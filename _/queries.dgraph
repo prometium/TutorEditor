@@ -1,0 +1,11 @@
+{
+  frames(func: eq(dgraph.type, "Frame")) {
+    uid
+    actions {
+      next_frame {
+        uid
+      }
+    }
+    dgraph.type
+  }
+}

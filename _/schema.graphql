@@ -1,0 +1,27 @@
+type Scenario {
+  scenarioID: ID!
+  name: String!
+  frames: [Frame]
+}
+
+type Frame {
+  frameID: ID!
+  actions: [Action]
+  task: Task
+  hint: Hint
+}
+
+type Action {
+  actionID: ID!
+  next: Frame
+}
+
+type Task {
+  taskID: ID!
+  taskText: String!
+}
+
+type Hint {
+  hintID: ID!
+  hintText: String!
+}
