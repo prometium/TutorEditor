@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"fmt"
-
 	httptransport "github.com/go-kit/kit/transport/http"
 	"github.com/gorilla/mux"
 
@@ -24,8 +22,8 @@ func MakeHTTPHandler(e transport.Endpoints) http.Handler {
 	))
 
 	r.Methods("POST").Path("/script").Handler(httptransport.NewServer(
-		e.TransformScriptEndpoint,
-		decodeTransformScriptRequest,
+		e.AddRawScriptEndpoint,
+		decodeAddRawScriptRequest,
 		encodeResponse,
 	))
 
@@ -37,16 +35,16 @@ func decodeStatusRequest(ctx context.Context, r *http.Request) (interface{}, err
 	return req, nil
 }
 
-func decodeTransformScriptRequest(ctx context.Context, r *http.Request) (interface{}, error) {
-	var req transport.TransformScriptRequest
-	file, _, err := r.FormFile("script")
+func decodeAddRawScriptRequest(ctx context.Context, r *http.Request) (interface{}, error) {
+	scriptArchive, _, err := r.FormFile("script")
+	if err != nil && err != http.ErrMissingFile {
+		return nil, err
+	}
+	defer scriptArchive.Close()
 
-	fmt.Println(file, err)
-
-	// if e := json.NewDecoder(r.Body).Decode(&req.Script); e != nil {
-	// 	return nil, e
-	// }
-	return req, nil
+	return transport.AddRawScriptRequest{
+		ArchiveReader: scriptArchive,
+	}, nil
 }
 
 func encodeResponse(ctx context.Context, w http.ResponseWriter, response interface{}) error {

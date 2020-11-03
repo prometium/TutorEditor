@@ -1,5 +1,7 @@
 package transport
 
+import "io"
+
 type (
 	// StatusRequest holds the request parameters for the Status method
 	StatusRequest struct{}
@@ -9,13 +11,13 @@ type (
 		Status string `json:"status"`
 	}
 
-	// TransformScriptRequest holds the request parameters for the Status method
-	TransformScriptRequest struct{
-		Script string `json:"script"`
+	// AddRawScriptRequest holds the request parameters for the Status method
+	AddRawScriptRequest struct {
+		ArchiveReader io.Reader
 	}
 
-	// TransformScriptResponse holds the request parameters for the Status method
-	TransformScriptResponse struct {
+	// AddRawScriptResponse holds the request parameters for the Status method
+	AddRawScriptResponse struct {
 		ID int `json:"id"`
 	}
 )

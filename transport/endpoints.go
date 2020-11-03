@@ -10,16 +10,16 @@ import (
 
 // Endpoints are exposed
 type Endpoints struct {
-	StatusEndpoint endpoint.Endpoint
-	TransformScriptEndpoint endpoint.Endpoint
+	StatusEndpoint       endpoint.Endpoint
+	AddRawScriptEndpoint endpoint.Endpoint
 }
 
 // MakeServerEndpoints returns an Endpoints struct where each endpoint invokes
 // the corresponding method on the provided service
 func MakeServerEndpoints(s editorsvc.Service) Endpoints {
 	return Endpoints{
-		StatusEndpoint: makeStatusEndpoint(s),
-		TransformScriptEndpoint: makeTransformScriptEndpoint(s),
+		StatusEndpoint:       makeStatusEndpoint(s),
+		AddRawScriptEndpoint: makeAddRawScriptEndpoint(s),
 	}
 }
 
@@ -35,14 +35,14 @@ func makeStatusEndpoint(s editorsvc.Service) endpoint.Endpoint {
 	}
 }
 
-func makeTransformScriptEndpoint(s editorsvc.Service) endpoint.Endpoint {
+func makeAddRawScriptEndpoint(s editorsvc.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		req := request.(TransformScriptRequest)
-		id, err := s.TransformScript(ctx, req.Script)
+		req := request.(AddRawScriptRequest)
+		id, err := s.AddRawScript(ctx, req.ArchiveReader)
 		if err != nil {
-			return TransformScriptResponse{id}, err
+			return AddRawScriptResponse{id}, err
 		}
 
-		return TransformScriptResponse{id}, nil
+		return AddRawScriptResponse{id}, nil
 	}
 }

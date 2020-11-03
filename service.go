@@ -1,13 +1,12 @@
 package editorsvc
 
-import "context"
+import (
+	"context"
+	"io"
+)
 
 // Service provides some "date capabilities" to application
 type Service interface {
 	Status(ctx context.Context) (string, error)
-	TransformScript(ctx context.Context, script string) (int, error)
-}
-
-// Repository describes the persistence on editor model
-type Repository interface {
+	AddRawScript(ctx context.Context, archiveReader io.Reader) (int, error)
 }
