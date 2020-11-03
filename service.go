@@ -7,6 +7,5 @@ import (
 
 // Service provides some "date capabilities" to application
 type Service interface {
-	Status(ctx context.Context) (string, error)
-	AddRawScript(ctx context.Context, archiveReader io.Reader) (int, error)
+	AddRawScript(ctx context.Context, name string, archiveReader io.Reader) (string, error)
 }

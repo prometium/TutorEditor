@@ -28,7 +28,7 @@ type keyboardAction struct {
 }
 
 type action struct {
-	ActionID int `json:"ActionID"`
+	ActionType int `json:"actionId"`
 	mouseAction
 	dragAction
 	wheelAction
@@ -38,11 +38,11 @@ type action struct {
 type frame struct {
 	FrameNumber  int    `json:"frameNumber"`
 	PictureLink  string `json:"pictureLink"`
-	ActionSwitch action `json:"action"`
+	ActionSwitch action `json:"actionSwitch"`
 	Task         string `json:"task,omitempty"`
 	Hint         string `json:"hint,omitempty"`
 }
 
-type script struct {
+type rawScript struct {
 	Frames []frame `json:"frames"`
 }

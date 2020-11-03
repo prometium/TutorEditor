@@ -2,14 +2,24 @@ package editorsvc
 
 import "context"
 
-type mouseAction struct {
+// NextFrame represents a next frame
+type NextFrame struct {
+	UID string `json:"uid,omitempty"`
+}
+
+// Action represents an action
+type Action struct {
+	UID        string    `json:"uid,omitempty"`
+	ActionType int       `json:"actionType"`
+	NextFrame  NextFrame `json:"nextFrame,omitempty"`
+
+	// mouse
 	XLeft  float32 `json:"xLeft,omitempty"`
 	XRight float32 `json:"xRight,omitempty"`
 	YLeft  float32 `json:"yLeft,omitempty"`
 	YRight float32 `json:"yRight,omitempty"`
-}
 
-type dragAction struct {
+	// drag
 	StartXLeft   float32 `json:"startXLeft,omitempty"`
 	StartYLeft   float32 `json:"startYLeft,omitempty"`
 	StartXRight  float32 `json:"startXRight,omitempty"`
@@ -18,33 +28,18 @@ type dragAction struct {
 	FinishYLeft  float32 `json:"finishYLeft,omitempty"`
 	FinishXRight float32 `json:"finishXRight,omitempty"`
 	FinishYRight float32 `json:"finishYRight,omitempty"`
-}
 
-type wheelAction struct {
+	// wheel
 	TicksCount int `json:"ticksCount,omitempty"`
-}
 
-type nextFrame struct {
-	UID string `json:"uid,omitempty"`
-}
-
-type keyboardAction struct {
+	// keyboard
 	Key    string `json:"key,omitempty"`
 	ModKey string `json:"modKey,omitempty"`
-}
 
-// Action represents a script
-type Action struct {
-	UID       string    `json:"uid,omitempty"`
-	NextFrame nextFrame `json:"next_frame,omitempty"`
-	mouseAction
-	dragAction
-	wheelAction
-	keyboardAction
 	DType []string `json:"dgraph.type,omitempty"`
 }
 
-// Frame represents a script
+// Frame represents a frame
 type Frame struct {
 	UID         string   `json:"uid,omitempty"`
 	PictureLink string   `json:"pictureLink,omitempty"`
@@ -56,10 +51,14 @@ type Frame struct {
 
 // Script represents a script
 type Script struct {
-	Frames []Frame `json:"frames"`
+	UID    string   `json:"uid,omitempty"`
+	Name   string   `json:"name"`
+	Frames []Frame  `json:"frames"`
+	DType  []string `json:"dgraph.type,omitempty"`
 }
 
 // Repository describes the persistence on editor model
 type Repository interface {
-	AddScript(ctx context.Context, frames []Frame) error
+	Setup(ctx context.Context) error
+	AddScript(ctx context.Context, name string, frames []Frame) (string, error)
 }

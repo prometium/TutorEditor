@@ -48,6 +48,30 @@ func db() {
 		hintText: string .
 	`
 
+	op := &api.Operation{}
+	op.Schema = `
+		type Action {
+			actionType
+			nextFrame
+		}
+
+		type Frame {
+			pictureLink
+			actions
+			task
+			hint
+		}
+
+		actionType: int .
+		nextFrame: uid .
+		pictureLink: string .
+		actions: [uid] .
+		task: string .
+		hint: string .
+	`
+
+	err := db.Alter(ctx, op)
+
 	ctx := context.Background()
 	err = dgraphClient.Alter(ctx, op)
 	if err != nil {
@@ -72,7 +96,7 @@ func db() {
 	mutations := make([]*api.Mutation, 2)
 	for i, x := range []int{1, 2} {
 		frame := Frame{
-			UID: fmt.Sprintf("_:frame%d", x),
+			UID:   fmt.Sprintf("_:frame%d", x),
 			DType: []string{"Frame"},
 		}
 
@@ -103,7 +127,7 @@ func db() {
 				NextFrame: NextFrame{
 					UID: assigned.Uids["frame2"],
 				},
-				DType:     []string{"Action"},
+				DType: []string{"Action"},
 			}},
 	}
 

@@ -15,24 +15,13 @@ import (
 func MakeHTTPHandler(e transport.Endpoints) http.Handler {
 	r := mux.NewRouter()
 
-	r.Methods("GET").Path("/status").Handler(httptransport.NewServer(
-		e.StatusEndpoint,
-		decodeStatusRequest,
-		encodeResponse,
-	))
-
-	r.Methods("POST").Path("/script").Handler(httptransport.NewServer(
+	r.Methods("POST").Path("/script/raw").Handler(httptransport.NewServer(
 		e.AddRawScriptEndpoint,
 		decodeAddRawScriptRequest,
 		encodeResponse,
 	))
 
 	return r
-}
-
-func decodeStatusRequest(ctx context.Context, r *http.Request) (interface{}, error) {
-	var req transport.StatusRequest
-	return req, nil
 }
 
 func decodeAddRawScriptRequest(ctx context.Context, r *http.Request) (interface{}, error) {

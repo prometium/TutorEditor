@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 
 	"github.com/dgraph-io/dgo"
 	"github.com/dgraph-io/dgo/protos/api"
@@ -17,36 +16,56 @@ type repository struct {
 }
 
 // New returns a repository backed by Dgraph
-func New(db *dgo.Dgraph) (editorsvc.Repository, error) {
+func New(db *dgo.Dgraph) editorsvc.Repository {
 	return &repository{
 		db: db,
-	}, nil
+	}
 }
 
-func (repo *repository) AddScript(ctx context.Context, frames []editorsvc.Frame) error {
-	mutations := make([]*api.Mutation, len(frames))
-	for i, frame := range frames {
-		frameB, err := json.Marshal(frame)
-		if err != nil {
-			log.Fatal(err)
-		}
+func (repo *repository) Setup(ctx context.Context) error {
+	err := repo.db.Alter(ctx, &api.Operation{
+		Schema:          schema,
+		RunInBackground: true,
+	})
+	return err
+}
 
-		mu := &api.Mutation{
-			SetJson: frameB,
-		}
-		mutations[i] = mu
+func (repo *repository) AddScript(ctx context.Context, name string, frames []editorsvc.Frame) (string, error) {
+	script := editorsvc.Script{
+		UID:    "script",
+		Name:   name,
+		Frames: frames,
 	}
+	prepareScript(&script)
 
-	fmt.Println("HERE")
-
-	req := &api.Request{CommitNow: true, Mutations: mutations}
-	assigned, err := repo.db.NewTxn().Do(ctx, req)
+	scriptB, err := json.Marshal(script)
 	if err != nil {
-		fmt.Println(err)
-		return err
+		return "", err
 	}
 
-	fmt.Println(assigned)
+	mu := &api.Mutation{
+		SetJson:   scriptB,
+		CommitNow: true,
+	}
 
-	return nil
+	assigned, err := repo.db.NewTxn().Mutate(ctx, mu)
+	if err != nil {
+		return "", err
+	}
+	return assigned.Uids["script"], nil
+}
+
+func prepareScript(script *editorsvc.Script) {
+	script.UID = fmt.Sprintf("_:%s", script.UID)
+	script.DType = []string{"Script"}
+	for i := range script.Frames {
+		frame := &script.Frames[i]
+		frame.UID = fmt.Sprintf("_:%s", frame.UID)
+		frame.DType = []string{"Frame"}
+		for j := range frame.Actions {
+			action := &frame.Actions[j]
+			action.NextFrame.UID = fmt.Sprintf("_:%s", action.NextFrame.UID)
+			action.DType = []string{"Action"}
+		}
+	}
 }
