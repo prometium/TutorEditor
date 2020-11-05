@@ -2,14 +2,17 @@ package implementation
 
 import (
 	"archive/zip"
-	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
-	"io/ioutil"
+	"os"
+	"path/filepath"
 	"strconv"
+	"strings"
 
 	"editorsvc"
+	"editorsvc/utils"
 )
 
 type service struct {
@@ -23,66 +26,65 @@ func NewService(rep editorsvc.Repository) editorsvc.Service {
 	}
 }
 
-func (*service) Status(ctx context.Context) (string, error) {
-	return "Ok", nil
+func (s *service) Setup(ctx context.Context) error {
+	return s.repository.Setup(ctx)
 }
 
 func (s *service) AddRawScript(ctx context.Context, name string, archiveReader io.Reader) (string, error) {
-	zipBytes, err := ioutil.ReadAll(archiveReader)
+	exists, err := s.repository.ScriptExists(ctx, name)
+	if err != nil {
+		return "", err
+	} else if exists {
+		return "", editorsvc.ErrScriptAlreadyExists
+	}
+
+	zipReader, err := utils.CreateZipReader(archiveReader)
 	if err != nil {
 		return "", err
 	}
 
-	reader := bytes.NewReader(zipBytes)
-	zipReader, err := zip.NewReader(reader, int64(len(zipBytes)))
-	if err != nil {
-		return "", err
-	}
+	dir := fmt.Sprintf("static/images/%s/", name)
+	os.MkdirAll(dir, os.ModePerm)
 
+	var scriptFile *zip.File = nil
 	for _, file := range zipReader.File {
-		//fmt.Printf("=%s\n", file.Name)
-
-		if file.Name == "Script.json" {
-			var rs rawScript
-			scriptJSON, err := readAll(file)
+		if filepath.Ext(strings.TrimSpace(file.Name)) == ".png" {
+			err := utils.CopyZipFile(file, filepath.Join(dir, filepath.Base(file.Name)))
 			if err != nil {
 				return "", err
 			}
-
-			json.Unmarshal([]byte(scriptJSON), &rs)
-			id, err := s.repository.AddScript(ctx, name, convertToFrames(rs))
-			if err != nil {
-				return "", err
-			}
-			return id, nil
+		} else if file.Name == "Script.json" {
+			scriptFile = file
 		}
 	}
 
-	return "", nil
+	scriptJSON, err := utils.ReadAllFromZip(scriptFile)
+	if err != nil {
+		return "", err
+	}
+
+	var rs rawScript
+	json.Unmarshal([]byte(scriptJSON), &rs)
+
+	id, err := s.repository.AddScript(ctx, name, convertToFrames(name, rs))
+	if err != nil {
+		return "", err
+	}
+	return id, nil
 }
 
-func readAll(f *zip.File) ([]byte, error) {
-	rc, err := f.Open()
-	if err != nil {
-		return nil, err
-	}
-	defer rc.Close()
-
-	content, err := ioutil.ReadAll(rc)
-	if err != nil {
-		return nil, err
-	}
-	return content, nil
-}
-
-func convertToFrames(rs rawScript) []editorsvc.Frame {
+func convertToFrames(name string, rs rawScript) []editorsvc.Frame {
 	frames := make([]editorsvc.Frame, len(rs.Frames))
 	for i, frame := range rs.Frames {
 		frames[i] = editorsvc.Frame{
 			UID:         strconv.Itoa(frame.FrameNumber),
-			PictureLink: frame.PictureLink,
-			Task:        frame.Task,
-			Hint:        frame.Hint,
+			PictureLink: filepath.Join(fmt.Sprintf("images/%s/", name), filepath.Base(frame.PictureLink)),
+			Task: editorsvc.Task{
+				Text: frame.Task,
+			},
+			Hint: editorsvc.Hint{
+				Text: frame.Hint,
+			},
 		}
 	}
 	for i, frame := range rs.Frames[1:] {

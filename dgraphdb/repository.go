@@ -9,6 +9,7 @@ import (
 	"github.com/dgraph-io/dgo/protos/api"
 
 	"editorsvc"
+	"editorsvc/utils"
 )
 
 type repository struct {
@@ -61,6 +62,8 @@ func prepareScript(script *editorsvc.Script) {
 	for i := range script.Frames {
 		frame := &script.Frames[i]
 		frame.UID = fmt.Sprintf("_:%s", frame.UID)
+		frame.Task.UID = fmt.Sprintf("_:task-%d", utils.Hash(frame.Task.Text))
+		frame.Hint.UID = fmt.Sprintf("_:hint-%d", utils.Hash(frame.Hint.Text))
 		frame.DType = []string{"Frame"}
 		for j := range frame.Actions {
 			action := &frame.Actions[j]
@@ -68,4 +71,27 @@ func prepareScript(script *editorsvc.Script) {
 			action.DType = []string{"Action"}
 		}
 	}
+}
+
+func (repo *repository) ScriptExists(ctx context.Context, name string) (bool, error) {
+	q := `query Scripts($name: string) {
+		scripts(func: eq(dgraph.type, "Script")) @filter(eq(name, $name)) {
+			Count : count(uid)
+		}
+	}`
+	variables := map[string]string{"$name": name}
+	resp, err := repo.db.NewTxn().QueryWithVars(ctx, q, variables)
+	if err != nil {
+		return false, err
+	}
+
+	var decode struct {
+		Scripts []struct {
+			Count int
+		}
+	}
+	if err := json.Unmarshal(resp.GetJson(), &decode); err != nil {
+		return false, err
+	}
+	return decode.Scripts[0].Count > 0, nil
 }

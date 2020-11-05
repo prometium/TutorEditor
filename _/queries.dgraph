@@ -1,18 +1,29 @@
 {
-  frames(func: eq(dgraph.type, "Frame")) {
-    uid
-    actions {
-      nextFrame {
-        uid
+  frames(func: eq(dgraph.type, "Script")) {
+    frames {
+      uid
+      pictureLink
+      actions {
+        nextFrame {
+          uid
+        }
+        actionType
+        xLeft
+        xRight
+        yLeft
+        yRight
+        key
+        modKey
+        dgraph.type
       }
-      XLeft
-      xRight
-      yLeft
-      yRight
+      task {
+        text
+      }
+      hint {
+        text
+      }
+      dgraph.type
     }
-    task
-    hint
-    dgraph.type
   }
 }
 
@@ -33,8 +44,12 @@
         modKey
         dgraph.type
       }
-      task
-      hint
+      task {
+        text
+      }
+      hint {
+        text
+      }
       dgraph.type
     }
   }

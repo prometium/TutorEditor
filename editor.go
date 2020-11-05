@@ -39,13 +39,25 @@ type Action struct {
 	DType []string `json:"dgraph.type,omitempty"`
 }
 
+// Task represents a task
+type Task struct {
+	UID  string `json:"uid,omitempty"`
+	Text string `json:"text,omitempty"`
+}
+
+// Hint represents a hint
+type Hint struct {
+	UID  string `json:"uid,omitempty"`
+	Text string `json:"text,omitempty"`
+}
+
 // Frame represents a frame
 type Frame struct {
 	UID         string   `json:"uid,omitempty"`
 	PictureLink string   `json:"pictureLink,omitempty"`
 	Actions     []Action `json:"actions,omitempty"`
-	Task        string   `json:"task,omitempty"`
-	Hint        string   `json:"hint,omitempty"`
+	Task        Task     `json:"task,omitempty"`
+	Hint        Hint     `json:"hint,omitempty"`
 	DType       []string `json:"dgraph.type,omitempty"`
 }
 
@@ -61,4 +73,5 @@ type Script struct {
 type Repository interface {
 	Setup(ctx context.Context) error
 	AddScript(ctx context.Context, name string, frames []Frame) (string, error)
+	ScriptExists(ctx context.Context, name string) (bool, error)
 }

@@ -15,6 +15,14 @@ import (
 func MakeHTTPHandler(e transport.Endpoints) http.Handler {
 	r := mux.NewRouter()
 
+	r.PathPrefix("/images/").Handler(http.StripPrefix("/images/", http.FileServer(http.Dir("./static/images"))))
+
+	r.Methods("GET").Path("/setup").Handler(httptransport.NewServer(
+		e.SetupEndpoint,
+		decodeSetupRequest,
+		encodeResponse,
+	))
+
 	r.Methods("POST").Path("/script/raw").Handler(httptransport.NewServer(
 		e.AddRawScriptEndpoint,
 		decodeAddRawScriptRequest,
@@ -24,6 +32,11 @@ func MakeHTTPHandler(e transport.Endpoints) http.Handler {
 	return r
 }
 
+func decodeSetupRequest(ctx context.Context, r *http.Request) (interface{}, error) {
+	var req transport.SetupRequest
+	return req, nil
+}
+
 func decodeAddRawScriptRequest(ctx context.Context, r *http.Request) (interface{}, error) {
 	scriptArchive, _, err := r.FormFile("script")
 	if err != nil && err != http.ErrMissingFile {
@@ -31,8 +44,11 @@ func decodeAddRawScriptRequest(ctx context.Context, r *http.Request) (interface{
 	}
 	defer scriptArchive.Close()
 
+	name := r.FormValue("name")
+
 	return transport.AddRawScriptRequest{
 		ArchiveReader: scriptArchive,
+		Name:          name,
 	}, nil
 }
 

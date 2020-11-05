@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"net/http"
 	"os"
@@ -33,26 +32,18 @@ func main() {
 	var dgraphClient *dgo.Dgraph
 	{
 		conn, err := grpc.Dial("localhost:9080", grpc.WithInsecure())
+		defer conn.Close()
 		if err != nil {
 			level.Error(logger).Log("exit", err)
 			os.Exit(-1)
 		}
-		defer conn.Close()
 
 		dgraphClient = dgo.NewDgraphClient(api.NewDgraphClient(conn))
 	}
 
-	ctx := context.Background()
-
 	var service editorsvc.Service
 	{
 		repository := dgraphdb.New(dgraphClient)
-		err := repository.Setup(ctx)
-		if err != nil {
-			level.Error(logger).Log("exit", err)
-			os.Exit(-1)
-		}
-
 		service = implementation.NewService(repository)
 	}
 

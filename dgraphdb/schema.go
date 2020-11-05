@@ -21,6 +21,26 @@ type Action {
 	modKey
 }
 
+type Task {
+	text
+}
+
+type Hint {
+	text
+}
+
+type Frame {
+	pictureLink
+	actions
+	task
+	hint
+}
+
+type Script {
+	name
+	frames
+}
+
 actionType: int .
 nextFrame: uid .
 xLeft: float .
@@ -38,16 +58,11 @@ finishYRight: float .
 ticksCount: int .
 key: string .
 modKey: string .
-
-type Frame {
-	pictureLink
-	actions
-	task
-	hint
-}
-
+text: string .
 pictureLink: string .
 actions: [uid] .
-task: string .
-hint: string .
+task: uid .
+hint: uid .
+name: string .
+frames: [uid] .
 `
