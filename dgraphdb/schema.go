@@ -63,6 +63,6 @@ pictureLink: string .
 actions: [uid] .
 task: uid .
 hint: uid .
-name: string .
+name: string @index(exact) .
 frames: [uid] .
 `

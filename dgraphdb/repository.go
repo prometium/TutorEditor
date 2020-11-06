@@ -74,8 +74,8 @@ func prepareScript(script *editorsvc.Script) {
 }
 
 func (repo *repository) ScriptExists(ctx context.Context, name string) (bool, error) {
-	q := `query Scripts($name: string) {
-		scripts(func: eq(dgraph.type, "Script")) @filter(eq(name, $name)) {
+	q := `query ScriptsCount($name: string) {
+		scriptsCount(func: eq(dgraph.type, "Script")) @filter(eq(name, $name)) {
 			Count : count(uid)
 		}
 	}`
@@ -86,12 +86,33 @@ func (repo *repository) ScriptExists(ctx context.Context, name string) (bool, er
 	}
 
 	var decode struct {
-		Scripts []struct {
+		ScriptsCount []struct {
 			Count int
 		}
 	}
 	if err := json.Unmarshal(resp.GetJson(), &decode); err != nil {
 		return false, err
 	}
-	return decode.Scripts[0].Count > 0, nil
+	return decode.ScriptsCount[0].Count > 0, nil
+}
+
+func (repo *repository) GetScriptsList(ctx context.Context) ([]editorsvc.Script, error) {
+	q := `{
+		scripts(func: eq(dgraph.type, "Script")) {
+			uid
+			name
+		}
+	}`
+	resp, err := repo.db.NewTxn().Query(ctx, q)
+	if err != nil {
+		return nil, err
+	}
+
+	var decode struct {
+		Scripts []editorsvc.Script
+	}
+	if err := json.Unmarshal(resp.GetJson(), &decode); err != nil {
+		return nil, err
+	}
+	return decode.Scripts, nil
 }

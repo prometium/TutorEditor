@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"editorsvc"
 	"editorsvc/utils"
@@ -30,55 +31,69 @@ func (s *service) Setup(ctx context.Context) error {
 	return s.repository.Setup(ctx)
 }
 
-func (s *service) AddRawScript(ctx context.Context, name string, archiveReader io.Reader) (string, error) {
+func (s *service) AddRawScript(ctx context.Context, name string, fileReader io.Reader) (string, error) {
 	exists, err := s.repository.ScriptExists(ctx, name)
 	if err != nil {
 		return "", err
 	} else if exists {
-		return "", editorsvc.ErrScriptAlreadyExists
+		name = fmt.Sprintf("%s [%s]", name, time.Now().Format("2006-01-02 15:04:05"))
 	}
 
-	zipReader, err := utils.CreateZipReader(archiveReader)
+	zipReader, err := utils.CreateZipReader(fileReader)
 	if err != nil {
 		return "", err
 	}
 
-	dir := fmt.Sprintf("static/images/%s/", name)
-	os.MkdirAll(dir, os.ModePerm)
+	imagesDir := fmt.Sprintf("static/images/")
+	os.MkdirAll(imagesDir, os.ModePerm)
 
+	var linksMap map[string]string = make(map[string]string)
 	var scriptFile *zip.File = nil
 	for _, file := range zipReader.File {
 		if filepath.Ext(strings.TrimSpace(file.Name)) == ".png" {
-			err := utils.CopyZipFile(file, filepath.Join(dir, filepath.Base(file.Name)))
+			hash, err := utils.HashZipFileMD5(file)
 			if err != nil {
 				return "", err
 			}
+			linksMap[file.Name] = hash + ".png"
+			// err = utils.CopyZipFile(file, filepath.Join(imagesDir, linksMap[file.Name]))
+			// if err != nil {
+			// 	return "", err
+			// }
 		} else if file.Name == "Script.json" {
 			scriptFile = file
 		}
 	}
 
-	scriptJSON, err := utils.ReadAllFromZip(scriptFile)
+	frames, err := getFramesFromScriptFile(scriptFile)
 	if err != nil {
 		return "", err
 	}
 
-	var rs rawScript
-	json.Unmarshal([]byte(scriptJSON), &rs)
-
-	id, err := s.repository.AddScript(ctx, name, convertToFrames(name, rs))
+	configuredFrames := configurePictureLinks(frames, "images/", linksMap)
+	id, err := s.repository.AddScript(ctx, name, configuredFrames)
 	if err != nil {
 		return "", err
 	}
 	return id, nil
 }
 
-func convertToFrames(name string, rs rawScript) []editorsvc.Frame {
+func getFramesFromScriptFile(scriptFile *zip.File) ([]editorsvc.Frame, error) {
+	scriptJSON, err := utils.ReadAllFromZip(scriptFile)
+	if err != nil {
+		return nil, err
+	}
+
+	var rs rawScript
+	if err := json.Unmarshal([]byte(scriptJSON), &rs); err != nil {
+		return nil, err
+	}
+
 	frames := make([]editorsvc.Frame, len(rs.Frames))
 	for i, frame := range rs.Frames {
 		frames[i] = editorsvc.Frame{
 			UID:         strconv.Itoa(frame.FrameNumber),
-			PictureLink: filepath.Join(fmt.Sprintf("images/%s/", name), filepath.Base(frame.PictureLink)),
+			PictureLink: frame.PictureLink,
 			Task: editorsvc.Task{
 				Text: frame.Task,
 			},
@@ -87,8 +102,9 @@ func convertToFrames(name string, rs rawScript) []editorsvc.Frame {
 			},
 		}
 	}
+
 	for i, frame := range rs.Frames[1:] {
-		action := frame.ActionSwitch
+		action := &frame.ActionSwitch
 		frames[i].Actions = []editorsvc.Action{
 			editorsvc.Action{
 				NextFrame: editorsvc.NextFrame{
@@ -113,5 +129,17 @@ func convertToFrames(name string, rs rawScript) []editorsvc.Frame {
 			},
 		}
 	}
+
+	return frames, nil
+}
+
+func configurePictureLinks(frames []editorsvc.Frame, path string, linksMap map[string]string) []editorsvc.Frame {
+	for i := range frames {
+		frames[i].PictureLink = filepath.Join(path, linksMap[frames[i].PictureLink])
+	}
 	return frames
+}
+
+func (s *service) GetScriptsList(ctx context.Context) ([]editorsvc.Script, error) {
+	return s.repository.GetScriptsList(ctx)
 }

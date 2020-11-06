@@ -29,6 +29,12 @@ func MakeHTTPHandler(e transport.Endpoints) http.Handler {
 		encodeResponse,
 	))
 
+	r.Methods("GET").Path("/scripts").Handler(httptransport.NewServer(
+		e.GetScriptsListEndpoint,
+		decodeGetScriptsListRequest,
+		encodeResponse,
+	))
+
 	return r
 }
 
@@ -47,9 +53,14 @@ func decodeAddRawScriptRequest(ctx context.Context, r *http.Request) (interface{
 	name := r.FormValue("name")
 
 	return transport.AddRawScriptRequest{
-		ArchiveReader: scriptArchive,
-		Name:          name,
+		FileReader: scriptArchive,
+		Name:       name,
 	}, nil
+}
+
+func decodeGetScriptsListRequest(ctx context.Context, r *http.Request) (interface{}, error) {
+	var req transport.GetScriptsListRequest
+	return req, nil
 }
 
 func encodeResponse(ctx context.Context, w http.ResponseWriter, response interface{}) error {

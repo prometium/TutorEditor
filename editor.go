@@ -1,6 +1,8 @@
 package editorsvc
 
-import "context"
+import (
+	"context"
+)
 
 // NextFrame represents a next frame
 type NextFrame struct {
@@ -65,7 +67,7 @@ type Frame struct {
 type Script struct {
 	UID    string   `json:"uid,omitempty"`
 	Name   string   `json:"name"`
-	Frames []Frame  `json:"frames"`
+	Frames []Frame  `json:"frames,omitempty"`
 	DType  []string `json:"dgraph.type,omitempty"`
 }
 
@@ -74,4 +76,5 @@ type Repository interface {
 	Setup(ctx context.Context) error
 	AddScript(ctx context.Context, name string, frames []Frame) (string, error)
 	ScriptExists(ctx context.Context, name string) (bool, error)
+	GetScriptsList(ctx context.Context) ([]Script, error)
 }

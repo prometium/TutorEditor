@@ -3,6 +3,8 @@ package utils
 import (
 	"archive/zip"
 	"bytes"
+	"crypto/md5"
+	"encoding/hex"
 	"hash/fnv"
 	"io"
 	"io/ioutil"
@@ -14,6 +16,23 @@ func Hash(s string) uint32 {
 	h := fnv.New32a()
 	h.Write([]byte(s))
 	return h.Sum32()
+}
+
+// HashZipFileMD5 generate MD5 hash number of a zip file
+func HashZipFileMD5(f *zip.File) (string, error) {
+	var returnMD5String string
+	file, err := f.Open()
+	if err != nil {
+		return returnMD5String, err
+	}
+	defer file.Close()
+	hash := md5.New()
+	if _, err := io.Copy(hash, file); err != nil {
+		return returnMD5String, err
+	}
+	hashInBytes := hash.Sum(nil)[:16]
+	returnMD5String = hex.EncodeToString(hashInBytes)
+	return returnMD5String, nil
 }
 
 // ReadAllFromZip reads from zip file until an error or EOF and returns the data it read
