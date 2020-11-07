@@ -15,7 +15,7 @@ import (
 func MakeHTTPHandler(e transport.Endpoints) http.Handler {
 	r := mux.NewRouter()
 
-	r.PathPrefix("/images/").Handler(http.StripPrefix("/images/", http.FileServer(http.Dir("./static/images"))))
+	r.PathPrefix("/images/").Handler(http.StripPrefix("/images/", http.FileServer(http.Dir("assets/images"))))
 
 	r.Methods("GET").Path("/setup").Handler(httptransport.NewServer(
 		e.SetupEndpoint,

@@ -75,6 +75,5 @@ type Script struct {
 type Repository interface {
 	Setup(ctx context.Context) error
 	AddScript(ctx context.Context, name string, frames []Frame) (string, error)
-	ScriptExists(ctx context.Context, name string) (bool, error)
 	GetScriptsList(ctx context.Context) ([]Script, error)
 }
