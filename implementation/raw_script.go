@@ -99,6 +99,7 @@ func (rs *rawScript) saveImages(ctx context.Context, imagesDir string) (map[stri
 	errs, ctx := errgroup.WithContext(ctx)
 	var linksMap map[string]string = make(map[string]string)
 	for _, file := range rs.Images {
+		fileName := file.Name
 		errs.Go(func() error {
 			hash, err := utils.HashZipFileMD5(file)
 			if err != nil {
@@ -115,7 +116,7 @@ func (rs *rawScript) saveImages(ctx context.Context, imagesDir string) (map[stri
 
 			lock.Lock()
 			defer lock.Unlock()
-			linksMap[file.Name] = path
+			linksMap[fileName] = path
 
 			return nil
 		})
@@ -127,7 +128,7 @@ func (rs *rawScript) saveImages(ctx context.Context, imagesDir string) (map[stri
 	return linksMap, nil
 }
 
-func (rs *rawScript) generateFrames(linksMap map[string]string) ([]editorsvc.Frame, error) {
+func (rs *rawScript) createScript(name string, linksMap map[string]string) (editorsvc.Script, error) {
 	frames := make([]editorsvc.Frame, len(rs.Frames))
 	for i, frame := range rs.Frames {
 		frames[i] = editorsvc.Frame{
@@ -167,5 +168,12 @@ func (rs *rawScript) generateFrames(linksMap map[string]string) ([]editorsvc.Fra
 			},
 		}
 	}
-	return frames, nil
+	script := editorsvc.Script{
+		Name: name,
+		FirstFrame: &editorsvc.NextFrame{
+			UID: frames[0].UID,
+		},
+		Frames: frames,
+	}
+	return script, nil
 }

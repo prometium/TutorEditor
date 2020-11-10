@@ -24,4 +24,14 @@ type (
 	GetScriptsListResponse struct {
 		Scripts []editorsvc.Script `json:"scripts"`
 	}
+
+	// GetScriptRequest holds the request parameters for the GetScript method
+	GetScriptRequest struct {
+		ID string `json:"id"`
+	}
+
+	// GetScriptResponse holds the response parameters for the GetScript method
+	GetScriptResponse struct {
+		Script []editorsvc.Script `json:"script"`
+	}
 )

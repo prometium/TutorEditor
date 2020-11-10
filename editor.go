@@ -12,7 +12,7 @@ type NextFrame struct {
 // Action represents an action
 type Action struct {
 	UID        string    `json:"uid,omitempty"`
-	ActionType int       `json:"actionType"`
+	ActionType int       `json:"actionType,omitempty"`
 	NextFrame  NextFrame `json:"nextFrame,omitempty"`
 
 	// mouse
@@ -44,13 +44,13 @@ type Action struct {
 // Task represents a task
 type Task struct {
 	UID  string `json:"uid,omitempty"`
-	Text string `json:"text,omitempty"`
+	Text string `json:"text"`
 }
 
 // Hint represents a hint
 type Hint struct {
 	UID  string `json:"uid,omitempty"`
-	Text string `json:"text,omitempty"`
+	Text string `json:"text"`
 }
 
 // Frame represents a frame
@@ -65,15 +65,17 @@ type Frame struct {
 
 // Script represents a script
 type Script struct {
-	UID    string   `json:"uid,omitempty"`
-	Name   string   `json:"name"`
-	Frames []Frame  `json:"frames,omitempty"`
-	DType  []string `json:"dgraph.type,omitempty"`
+	UID        string     `json:"uid,omitempty"`
+	Name       string     `json:"name"`
+	FirstFrame *NextFrame `json:"firstFrame,omitempty"`
+	Frames     []Frame    `json:"frames,omitempty"`
+	DType      []string   `json:"dgraph.type,omitempty"`
 }
 
 // Repository describes the persistence on editor model
 type Repository interface {
 	Setup(ctx context.Context) error
-	AddScript(ctx context.Context, name string, frames []Frame) (string, error)
+	AddScript(ctx context.Context, script Script) (string, error)
 	GetScriptsList(ctx context.Context) ([]Script, error)
+	GetScript(ctx context.Context, id string) ([]Script, error)
 }

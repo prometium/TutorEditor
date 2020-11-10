@@ -12,6 +12,7 @@ import (
 type Endpoints struct {
 	AddRawScriptEndpoint   endpoint.Endpoint
 	GetScriptsListEndpoint endpoint.Endpoint
+	GetScriptEndpoint      endpoint.Endpoint
 }
 
 // MakeServerEndpoints returns an Endpoints struct where each endpoint invokes
@@ -20,6 +21,7 @@ func MakeServerEndpoints(s editorsvc.Service) Endpoints {
 	return Endpoints{
 		AddRawScriptEndpoint:   makeAddRawScriptEndpoint(s),
 		GetScriptsListEndpoint: makeGetScriptsListEndpoint(s),
+		GetScriptEndpoint:      makeGetScriptEndpoint(s),
 	}
 }
 
@@ -35,5 +37,13 @@ func makeGetScriptsListEndpoint(s editorsvc.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		scripts, err := s.GetScriptsList(ctx)
 		return GetScriptsListResponse{scripts}, err
+	}
+}
+
+func makeGetScriptEndpoint(s editorsvc.Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(GetScriptRequest)
+		script, err := s.GetScript(ctx, req.ID)
+		return GetScriptResponse{script}, err
 	}
 }

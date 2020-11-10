@@ -31,13 +31,9 @@ func (repo *repository) Setup(ctx context.Context) error {
 	return err
 }
 
-func (repo *repository) AddScript(ctx context.Context, name string, frames []editorsvc.Frame) (string, error) {
-	script := editorsvc.Script{
-		UID:    "_:script",
-		Name:   name,
-		Frames: frames,
-		DType:  []string{"Script"},
-	}
+func (repo *repository) AddScript(ctx context.Context, script editorsvc.Script) (string, error) {
+	script.UID = "_:script"
+	script.DType = []string{"Script"}
 	for i := range script.Frames {
 		frame := &script.Frames[i]
 		frame.UID = fmt.Sprintf("_:frame-%s", frame.UID)
@@ -50,6 +46,7 @@ func (repo *repository) AddScript(ctx context.Context, name string, frames []edi
 			action.DType = []string{"Action"}
 		}
 	}
+	script.FirstFrame.UID = script.Frames[0].UID
 
 	scriptB, err := json.Marshal(script)
 	if err != nil {
@@ -75,7 +72,7 @@ func (repo *repository) GetScriptsList(ctx context.Context) ([]editorsvc.Script,
 			name
 		}
 	}`
-	resp, err := repo.db.NewTxn().Query(ctx, q)
+	res, err := repo.db.NewTxn().Query(ctx, q)
 	if err != nil {
 		return nil, err
 	}
@@ -83,8 +80,64 @@ func (repo *repository) GetScriptsList(ctx context.Context) ([]editorsvc.Script,
 	var decode struct {
 		Scripts []editorsvc.Script
 	}
-	if err := json.Unmarshal(resp.GetJson(), &decode); err != nil {
+	if err := json.Unmarshal(res.GetJson(), &decode); err != nil {
 		return nil, err
 	}
 	return decode.Scripts, nil
+}
+
+func (repo *repository) GetScript(ctx context.Context, id string) ([]editorsvc.Script, error) {
+	q := `query script($id: string) {
+		script(func: eq(dgraph.type, "Script")) @filter(uid($id)) {
+			uid
+			name
+			firstFrame {
+				uid
+			}
+			frames {
+				uid
+				pictureLink
+				actions {
+					nextFrame {
+				  		uid
+					}
+					actionType
+					xLeft
+					xRight
+					yLeft
+					yRight
+					startXLeft
+					startYLeft
+					startXRight
+					startYRight
+					finishXLeft
+					finishYLeft
+					finishXRight
+					finishYRight
+					ticksCount
+					key
+					modKey
+			  	}
+			  	task {
+					text
+			  	}
+			  	hint {
+					text
+			  	}
+			}
+		}
+	}`
+
+	res, err := repo.db.NewTxn().QueryWithVars(ctx, q, map[string]string{"$id": id})
+	if err != nil {
+		return nil, err
+	}
+
+	var decode struct {
+		Script []editorsvc.Script
+	}
+	if err := json.Unmarshal(res.GetJson(), &decode); err != nil {
+		return decode.Script, err
+	}
+	return decode.Script, nil
 }

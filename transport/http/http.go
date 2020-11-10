@@ -29,6 +29,12 @@ func MakeHTTPHandler(e transport.Endpoints) http.Handler {
 		encodeResponse,
 	))
 
+	r.Methods("GET").Path("/script/{id}").Handler(httptransport.NewServer(
+		e.GetScriptEndpoint,
+		decodeGetScriptRequest,
+		encodeResponse,
+	))
+
 	return r
 }
 
@@ -37,9 +43,7 @@ func decodeAddRawScriptRequest(ctx context.Context, r *http.Request) (interface{
 	if err != nil && err != http.ErrMissingFile {
 		return nil, err
 	}
-
 	name := r.FormValue("name")
-
 	return transport.AddRawScriptRequest{
 		FileReader: file,
 		Name:       name,
@@ -49,6 +53,13 @@ func decodeAddRawScriptRequest(ctx context.Context, r *http.Request) (interface{
 func decodeGetScriptsListRequest(ctx context.Context, r *http.Request) (interface{}, error) {
 	var req transport.GetScriptsListRequest
 	return req, nil
+}
+
+func decodeGetScriptRequest(ctx context.Context, r *http.Request) (interface{}, error) {
+	vars := mux.Vars(r)
+	return transport.GetScriptRequest{
+		ID: vars["id"],
+	}, nil
 }
 
 func encodeResponse(ctx context.Context, w http.ResponseWriter, response interface{}) error {

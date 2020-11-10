@@ -31,12 +31,12 @@ func (s *service) AddRawScript(ctx context.Context, name string, fileReader io.R
 		return "", err
 	}
 
-	frames, err := rs.generateFrames(linksMap)
+	script, err := rs.createScript(name, linksMap)
 	if err != nil {
 		return "", err
 	}
 
-	id, err := s.repository.AddScript(ctx, name, frames)
+	id, err := s.repository.AddScript(ctx, script)
 	if err != nil {
 		return id, err
 	}
@@ -45,4 +45,8 @@ func (s *service) AddRawScript(ctx context.Context, name string, fileReader io.R
 
 func (s *service) GetScriptsList(ctx context.Context) ([]editorsvc.Script, error) {
 	return s.repository.GetScriptsList(ctx)
+}
+
+func (s *service) GetScript(ctx context.Context, id string) ([]editorsvc.Script, error) {
+	return s.repository.GetScript(ctx, id)
 }
