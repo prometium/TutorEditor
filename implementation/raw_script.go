@@ -2,6 +2,7 @@ package implementation
 
 import (
 	"archive/zip"
+	"context"
 	"editorsvc"
 	"editorsvc/utils"
 	"encoding/json"
@@ -10,6 +11,9 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
+
+	"golang.org/x/sync/errgroup"
 )
 
 type rawMouseAction struct {
@@ -88,32 +92,47 @@ func (rs *rawScript) init(r io.Reader) error {
 	return nil
 }
 
-func (rs *rawScript) storeImages(imagesDir string) (map[string]string, error) {
+func (rs *rawScript) saveImages(ctx context.Context, imagesDir string) (map[string]string, error) {
+	os.MkdirAll(imagesDir, os.ModePerm)
+
+	lock := sync.RWMutex{}
+	errs, ctx := errgroup.WithContext(ctx)
 	var linksMap map[string]string = make(map[string]string)
 	for _, file := range rs.Images {
-		hash, err := utils.HashZipFileMD5(file)
-		if err != nil {
-			return linksMap, err
-		}
-
-		linksMap[file.Name] = hash + ".png"
-		path := filepath.Join(imagesDir, linksMap[file.Name])
-		if _, err := os.Stat(path); os.IsNotExist(err) {
-			err = utils.CopyZipFile(file, path)
+		errs.Go(func() error {
+			hash, err := utils.HashZipFileMD5(file)
 			if err != nil {
-				return linksMap, err
+				return err
 			}
-		}
+
+			path := filepath.Join(imagesDir, hash+".png")
+			if _, err := os.Stat(path); os.IsNotExist(err) {
+				err = utils.CopyZipFile(file, path)
+				if err != nil {
+					return err
+				}
+			}
+
+			lock.Lock()
+			defer lock.Unlock()
+			linksMap[file.Name] = path
+
+			return nil
+		})
+	}
+
+	if err := errs.Wait(); err != nil {
+		return nil, err
 	}
 	return linksMap, nil
 }
 
-func (rs *rawScript) generateFrames(imagesDir string, linksMap map[string]string) ([]editorsvc.Frame, error) {
+func (rs *rawScript) generateFrames(linksMap map[string]string) ([]editorsvc.Frame, error) {
 	frames := make([]editorsvc.Frame, len(rs.Frames))
 	for i, frame := range rs.Frames {
 		frames[i] = editorsvc.Frame{
 			UID:         strconv.Itoa(frame.FrameNumber),
-			PictureLink: filepath.Join(imagesDir, linksMap[frames[i].PictureLink]),
+			PictureLink: linksMap[frame.PictureLink],
 			Task: editorsvc.Task{
 				Text: frame.Task,
 			},

@@ -2,9 +2,7 @@ package implementation
 
 import (
 	"context"
-	"fmt"
 	"io"
-	"os"
 
 	"editorsvc"
 )
@@ -20,32 +18,27 @@ func NewService(rep editorsvc.Repository) editorsvc.Service {
 	}
 }
 
-func (s *service) Setup(ctx context.Context) error {
-	return s.repository.Setup(ctx)
-}
+func (s *service) AddRawScript(ctx context.Context, name string, fileReader io.ReadCloser) (string, error) {
+	defer fileReader.Close()
 
-func (s *service) AddRawScript(ctx context.Context, name string, fileReader io.Reader) (string, error) {
 	var rs rawScript
 	if err := rs.init(fileReader); err != nil {
 		return "", err
 	}
 
-	imagesDir := fmt.Sprintf("assets/images/")
-	os.MkdirAll(imagesDir, os.ModePerm)
-
-	linksMap, err := rs.storeImages(imagesDir)
+	linksMap, err := rs.saveImages(ctx, "assets/images/")
 	if err != nil {
 		return "", err
 	}
 
-	frames, err := rs.generateFrames(imagesDir, linksMap)
+	frames, err := rs.generateFrames(linksMap)
 	if err != nil {
 		return "", err
 	}
 
 	id, err := s.repository.AddScript(ctx, name, frames)
 	if err != nil {
-		return "", err
+		return id, err
 	}
 	return id, nil
 }

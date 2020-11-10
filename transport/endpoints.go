@@ -10,7 +10,6 @@ import (
 
 // Endpoints are exposed
 type Endpoints struct {
-	SetupEndpoint          endpoint.Endpoint
 	AddRawScriptEndpoint   endpoint.Endpoint
 	GetScriptsListEndpoint endpoint.Endpoint
 }
@@ -19,16 +18,8 @@ type Endpoints struct {
 // the corresponding method on the provided service
 func MakeServerEndpoints(s editorsvc.Service) Endpoints {
 	return Endpoints{
-		SetupEndpoint:          makeSetupEndpoint(s),
 		AddRawScriptEndpoint:   makeAddRawScriptEndpoint(s),
 		GetScriptsListEndpoint: makeGetScriptsListEndpoint(s),
-	}
-}
-
-func makeSetupEndpoint(s editorsvc.Service) endpoint.Endpoint {
-	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		err := s.Setup(ctx)
-		return SetupResponse{}, err
 	}
 }
 

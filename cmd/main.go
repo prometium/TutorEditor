@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"net/http"
 	"os"
@@ -21,6 +22,8 @@ import (
 func main() {
 	var httpAddr = flag.String("http.addr", ":8080", "HTTP listen address")
 	flag.Parse()
+
+	var ctx = context.Background()
 
 	var logger log.Logger
 	{
@@ -44,6 +47,12 @@ func main() {
 	var service editorsvc.Service
 	{
 		repository := dgraphdb.New(dgraphClient)
+		err := repository.Setup(ctx)
+		if err != nil {
+			level.Error(logger).Log("exit", err)
+			os.Exit(-1)
+		}
+
 		service = implementation.NewService(repository)
 	}
 
