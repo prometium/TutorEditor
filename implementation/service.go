@@ -50,3 +50,7 @@ func (s *service) GetScriptsList(ctx context.Context) ([]editorsvc.Script, error
 func (s *service) GetScript(ctx context.Context, id string) ([]editorsvc.Script, error) {
 	return s.repository.GetScript(ctx, id)
 }
+
+func (s *service) AddBranchPoint(ctx context.Context, id string) ([]editorsvc.Frame, error) {
+	return s.repository.AddBranchPoint(ctx, id)
+}

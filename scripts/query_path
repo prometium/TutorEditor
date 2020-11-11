@@ -1,0 +1,13 @@
+{
+  path as shortest(from: 0x8, to: 0x6) {
+		actions
+    nextFrame
+	}
+	PATH as path(func: uid(path)) {}
+  frames(func: uid(PATH)) @filter(eq(dgraph.type, "Frame")) {
+    uid
+    expand(_all_) {
+      expand(_all_)
+    }
+  }
+}

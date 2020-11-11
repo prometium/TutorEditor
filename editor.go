@@ -78,4 +78,5 @@ type Repository interface {
 	AddScript(ctx context.Context, script Script) (string, error)
 	GetScriptsList(ctx context.Context) ([]Script, error)
 	GetScript(ctx context.Context, id string) ([]Script, error)
+	AddBranchPoint(ctx context.Context, id string) ([]Frame, error)
 }

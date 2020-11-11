@@ -90,41 +90,16 @@ func (repo *repository) GetScript(ctx context.Context, id string) ([]editorsvc.S
 	q := `query script($id: string) {
 		script(func: eq(dgraph.type, "Script")) @filter(uid($id)) {
 			uid
-			name
-			firstFrame {
-				uid
-			}
-			frames {
-				uid
-				pictureLink
-				actions {
-					nextFrame {
-				  		uid
-					}
-					actionType
-					xLeft
-					xRight
-					yLeft
-					yRight
-					startXLeft
-					startYLeft
-					startXRight
-					startYRight
-					finishXLeft
-					finishYLeft
-					finishXRight
-					finishYRight
-					ticksCount
-					key
-					modKey
-			  	}
-			  	task {
-					text
-			  	}
-			  	hint {
-					text
-			  	}
-			}
+    		expand(_all_) {
+      			uid
+      			expand(_all_) {
+        			uid
+        			expand(_all_) {
+          				uid
+          				expand(_all_)
+        			}
+      			}
+    		}
 		}
 	}`
 
@@ -140,4 +115,36 @@ func (repo *repository) GetScript(ctx context.Context, id string) ([]editorsvc.S
 		return decode.Script, err
 	}
 	return decode.Script, nil
+}
+
+func (repo *repository) AddBranchPoint(ctx context.Context, id string) ([]editorsvc.Frame, error) {
+	q := `query script($id1: string, $id2: string) {
+		path as shortest(from: 0x8, to: 0x6) {
+			actions
+			nextFrame
+		}
+		PATH as path(func: uid(path)) {}
+	  	frames(func: uid(PATH)) @filter(eq(dgraph.type, "Frame")) {
+			uid
+			expand(_all_) {
+				uid
+				expand(_all_) {
+					uid
+					expand(_all_)
+				}
+			}
+	  	}
+	}`
+	res, err := repo.db.NewTxn().QueryWithVars(ctx, q, map[string]string{"$id": id})
+	if err != nil {
+		return nil, err
+	}
+	/*
+		1. Получить вершины фрагмента
+		2. Подготовить вершины для вставки
+		3. Добавить первую вершину, изменив у нее next frame id на id1
+		3. Изменить у последней вершины next frame id на id2
+	*/
+
+	return nil, nil
 }
