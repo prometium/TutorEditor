@@ -43,14 +43,16 @@ type Action struct {
 
 // Task represents a task
 type Task struct {
-	UID  string `json:"uid,omitempty"`
-	Text string `json:"text"`
+	UID   string   `json:"uid,omitempty"`
+	Text  string   `json:"text"`
+	DType []string `json:"dgraph.type,omitempty"`
 }
 
 // Hint represents a hint
 type Hint struct {
-	UID  string `json:"uid,omitempty"`
-	Text string `json:"text"`
+	UID   string   `json:"uid,omitempty"`
+	Text  string   `json:"text"`
+	DType []string `json:"dgraph.type,omitempty"`
 }
 
 // Frame represents a frame
@@ -78,5 +80,5 @@ type Repository interface {
 	AddScript(ctx context.Context, script Script) (string, error)
 	GetScriptsList(ctx context.Context) ([]Script, error)
 	GetScript(ctx context.Context, id string) ([]Script, error)
-	AddBranchPoint(ctx context.Context, id string) ([]Frame, error)
+	DeleteScript(ctx context.Context, id string) error
 }

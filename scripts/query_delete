@@ -1,0 +1,36 @@
+upsert {
+  query {
+    script as var(func: uid(0x5e2)) {
+      firstFrame {
+      	firstFrame as uid
+    	}
+    	frames {
+      	frames as uid
+        actions {
+          actions as uid
+          nextFrame {
+            nextFrame as uid
+          }
+        }
+        task {
+          task as uid
+        }
+        hint {
+          hint as uid
+        }
+    	}
+  	}
+  }
+
+  mutation {
+    delete {
+      uid(script) * * .
+      uid(firstFrame) * * .
+      uid(frames) * * .
+      uid(actions) * * .
+      uid(nextFrame) * * .
+      uid(task) * * .
+      uid(hint) * * .
+    }
+  }
+}

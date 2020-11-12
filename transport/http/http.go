@@ -35,6 +35,12 @@ func MakeHTTPHandler(e transport.Endpoints) http.Handler {
 		encodeResponse,
 	))
 
+	r.Methods("DELETE").Path("/script/{id}").Handler(httptransport.NewServer(
+		e.DeleteScriptEndpoint,
+		decodeDeleteScriptRequest,
+		encodeResponse,
+	))
+
 	return r
 }
 
@@ -58,6 +64,13 @@ func decodeGetScriptsListRequest(ctx context.Context, r *http.Request) (interfac
 func decodeGetScriptRequest(ctx context.Context, r *http.Request) (interface{}, error) {
 	vars := mux.Vars(r)
 	return transport.GetScriptRequest{
+		ID: vars["id"],
+	}, nil
+}
+
+func decodeDeleteScriptRequest(ctx context.Context, r *http.Request) (interface{}, error) {
+	vars := mux.Vars(r)
+	return transport.DeleteScriptRequest{
 		ID: vars["id"],
 	}, nil
 }

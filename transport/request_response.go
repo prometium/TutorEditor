@@ -32,6 +32,14 @@ type (
 
 	// GetScriptResponse holds the response parameters for the GetScript method
 	GetScriptResponse struct {
-		Script []editorsvc.Script `json:"script"`
+		Script *editorsvc.Script `json:"script"`
 	}
+
+	// DeleteScriptRequest holds the request parameters for the DeleteScript method
+	DeleteScriptRequest struct {
+		ID string `json:"id"`
+	}
+
+	// DeleteScriptResponse holds the response parameters for the DeleteScript method
+	DeleteScriptResponse struct{}
 )

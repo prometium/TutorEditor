@@ -13,18 +13,18 @@ import (
 )
 
 type repository struct {
-	db *dgo.Dgraph
+	dg *dgo.Dgraph
 }
 
 // New returns a repository backed by Dgraph
-func New(db *dgo.Dgraph) editorsvc.Repository {
+func New(dg *dgo.Dgraph) editorsvc.Repository {
 	return &repository{
-		db: db,
+		dg: dg,
 	}
 }
 
 func (repo *repository) Setup(ctx context.Context) error {
-	err := repo.db.Alter(ctx, &api.Operation{
+	err := repo.dg.Alter(ctx, &api.Operation{
 		Schema:          schema,
 		RunInBackground: true,
 	})
@@ -34,18 +34,26 @@ func (repo *repository) Setup(ctx context.Context) error {
 func (repo *repository) AddScript(ctx context.Context, script editorsvc.Script) (string, error) {
 	script.UID = "_:script"
 	script.DType = []string{"Script"}
+
 	for i := range script.Frames {
 		frame := &script.Frames[i]
 		frame.UID = fmt.Sprintf("_:frame-%s", frame.UID)
-		frame.Task.UID = fmt.Sprintf("_:task-%d", utils.Hash(frame.Task.Text))
-		frame.Hint.UID = fmt.Sprintf("_:hint-%d", utils.Hash(frame.Hint.Text))
 		frame.DType = []string{"Frame"}
+
+		frame.Task.UID = fmt.Sprintf("_:task-%d", utils.Hash(frame.Task.Text))
+		frame.Task.DType = []string{"Task"}
+
+		frame.Hint.UID = fmt.Sprintf("_:hint-%d", utils.Hash(frame.Hint.Text))
+		frame.Hint.DType = []string{"Hint"}
+
 		for j := range frame.Actions {
 			action := &frame.Actions[j]
-			action.NextFrame.UID = fmt.Sprintf("_:frame-%s", action.NextFrame.UID)
 			action.DType = []string{"Action"}
+
+			action.NextFrame.UID = fmt.Sprintf("_:frame-%s", action.NextFrame.UID)
 		}
 	}
+
 	script.FirstFrame.UID = script.Frames[0].UID
 
 	scriptB, err := json.Marshal(script)
@@ -58,7 +66,7 @@ func (repo *repository) AddScript(ctx context.Context, script editorsvc.Script) 
 		CommitNow: true,
 	}
 
-	assigned, err := repo.db.NewTxn().Mutate(ctx, mu)
+	assigned, err := repo.dg.NewTxn().Mutate(ctx, mu)
 	if err != nil {
 		return "", err
 	}
@@ -72,7 +80,8 @@ func (repo *repository) GetScriptsList(ctx context.Context) ([]editorsvc.Script,
 			name
 		}
 	}`
-	res, err := repo.db.NewTxn().Query(ctx, q)
+
+	res, err := repo.dg.NewTxn().Query(ctx, q)
 	if err != nil {
 		return nil, err
 	}
@@ -93,17 +102,13 @@ func (repo *repository) GetScript(ctx context.Context, id string) ([]editorsvc.S
     		expand(_all_) {
       			uid
       			expand(_all_) {
-        			uid
-        			expand(_all_) {
-          				uid
-          				expand(_all_)
-        			}
+					uid
       			}
     		}
 		}
 	}`
 
-	res, err := repo.db.NewTxn().QueryWithVars(ctx, q, map[string]string{"$id": id})
+	res, err := repo.dg.NewTxn().QueryWithVars(ctx, q, map[string]string{"$id": id})
 	if err != nil {
 		return nil, err
 	}
@@ -112,39 +117,41 @@ func (repo *repository) GetScript(ctx context.Context, id string) ([]editorsvc.S
 		Script []editorsvc.Script
 	}
 	if err := json.Unmarshal(res.GetJson(), &decode); err != nil {
-		return decode.Script, err
+		return nil, err
 	}
 	return decode.Script, nil
 }
 
-func (repo *repository) AddBranchPoint(ctx context.Context, id string) ([]editorsvc.Frame, error) {
-	q := `query script($id1: string, $id2: string) {
-		path as shortest(from: 0x8, to: 0x6) {
-			actions
-			nextFrame
-		}
-		PATH as path(func: uid(path)) {}
-	  	frames(func: uid(PATH)) @filter(eq(dgraph.type, "Frame")) {
-			uid
+func (repo *repository) DeleteScript(ctx context.Context, id string) error {
+	q := `query script($id: string) {
+		q(func: uid($id)) {
+			depth1 as uid
 			expand(_all_) {
-				uid
+				depth2 as uid
 				expand(_all_) {
-					uid
-					expand(_all_)
+					depth3 as uid
 				}
 			}
-	  	}
+		}
 	}`
-	res, err := repo.db.NewTxn().QueryWithVars(ctx, q, map[string]string{"$id": id})
-	if err != nil {
-		return nil, err
-	}
-	/*
-		1. Получить вершины фрагмента
-		2. Подготовить вершины для вставки
-		3. Добавить первую вершину, изменив у нее next frame id на id1
-		3. Изменить у последней вершины next frame id на id2
-	*/
 
-	return nil, nil
+	mu := &api.Mutation{
+		DelNquads: []byte(`
+			uid(depth1) * * .
+			uid(depth2) * * .
+		  	uid(depth3) * * .
+		`),
+	}
+
+	req := &api.Request{
+		Query:     q,
+		Mutations: []*api.Mutation{mu},
+		Vars:      map[string]string{"$id": id},
+		CommitNow: true,
+	}
+
+	if _, err := repo.dg.NewTxn().Do(ctx, req); err != nil {
+		return err
+	}
+	return nil
 }

@@ -47,10 +47,14 @@ func (s *service) GetScriptsList(ctx context.Context) ([]editorsvc.Script, error
 	return s.repository.GetScriptsList(ctx)
 }
 
-func (s *service) GetScript(ctx context.Context, id string) ([]editorsvc.Script, error) {
-	return s.repository.GetScript(ctx, id)
+func (s *service) GetScript(ctx context.Context, id string) (*editorsvc.Script, error) {
+	script, err := s.repository.GetScript(ctx, id)
+	if len(script) == 0 {
+		return nil, editorsvc.ErrScriptNotFound
+	}
+	return &script[0], err
 }
 
-func (s *service) AddBranchPoint(ctx context.Context, id string) ([]editorsvc.Frame, error) {
-	return s.repository.AddBranchPoint(ctx, id)
+func (s *service) DeleteScript(ctx context.Context, id string) error {
+	return s.repository.DeleteScript(ctx, id)
 }

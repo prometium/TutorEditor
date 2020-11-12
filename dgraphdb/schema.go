@@ -61,8 +61,8 @@ modKey: string .
 text: string .
 pictureLink: string .
 actions: [uid] .
-task: uid .
 hint: uid .
+task: uid .
 name: string @index(exact) .
 frames: [uid] .
 `
