@@ -3,8 +3,11 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/dgraph-io/dgo"
 	"github.com/dgraph-io/dgo/protos/api"
@@ -63,15 +66,25 @@ func main() {
 
 	var handler http.Handler
 	{
-		handler = httptransport.MakeHTTPHandler(endpoints)
+		handler = httptransport.MakeHTTPHandler(endpoints, logger)
 	}
 
 	errs := make(chan error)
 
 	go func() {
-		logger.Log("transport", "HTTP", "addr", *httpAddr)
-		errs <- http.ListenAndServe(*httpAddr, handler)
+		c := make(chan os.Signal)
+		signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
+		errs <- fmt.Errorf("%s", <-c)
 	}()
 
-	logger.Log("exit", <-errs)
+	go func() {
+		level.Info(logger).Log("transport", "HTTP", "addr", *httpAddr)
+		server := &http.Server{
+			Addr:    *httpAddr,
+			Handler: handler,
+		}
+		errs <- server.ListenAndServe()
+	}()
+
+	level.Error(logger).Log("exit", <-errs)
 }

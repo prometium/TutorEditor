@@ -17,4 +17,5 @@ type Service interface {
 	GetScriptsList(ctx context.Context) ([]Script, error)
 	GetScript(ctx context.Context, id string) (*Script, error)
 	DeleteScript(ctx context.Context, id string) error
+	UpdateScript(ctx context.Context, script *Script) error
 }

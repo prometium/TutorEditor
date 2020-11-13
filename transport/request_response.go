@@ -5,41 +5,64 @@ import (
 	"io"
 )
 
-type (
-	// AddRawScriptRequest holds the request parameters for the AddRawScript method
-	AddRawScriptRequest struct {
-		Name       string `json:"name"`
-		FileReader io.ReadCloser
-	}
+// AddRawScriptRequest holds the request parameters for the AddRawScript method
+type AddRawScriptRequest struct {
+	Name       string `json:"name"`
+	FileReader io.ReadCloser
+}
 
-	// AddRawScriptResponse holds the response parameters for the AddRawScript method
-	AddRawScriptResponse struct {
-		ID string `json:"id"`
-	}
+// AddRawScriptResponse holds the response parameters for the AddRawScript method
+type AddRawScriptResponse struct {
+	ID  string `json:"id"`
+	Err error  `json:"error,omitempty"`
+}
 
-	// GetScriptsListRequest holds the request parameters for the GetScriptsList method
-	GetScriptsListRequest struct{}
+func (r AddRawScriptResponse) Error() error { return r.Err }
 
-	// GetScriptsListResponse holds the response parameters for the GetScriptsList method
-	GetScriptsListResponse struct {
-		Scripts []editorsvc.Script `json:"scripts"`
-	}
+// GetScriptsListRequest holds the request parameters for the GetScriptsList method
+type GetScriptsListRequest struct{}
 
-	// GetScriptRequest holds the request parameters for the GetScript method
-	GetScriptRequest struct {
-		ID string `json:"id"`
-	}
+// GetScriptsListResponse holds the response parameters for the GetScriptsList method
+type GetScriptsListResponse struct {
+	Scripts []editorsvc.Script `json:"scripts"`
+	Err     error              `json:"error,omitempty"`
+}
 
-	// GetScriptResponse holds the response parameters for the GetScript method
-	GetScriptResponse struct {
-		Script *editorsvc.Script `json:"script"`
-	}
+func (r GetScriptsListResponse) Error() error { return r.Err }
 
-	// DeleteScriptRequest holds the request parameters for the DeleteScript method
-	DeleteScriptRequest struct {
-		ID string `json:"id"`
-	}
+// GetScriptRequest holds the request parameters for the GetScript method
+type GetScriptRequest struct {
+	ID string `json:"id"`
+}
 
-	// DeleteScriptResponse holds the response parameters for the DeleteScript method
-	DeleteScriptResponse struct{}
-)
+// GetScriptResponse holds the response parameters for the GetScript method
+type GetScriptResponse struct {
+	Script *editorsvc.Script `json:"script"`
+	Err    error             `json:"error,omitempty"`
+}
+
+func (r GetScriptResponse) Error() error { return r.Err }
+
+// DeleteScriptRequest holds the request parameters for the DeleteScript method
+type DeleteScriptRequest struct {
+	ID string `json:"id"`
+}
+
+// DeleteScriptResponse holds the response parameters for the DeleteScript method
+type DeleteScriptResponse struct {
+	Err error `json:"error,omitempty"`
+}
+
+func (r DeleteScriptResponse) Error() error { return r.Err }
+
+// UpdateScriptRequest holds the request parameters for the UpdateScript method
+type UpdateScriptRequest struct {
+	Script *editorsvc.Script `json:"script"`
+}
+
+// UpdateScriptResponse holds the response parameters for the UpdateScript method
+type UpdateScriptResponse struct {
+	Err error `json:"error,omitempty"`
+}
+
+func (r UpdateScriptResponse) Error() error { return r.Err }

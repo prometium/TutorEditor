@@ -31,30 +31,9 @@ func (repo *repository) Setup(ctx context.Context) error {
 	return err
 }
 
-func (repo *repository) AddScript(ctx context.Context, script editorsvc.Script) (string, error) {
+func (repo *repository) AddScript(ctx context.Context, script *editorsvc.Script) (string, error) {
+	script = configureScript(script)
 	script.UID = "_:script"
-	script.DType = []string{"Script"}
-
-	for i := range script.Frames {
-		frame := &script.Frames[i]
-		frame.UID = fmt.Sprintf("_:frame-%s", frame.UID)
-		frame.DType = []string{"Frame"}
-
-		frame.Task.UID = fmt.Sprintf("_:task-%d", utils.Hash(frame.Task.Text))
-		frame.Task.DType = []string{"Task"}
-
-		frame.Hint.UID = fmt.Sprintf("_:hint-%d", utils.Hash(frame.Hint.Text))
-		frame.Hint.DType = []string{"Hint"}
-
-		for j := range frame.Actions {
-			action := &frame.Actions[j]
-			action.DType = []string{"Action"}
-
-			action.NextFrame.UID = fmt.Sprintf("_:frame-%s", action.NextFrame.UID)
-		}
-	}
-
-	script.FirstFrame.UID = script.Frames[0].UID
 
 	scriptB, err := json.Marshal(script)
 	if err != nil {
@@ -154,4 +133,75 @@ func (repo *repository) DeleteScript(ctx context.Context, id string) error {
 		return err
 	}
 	return nil
+}
+
+func (repo *repository) UpdateScript(ctx context.Context, script *editorsvc.Script) error {
+	q := `query script($id: string) {
+		script as var(func: uid($id)) {
+			expand(_all_) {
+				depth2 as uid
+				expand(_all_) {
+					depth3 as uid
+				}
+			}
+		}
+	}`
+
+	mu1 := &api.Mutation{
+		DelNquads: []byte(`
+			uid(script) <firstFrame> * .
+			uid(script) <frames> * .
+			uid(depth2) * * .
+			uid(depth3) * * .
+		`),
+	}
+
+	script = configureScript(script)
+	scriptB, err := json.Marshal(script)
+	if err != nil {
+		return err
+	}
+
+	mu2 := &api.Mutation{
+		SetJson: scriptB,
+	}
+
+	req := &api.Request{
+		Query:     q,
+		Mutations: []*api.Mutation{mu1, mu2},
+		Vars:      map[string]string{"$id": script.UID},
+		CommitNow: true,
+	}
+
+	if _, err := repo.dg.NewTxn().Do(ctx, req); err != nil {
+		return err
+	}
+	return nil
+}
+
+func configureScript(script *editorsvc.Script) *editorsvc.Script {
+	script.DType = []string{"Script"}
+
+	for i := range script.Frames {
+		frame := &script.Frames[i]
+		frame.UID = fmt.Sprintf("_:frame-%s", frame.UID)
+		frame.DType = []string{"Frame"}
+
+		frame.Task.UID = fmt.Sprintf("_:task-%d", utils.Hash(frame.Task.Text))
+		frame.Task.DType = []string{"Task"}
+
+		frame.Hint.UID = fmt.Sprintf("_:hint-%d", utils.Hash(frame.Hint.Text))
+		frame.Hint.DType = []string{"Hint"}
+
+		for j := range frame.Actions {
+			action := &frame.Actions[j]
+			action.DType = []string{"Action"}
+
+			action.NextFrame.UID = fmt.Sprintf("_:frame-%s", action.NextFrame.UID)
+		}
+	}
+
+	script.FirstFrame.UID = script.Frames[0].UID
+
+	return script
 }

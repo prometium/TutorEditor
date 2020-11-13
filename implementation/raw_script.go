@@ -128,7 +128,7 @@ func (rs *rawScript) saveImages(ctx context.Context, imagesDir string) (map[stri
 	return linksMap, nil
 }
 
-func (rs *rawScript) createScript(name string, linksMap map[string]string) (editorsvc.Script, error) {
+func (rs *rawScript) createScript(name string, linksMap map[string]string) (*editorsvc.Script, error) {
 	frames := make([]editorsvc.Frame, len(rs.Frames))
 	for i, frame := range rs.Frames {
 		frames[i] = editorsvc.Frame{
@@ -175,5 +175,5 @@ func (rs *rawScript) createScript(name string, linksMap map[string]string) (edit
 		},
 		Frames: frames,
 	}
-	return script, nil
+	return &script, nil
 }

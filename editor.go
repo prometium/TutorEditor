@@ -77,8 +77,9 @@ type Script struct {
 // Repository describes the persistence on editor model
 type Repository interface {
 	Setup(ctx context.Context) error
-	AddScript(ctx context.Context, script Script) (string, error)
+	AddScript(ctx context.Context, script *Script) (string, error)
 	GetScriptsList(ctx context.Context) ([]Script, error)
 	GetScript(ctx context.Context, id string) ([]Script, error)
 	DeleteScript(ctx context.Context, id string) error
+	UpdateScript(ctx context.Context, script *Script) error
 }

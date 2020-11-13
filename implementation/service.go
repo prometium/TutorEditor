@@ -58,3 +58,7 @@ func (s *service) GetScript(ctx context.Context, id string) (*editorsvc.Script, 
 func (s *service) DeleteScript(ctx context.Context, id string) error {
 	return s.repository.DeleteScript(ctx, id)
 }
+
+func (s *service) UpdateScript(ctx context.Context, script *editorsvc.Script) error {
+	return s.repository.UpdateScript(ctx, script)
+}
