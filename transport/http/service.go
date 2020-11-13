@@ -52,7 +52,7 @@ func MakeHTTPHandler(e transport.Endpoints, logger log.Logger) http.Handler {
 		options...,
 	))
 
-	r.Methods("POST").Path("/script/{id}").Handler(httptransport.NewServer(
+	r.Methods("POST").Path("/script").Handler(httptransport.NewServer(
 		e.UpdateScriptEndpoint,
 		decodeUpdateScriptRequest,
 		encodeResponse,
@@ -91,7 +91,7 @@ func decodeDeleteScriptRequest(ctx context.Context, r *http.Request) (interface{
 
 func decodeUpdateScriptRequest(ctx context.Context, r *http.Request) (interface{}, error) {
 	var req transport.UpdateScriptRequest
-	if err := json.NewDecoder(r.Body).Decode(&req.Script); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return nil, err
 	}
 	return req, nil

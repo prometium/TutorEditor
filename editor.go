@@ -11,9 +11,9 @@ type NextFrame struct {
 
 // Action represents an action
 type Action struct {
-	UID        string    `json:"uid,omitempty"`
-	ActionType int       `json:"actionType,omitempty"`
-	NextFrame  NextFrame `json:"nextFrame,omitempty"`
+	UID        string     `json:"uid,omitempty"`
+	ActionType int        `json:"actionType,omitempty"`
+	NextFrame  *NextFrame `json:"nextFrame,omitempty"`
 
 	// mouse
 	XLeft  float32 `json:"xLeft,omitempty"`
@@ -44,14 +44,14 @@ type Action struct {
 // Task represents a task
 type Task struct {
 	UID   string   `json:"uid,omitempty"`
-	Text  string   `json:"text"`
+	Text  string   `json:"text,omitempty"`
 	DType []string `json:"dgraph.type,omitempty"`
 }
 
 // Hint represents a hint
 type Hint struct {
 	UID   string   `json:"uid,omitempty"`
-	Text  string   `json:"text"`
+	Text  string   `json:"text,omitempty"`
 	DType []string `json:"dgraph.type,omitempty"`
 }
 
@@ -68,7 +68,7 @@ type Frame struct {
 // Script represents a script
 type Script struct {
 	UID        string     `json:"uid,omitempty"`
-	Name       string     `json:"name"`
+	Name       string     `json:"name,omitempty"`
 	FirstFrame *NextFrame `json:"firstFrame,omitempty"`
 	Frames     []Frame    `json:"frames,omitempty"`
 	DType      []string   `json:"dgraph.type,omitempty"`

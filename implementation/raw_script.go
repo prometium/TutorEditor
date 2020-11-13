@@ -146,7 +146,7 @@ func (rs *rawScript) createScript(name string, linksMap map[string]string) (*edi
 		action := &frame.ActionSwitch
 		frames[i].Actions = []editorsvc.Action{
 			editorsvc.Action{
-				NextFrame: editorsvc.NextFrame{
+				NextFrame: &editorsvc.NextFrame{
 					UID: strconv.Itoa(frame.FrameNumber),
 				},
 				ActionType:   action.ActionType,

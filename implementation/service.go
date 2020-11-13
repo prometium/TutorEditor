@@ -49,7 +49,9 @@ func (s *service) GetScriptsList(ctx context.Context) ([]editorsvc.Script, error
 
 func (s *service) GetScript(ctx context.Context, id string) (*editorsvc.Script, error) {
 	script, err := s.repository.GetScript(ctx, id)
-	if len(script) == 0 {
+	if err != nil {
+		return nil, err
+	} else if len(script) == 0 {
 		return nil, editorsvc.ErrScriptNotFound
 	}
 	return &script[0], err

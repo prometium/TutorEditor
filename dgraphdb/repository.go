@@ -2,6 +2,7 @@ package dgraphdb
 
 import (
 	"context"
+	"editorsvc/utils"
 	"encoding/json"
 	"fmt"
 
@@ -9,7 +10,6 @@ import (
 	"github.com/dgraph-io/dgo/protos/api"
 
 	"editorsvc"
-	"editorsvc/utils"
 )
 
 type repository struct {
@@ -78,12 +78,19 @@ func (repo *repository) GetScript(ctx context.Context, id string) ([]editorsvc.S
 	q := `query script($id: string) {
 		script(func: eq(dgraph.type, "Script")) @filter(uid($id)) {
 			uid
-    		expand(_all_) {
-      			uid
-      			expand(_all_) {
+			name
+			firstFrame {
+			  uid
+			}
+			frames {
+				uid
+			 	expand(_all_) {
 					uid
-      			}
-    		}
+					expand(_all_) {
+						uid
+					}
+				}
+			}
 		}
 	}`
 
@@ -166,14 +173,23 @@ func (repo *repository) UpdateScript(ctx context.Context, script *editorsvc.Scri
 		SetJson: scriptB,
 	}
 
-	req := &api.Request{
+	req1 := &api.Request{
 		Query:     q,
-		Mutations: []*api.Mutation{mu1, mu2},
+		Mutations: []*api.Mutation{mu1},
 		Vars:      map[string]string{"$id": script.UID},
 		CommitNow: true,
 	}
 
-	if _, err := repo.dg.NewTxn().Do(ctx, req); err != nil {
+	if _, err := repo.dg.NewTxn().Do(ctx, req1); err != nil {
+		return err
+	}
+
+	req2 := &api.Request{
+		Mutations: []*api.Mutation{mu2},
+		CommitNow: true,
+	}
+
+	if _, err := repo.dg.NewTxn().Do(ctx, req2); err != nil {
 		return err
 	}
 	return nil
@@ -201,7 +217,7 @@ func configureScript(script *editorsvc.Script) *editorsvc.Script {
 		}
 	}
 
-	script.FirstFrame.UID = script.Frames[0].UID
+	script.FirstFrame.UID = fmt.Sprintf("_:frame-%s", script.FirstFrame.UID)
 
 	return script
 }
