@@ -134,12 +134,8 @@ func (rs *rawScript) createScript(name string, linksMap map[string]string) (*edi
 		frames[i] = editorsvc.Frame{
 			UID:         strconv.Itoa(frame.FrameNumber),
 			PictureLink: linksMap[frame.PictureLink],
-			Task: editorsvc.Task{
-				Text: frame.Task,
-			},
-			Hint: editorsvc.Hint{
-				Text: frame.Hint,
-			},
+			TaskText:    frame.Task,
+			HintText:    frame.Hint,
 		}
 	}
 	for i, frame := range rs.Frames[1:] {

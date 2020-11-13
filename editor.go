@@ -41,27 +41,13 @@ type Action struct {
 	DType []string `json:"dgraph.type,omitempty"`
 }
 
-// Task represents a task
-type Task struct {
-	UID   string   `json:"uid,omitempty"`
-	Text  string   `json:"text,omitempty"`
-	DType []string `json:"dgraph.type,omitempty"`
-}
-
-// Hint represents a hint
-type Hint struct {
-	UID   string   `json:"uid,omitempty"`
-	Text  string   `json:"text,omitempty"`
-	DType []string `json:"dgraph.type,omitempty"`
-}
-
 // Frame represents a frame
 type Frame struct {
 	UID         string   `json:"uid,omitempty"`
 	PictureLink string   `json:"pictureLink,omitempty"`
 	Actions     []Action `json:"actions,omitempty"`
-	Task        Task     `json:"task,omitempty"`
-	Hint        Hint     `json:"hint,omitempty"`
+	TaskText    string   `json:"taskText,omitempty"`
+	HintText    string   `json:"hintText,omitempty"`
 	DType       []string `json:"dgraph.type,omitempty"`
 }
 

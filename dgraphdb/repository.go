@@ -2,7 +2,6 @@ package dgraphdb
 
 import (
 	"context"
-	"editorsvc/utils"
 	"encoding/json"
 	"fmt"
 
@@ -76,7 +75,7 @@ func (repo *repository) GetScriptsList(ctx context.Context) ([]editorsvc.Script,
 
 func (repo *repository) GetScript(ctx context.Context, id string) ([]editorsvc.Script, error) {
 	q := `query script($id: string) {
-		script(func: eq(dgraph.type, "Script")) @filter(uid($id)) {
+		script(func: uid($id)) @filter(eq(dgraph.type, "Script")) {
 			uid
 			name
 			firstFrame {
@@ -84,7 +83,7 @@ func (repo *repository) GetScript(ctx context.Context, id string) ([]editorsvc.S
 			}
 			frames {
 				uid
-			 	expand(_all_) {
+				expand(_all_) {
 					uid
 					expand(_all_) {
 						uid
@@ -110,22 +109,17 @@ func (repo *repository) GetScript(ctx context.Context, id string) ([]editorsvc.S
 
 func (repo *repository) DeleteScript(ctx context.Context, id string) error {
 	q := `query script($id: string) {
-		q(func: uid($id)) {
-			depth1 as uid
+		script as var(func: uid($id)) {
 			expand(_all_) {
 				depth2 as uid
-				expand(_all_) {
-					depth3 as uid
-				}
 			}
 		}
 	}`
 
 	mu := &api.Mutation{
 		DelNquads: []byte(`
-			uid(depth1) * * .
+			uid(script) * * .
 			uid(depth2) * * .
-		  	uid(depth3) * * .
 		`),
 	}
 
@@ -147,19 +141,14 @@ func (repo *repository) UpdateScript(ctx context.Context, script *editorsvc.Scri
 		script as var(func: uid($id)) {
 			expand(_all_) {
 				depth2 as uid
-				expand(_all_) {
-					depth3 as uid
-				}
 			}
 		}
 	}`
 
 	mu1 := &api.Mutation{
 		DelNquads: []byte(`
-			uid(script) <firstFrame> * .
 			uid(script) <frames> * .
 			uid(depth2) * * .
-			uid(depth3) * * .
 		`),
 	}
 
@@ -173,25 +162,17 @@ func (repo *repository) UpdateScript(ctx context.Context, script *editorsvc.Scri
 		SetJson: scriptB,
 	}
 
-	req1 := &api.Request{
+	req := &api.Request{
 		Query:     q,
-		Mutations: []*api.Mutation{mu1},
+		Mutations: []*api.Mutation{mu1, mu2},
 		Vars:      map[string]string{"$id": script.UID},
 		CommitNow: true,
 	}
 
-	if _, err := repo.dg.NewTxn().Do(ctx, req1); err != nil {
+	if _, err := repo.dg.NewTxn().Do(ctx, req); err != nil {
 		return err
 	}
 
-	req2 := &api.Request{
-		Mutations: []*api.Mutation{mu2},
-		CommitNow: true,
-	}
-
-	if _, err := repo.dg.NewTxn().Do(ctx, req2); err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -202,12 +183,6 @@ func configureScript(script *editorsvc.Script) *editorsvc.Script {
 		frame := &script.Frames[i]
 		frame.UID = fmt.Sprintf("_:frame-%s", frame.UID)
 		frame.DType = []string{"Frame"}
-
-		frame.Task.UID = fmt.Sprintf("_:task-%d", utils.Hash(frame.Task.Text))
-		frame.Task.DType = []string{"Task"}
-
-		frame.Hint.UID = fmt.Sprintf("_:hint-%d", utils.Hash(frame.Hint.Text))
-		frame.Hint.DType = []string{"Hint"}
 
 		for j := range frame.Actions {
 			action := &frame.Actions[j]

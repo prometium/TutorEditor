@@ -21,19 +21,11 @@ type Action {
 	modKey
 }
 
-type Task {
-	text
-}
-
-type Hint {
-	text
-}
-
 type Frame {
 	pictureLink
 	actions
-	task
-	hint
+	taskText
+	hintText
 }
 
 type Script {
@@ -59,11 +51,10 @@ finishYRight: float .
 ticksCount: int .
 key: string .
 modKey: string .
-text: string .
 pictureLink: string .
 actions: [uid] .
-hint: uid .
-task: uid .
+hintText: string .
+taskText: string .
 name: string @index(exact) .
 firstFrame: uid .
 frames: [uid] .
