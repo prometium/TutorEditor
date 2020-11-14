@@ -65,6 +65,10 @@ func (s *service) UpdateScript(ctx context.Context, script *editorsvc.Script) er
 	return s.repository.UpdateScript(ctx, script)
 }
 
-func (s *service) AddBranchPoint(ctx context.Context, bp *editorsvc.BranchPoint) (map[string]string, error) {
-	return s.repository.AddBranchPoint(ctx, bp)
+func (s *service) AddBranch(ctx context.Context, branch *editorsvc.Branch) (map[string]string, error) {
+	return s.repository.AddBranch(ctx, branch)
+}
+
+func (s *service) DeleteBranch(ctx context.Context, branchToDelete *editorsvc.BranchToDelete) error {
+	return s.repository.DeleteBranch(ctx, branchToDelete)
 }

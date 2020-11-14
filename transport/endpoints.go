@@ -15,7 +15,8 @@ type Endpoints struct {
 	GetScriptEndpoint      endpoint.Endpoint
 	DeleteScriptEndpoint   endpoint.Endpoint
 	UpdateScriptEndpoint   endpoint.Endpoint
-	AddBranchPointEndpoint endpoint.Endpoint
+	AddBranchEndpoint      endpoint.Endpoint
+	DeleteBranchEndpoint   endpoint.Endpoint
 }
 
 // MakeServerEndpoints returns an Endpoints struct where each endpoint invokes
@@ -27,7 +28,8 @@ func MakeServerEndpoints(s editorsvc.Service) Endpoints {
 		GetScriptEndpoint:      makeGetScriptEndpoint(s),
 		DeleteScriptEndpoint:   makeDeleteScriptEndpoint(s),
 		UpdateScriptEndpoint:   makeUpdateScriptEndpoint(s),
-		AddBranchPointEndpoint: makeAddBranchPointEndpoint(s),
+		AddBranchEndpoint:      makeAddBranchEndpoint(s),
+		DeleteBranchEndpoint:   makeDeleteBranchEndpoint(s),
 	}
 }
 
@@ -70,10 +72,18 @@ func makeUpdateScriptEndpoint(s editorsvc.Service) endpoint.Endpoint {
 	}
 }
 
-func makeAddBranchPointEndpoint(s editorsvc.Service) endpoint.Endpoint {
+func makeAddBranchEndpoint(s editorsvc.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		req := request.(AddBranchPointRequest)
-		uids, err := s.AddBranchPoint(ctx, req.BranchPoint)
-		return AddBranchPointResponse{Uids: uids, Err: err}, nil
+		req := request.(AddBranchRequest)
+		uids, err := s.AddBranch(ctx, req.Branch)
+		return AddBranchResponse{Uids: uids, Err: err}, nil
+	}
+}
+
+func makeDeleteBranchEndpoint(s editorsvc.Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(DeleteBranchRequest)
+		err := s.DeleteBranch(ctx, req.BranchToDelete)
+		return DeleteBranchResponse{Err: err}, nil
 	}
 }

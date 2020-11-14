@@ -59,9 +59,16 @@ func MakeHTTPHandler(e transport.Endpoints, logger log.Logger) http.Handler {
 		options...,
 	))
 
-	r.Methods("POST").Path("/branchPoint").Handler(httptransport.NewServer(
-		e.AddBranchPointEndpoint,
-		decodeAddBranchPointRequest,
+	r.Methods("POST").Path("/branch").Handler(httptransport.NewServer(
+		e.AddBranchEndpoint,
+		decodeAddBranchRequest,
+		encodeResponse,
+		options...,
+	))
+
+	r.Methods("DELETE").Path("/branch").Handler(httptransport.NewServer(
+		e.DeleteBranchEndpoint,
+		decodeDeleteBranchRequest,
 		encodeResponse,
 		options...,
 	))
@@ -104,8 +111,16 @@ func decodeUpdateScriptRequest(ctx context.Context, r *http.Request) (interface{
 	return req, nil
 }
 
-func decodeAddBranchPointRequest(ctx context.Context, r *http.Request) (interface{}, error) {
-	var req transport.AddBranchPointRequest
+func decodeAddBranchRequest(ctx context.Context, r *http.Request) (interface{}, error) {
+	var req transport.AddBranchRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		return nil, err
+	}
+	return req, nil
+}
+
+func decodeDeleteBranchRequest(ctx context.Context, r *http.Request) (interface{}, error) {
+	var req transport.DeleteBranchRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return nil, err
 	}

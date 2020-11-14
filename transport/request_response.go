@@ -67,15 +67,27 @@ type UpdateScriptResponse struct {
 
 func (r UpdateScriptResponse) Error() error { return r.Err }
 
-// AddBranchPointRequest holds the request parameters for the AddBranchPoint method
-type AddBranchPointRequest struct {
-	BranchPoint *editorsvc.BranchPoint `json:"branchPoint"`
+// AddBranchRequest holds the request parameters for the AddBranch method
+type AddBranchRequest struct {
+	Branch *editorsvc.Branch `json:"branch"`
 }
 
-// AddBranchPointResponse holds the response parameters for the AddBranchPoint method
-type AddBranchPointResponse struct {
+// AddBranchResponse holds the response parameters for the AddBranch method
+type AddBranchResponse struct {
 	Uids map[string]string `json:"uids"`
 	Err  error             `json:"error,omitempty"`
 }
 
-func (r AddBranchPointResponse) Error() error { return r.Err }
+func (r AddBranchResponse) Error() error { return r.Err }
+
+// DeleteBranchRequest holds the request parameters for the DeleteBranch method
+type DeleteBranchRequest struct {
+	BranchToDelete *editorsvc.BranchToDelete `json:"branchToDelete"`
+}
+
+// DeleteBranchResponse holds the response parameters for the DeleteBranch method
+type DeleteBranchResponse struct {
+	Err  error             `json:"error,omitempty"`
+}
+
+func (r DeleteBranchResponse) Error() error { return r.Err }

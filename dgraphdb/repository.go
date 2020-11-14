@@ -173,12 +173,12 @@ func (repo *repository) UpdateScript(ctx context.Context, script *editorsvc.Scri
 	return nil
 }
 
-func (repo *repository) AddBranchPoint(ctx context.Context, bp *editorsvc.BranchPoint) (map[string]string, error) {
-	if len(bp.ConnectedFrames) == 0 {
+func (repo *repository) AddBranch(ctx context.Context, branch *editorsvc.Branch) (map[string]string, error) {
+	if len(branch.ConnectedFrames) == 0 {
 		return nil, nil
 	}
 
-	frames := classifyFrames(bp.ConnectedFrames)
+	frames := classifyFrames(branch.ConnectedFrames)
 
 	for i := range frames {
 		frame := &frames[i]
@@ -190,11 +190,11 @@ func (repo *repository) AddBranchPoint(ctx context.Context, bp *editorsvc.Branch
 	}
 
 	firstMainFrame := editorsvc.Frame{
-		UID:     bp.FirstMainFrameID,
+		UID:     branch.FirstMainFrameID,
 		Actions: frames[0].Actions,
 	}
 
-	frames[len(frames)-1].Actions[0].NextFrame.UID = bp.LastMainFrameID
+	frames[len(frames)-1].Actions[0].NextFrame.UID = branch.LastMainFrameID
 
 	frames = append(frames[1:], firstMainFrame)
 
@@ -213,6 +213,41 @@ func (repo *repository) AddBranchPoint(ctx context.Context, bp *editorsvc.Branch
 		return nil, err
 	}
 	return assigned.Uids, nil
+}
+
+func (repo *repository) DeleteBranch(ctx context.Context, branchToDelete *editorsvc.BranchToDelete) error {
+	q := `query script($branchFrameId: string, $firstActionId: string, $lastActionId: string) {
+		root as var(func: uid($branchFrameId))
+		first as var(func: uid($firstActionId))
+		last as var(func: uid($lastActionId))
+		path as shortest(from: uid(first), to: uid(last)) {
+			actions
+			nextFrame
+		}
+	}`
+
+	mu := &api.Mutation{
+		DelNquads: []byte(`
+			uid(root) <actions> uid(first) .
+			uid(path) * * .
+		`),
+	}
+
+	req := &api.Request{
+		Query:     q,
+		Mutations: []*api.Mutation{mu},
+		Vars: map[string]string{
+			"$branchFrameId": branchToDelete.BranchFrameID,
+			"$firstActionId": branchToDelete.FirstActionID,
+			"$lastActionId":  branchToDelete.LastActionID,
+		},
+		CommitNow: true,
+	}
+
+	if _, err := repo.dg.NewTxn().Do(ctx, req); err != nil {
+		return err
+	}
+	return nil
 }
 
 func classifyScript(script *editorsvc.Script) *editorsvc.Script {

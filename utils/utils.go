@@ -5,18 +5,10 @@ import (
 	"bytes"
 	"crypto/md5"
 	"encoding/hex"
-	"hash/fnv"
 	"io"
 	"io/ioutil"
 	"os"
 )
-
-// Hash generate hash number of a string
-func Hash(s string) uint32 {
-	h := fnv.New32a()
-	h.Write([]byte(s))
-	return h.Sum32()
-}
 
 // HashZipFileMD5 generate MD5 hash number of a zip file
 func HashZipFileMD5(f *zip.File) (string, error) {

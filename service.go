@@ -18,5 +18,6 @@ type Service interface {
 	GetScript(ctx context.Context, id string) (*Script, error)
 	DeleteScript(ctx context.Context, id string) error
 	UpdateScript(ctx context.Context, script *Script) error
-	AddBranchPoint(ctx context.Context, bp *BranchPoint) (map[string]string, error)
+	AddBranch(ctx context.Context, branch *Branch) (map[string]string, error)
+	DeleteBranch(ctx context.Context, branchToDelete *BranchToDelete) error
 }
