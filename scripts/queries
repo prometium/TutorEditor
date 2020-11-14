@@ -1,5 +1,5 @@
 {
-  scripts(func: eq(dgraph.type, "Script")) {
+  scripts(func: type("Script")) {
     uid
     name
     firstFrame {
@@ -30,7 +30,7 @@
 }
 
 {
-  frames(func: eq(dgraph.type, "Frame")) {
+  frames(func: type("Frame")) {
       uid
       pictureLink
       actions {

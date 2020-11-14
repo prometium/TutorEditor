@@ -36,13 +36,17 @@ func (repo *repository) AddScript(ctx context.Context, script *editorsvc.Script)
 	script.UID = "_:script"
 	for i := range script.Frames {
 		frame := &script.Frames[i]
-		frame.UID = fmt.Sprintf("_:%s", frame.UID)
+		frame.UID = fmt.Sprintf("_:f%s", frame.UID)
+
 		for j := range frame.Actions {
-			nextFrame := frame.Actions[j].NextFrame
-			nextFrame.UID = fmt.Sprintf("_:%s", nextFrame.UID)
+			action := &frame.Actions[j]
+			action.UID = ""
+
+			nextFrame := action.NextFrame
+			nextFrame.UID = fmt.Sprintf("_:f%s", nextFrame.UID)
 		}
 	}
-	script.FirstFrame.UID = fmt.Sprintf("_:%s", script.FirstFrame.UID)
+	script.FirstFrame.UID = fmt.Sprintf("_:f%s", script.FirstFrame.UID)
 
 	scriptB, err := json.Marshal(script)
 	if err != nil {
@@ -63,7 +67,7 @@ func (repo *repository) AddScript(ctx context.Context, script *editorsvc.Script)
 
 func (repo *repository) GetScriptsList(ctx context.Context) ([]editorsvc.Script, error) {
 	q := `{
-		scripts(func: eq(dgraph.type, "Script")) {
+		scripts(func: type("Script")) {
 			uid
 			name
 		}
@@ -85,7 +89,7 @@ func (repo *repository) GetScriptsList(ctx context.Context) ([]editorsvc.Script,
 
 func (repo *repository) GetScript(ctx context.Context, id string) ([]editorsvc.Script, error) {
 	q := `query script($id: string) {
-		script(func: uid($id)) @filter(eq(dgraph.type, "Script")) {
+		script(func: uid($id)) @filter(type("Script")) {
 			uid
 			name
 			firstFrame {
@@ -150,11 +154,11 @@ func (repo *repository) DeleteScript(ctx context.Context, id string) error {
 	return nil
 }
 
-func (repo *repository) UpdateScript(ctx context.Context, script *editorsvc.Script) error {
+func (repo *repository) UpdateScript(ctx context.Context, script *editorsvc.Script) (map[string]string, error) {
 	script = classifyScript(script)
 	scriptB, err := json.Marshal(script)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	mu2 := &api.Mutation{
@@ -166,11 +170,11 @@ func (repo *repository) UpdateScript(ctx context.Context, script *editorsvc.Scri
 		CommitNow: true,
 	}
 
-	if _, err := repo.dg.NewTxn().Do(ctx, req); err != nil {
-		return err
+	assigned, err := repo.dg.NewTxn().Do(ctx, req)
+	if err != nil {
+		return nil, err
 	}
-
-	return nil
+	return assigned.Uids, nil
 }
 
 func (repo *repository) AddBranch(ctx context.Context, branch *editorsvc.Branch) (map[string]string, error) {

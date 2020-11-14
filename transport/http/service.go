@@ -38,35 +38,42 @@ func MakeHTTPHandler(e transport.Endpoints, logger log.Logger) http.Handler {
 		options...,
 	))
 
-	r.Methods("GET").Path("/script/{id}").Handler(httptransport.NewServer(
+	r.Methods("GET").Path("/scripts/{id}").Handler(httptransport.NewServer(
 		e.GetScriptEndpoint,
 		decodeGetScriptRequest,
 		encodeResponse,
 		options...,
 	))
 
-	r.Methods("DELETE").Path("/script/{id}").Handler(httptransport.NewServer(
+	r.Methods("DELETE").Path("/scripts/{id}").Handler(httptransport.NewServer(
 		e.DeleteScriptEndpoint,
 		decodeDeleteScriptRequest,
 		encodeResponse,
 		options...,
 	))
 
-	r.Methods("POST").Path("/script").Handler(httptransport.NewServer(
+	r.Methods("PUT").Path("/scripts/{id}").Handler(httptransport.NewServer(
 		e.UpdateScriptEndpoint,
 		decodeUpdateScriptRequest,
 		encodeResponse,
 		options...,
 	))
 
-	r.Methods("POST").Path("/branch").Handler(httptransport.NewServer(
+	r.Methods("POST").Path("/scripts").Handler(httptransport.NewServer(
+		e.CopyScriptEndpoint,
+		decodeCopyScriptRequest,
+		encodeResponse,
+		options...,
+	))
+
+	r.Methods("POST").Path("/branches").Handler(httptransport.NewServer(
 		e.AddBranchEndpoint,
 		decodeAddBranchRequest,
 		encodeResponse,
 		options...,
 	))
 
-	r.Methods("DELETE").Path("/branch").Handler(httptransport.NewServer(
+	r.Methods("DELETE").Path("/branches").Handler(httptransport.NewServer(
 		e.DeleteBranchEndpoint,
 		decodeDeleteBranchRequest,
 		encodeResponse,
@@ -104,7 +111,17 @@ func decodeDeleteScriptRequest(ctx context.Context, r *http.Request) (interface{
 }
 
 func decodeUpdateScriptRequest(ctx context.Context, r *http.Request) (interface{}, error) {
+	vars := mux.Vars(r)
 	var req transport.UpdateScriptRequest
+	req.ID = vars["id"]
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		return nil, err
+	}
+	return req, nil
+}
+
+func decodeCopyScriptRequest(ctx context.Context, r *http.Request) (interface{}, error) {
+	var req transport.CopyScriptRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return nil, err
 	}

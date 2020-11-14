@@ -15,6 +15,7 @@ type Endpoints struct {
 	GetScriptEndpoint      endpoint.Endpoint
 	DeleteScriptEndpoint   endpoint.Endpoint
 	UpdateScriptEndpoint   endpoint.Endpoint
+	CopyScriptEndpoint     endpoint.Endpoint
 	AddBranchEndpoint      endpoint.Endpoint
 	DeleteBranchEndpoint   endpoint.Endpoint
 }
@@ -28,6 +29,7 @@ func MakeServerEndpoints(s editorsvc.Service) Endpoints {
 		GetScriptEndpoint:      makeGetScriptEndpoint(s),
 		DeleteScriptEndpoint:   makeDeleteScriptEndpoint(s),
 		UpdateScriptEndpoint:   makeUpdateScriptEndpoint(s),
+		CopyScriptEndpoint:     makeCopyScriptEndpoint(s),
 		AddBranchEndpoint:      makeAddBranchEndpoint(s),
 		DeleteBranchEndpoint:   makeDeleteBranchEndpoint(s),
 	}
@@ -67,8 +69,16 @@ func makeDeleteScriptEndpoint(s editorsvc.Service) endpoint.Endpoint {
 func makeUpdateScriptEndpoint(s editorsvc.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(UpdateScriptRequest)
-		err := s.UpdateScript(ctx, req.Script)
-		return UpdateScriptResponse{Err: err}, nil
+		uids, err := s.UpdateScript(ctx, req.ID, req.Script)
+		return UpdateScriptResponse{Uids: uids, Err: err}, nil
+	}
+}
+
+func makeCopyScriptEndpoint(s editorsvc.Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(CopyScriptRequest)
+		id, err := s.CopyScript(ctx, req.Script)
+		return CopyScriptResponse{ID: id, Err: err}, nil
 	}
 }
 

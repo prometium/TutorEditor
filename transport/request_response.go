@@ -57,15 +57,30 @@ func (r DeleteScriptResponse) Error() error { return r.Err }
 
 // UpdateScriptRequest holds the request parameters for the UpdateScript method
 type UpdateScriptRequest struct {
+	ID     string            `json:"id"`
 	Script *editorsvc.Script `json:"script"`
 }
 
 // UpdateScriptResponse holds the response parameters for the UpdateScript method
 type UpdateScriptResponse struct {
-	Err error `json:"error,omitempty"`
+	Uids map[string]string `json:"uids"`
+	Err  error             `json:"error,omitempty"`
 }
 
 func (r UpdateScriptResponse) Error() error { return r.Err }
+
+// CopyScriptRequest holds the request parameters for the UpdateScript method
+type CopyScriptRequest struct {
+	Script *editorsvc.Script `json:"script"`
+}
+
+// CopyScriptResponse holds the response parameters for the CopyScript method
+type CopyScriptResponse struct {
+	ID  string `json:"id"`
+	Err error  `json:"error,omitempty"`
+}
+
+func (r CopyScriptResponse) Error() error { return r.Err }
 
 // AddBranchRequest holds the request parameters for the AddBranch method
 type AddBranchRequest struct {
@@ -87,7 +102,7 @@ type DeleteBranchRequest struct {
 
 // DeleteBranchResponse holds the response parameters for the DeleteBranch method
 type DeleteBranchResponse struct {
-	Err  error             `json:"error,omitempty"`
+	Err error `json:"error,omitempty"`
 }
 
 func (r DeleteBranchResponse) Error() error { return r.Err }

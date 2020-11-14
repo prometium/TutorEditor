@@ -61,8 +61,13 @@ func (s *service) DeleteScript(ctx context.Context, id string) error {
 	return s.repository.DeleteScript(ctx, id)
 }
 
-func (s *service) UpdateScript(ctx context.Context, script *editorsvc.Script) error {
+func (s *service) UpdateScript(ctx context.Context, id string, script *editorsvc.Script) (map[string]string, error) {
+	script.UID = id
 	return s.repository.UpdateScript(ctx, script)
+}
+
+func (s *service) CopyScript(ctx context.Context, script *editorsvc.Script) (string, error) {
+	return s.repository.AddScript(ctx, script)
 }
 
 func (s *service) AddBranch(ctx context.Context, branch *editorsvc.Branch) (map[string]string, error) {
