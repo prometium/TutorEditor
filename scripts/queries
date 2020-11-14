@@ -9,6 +9,7 @@
       uid
       pictureLink
       actions {
+        uid
         nextFrame {
           uid
         }
@@ -33,6 +34,7 @@
       uid
       pictureLink
       actions {
+        uid
         nextFrame {
           uid
         }

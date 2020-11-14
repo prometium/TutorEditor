@@ -31,8 +31,18 @@ func (repo *repository) Setup(ctx context.Context) error {
 }
 
 func (repo *repository) AddScript(ctx context.Context, script *editorsvc.Script) (string, error) {
-	script = configureScript(script)
+	script = classifyScript(script)
+
 	script.UID = "_:script"
+	for i := range script.Frames {
+		frame := &script.Frames[i]
+		frame.UID = fmt.Sprintf("_:%s", frame.UID)
+		for j := range frame.Actions {
+			nextFrame := frame.Actions[j].NextFrame
+			nextFrame.UID = fmt.Sprintf("_:%s", nextFrame.UID)
+		}
+	}
+	script.FirstFrame.UID = fmt.Sprintf("_:%s", script.FirstFrame.UID)
 
 	scriptB, err := json.Marshal(script)
 	if err != nil {
@@ -112,6 +122,9 @@ func (repo *repository) DeleteScript(ctx context.Context, id string) error {
 		script as var(func: uid($id)) {
 			expand(_all_) {
 				depth2 as uid
+				expand(_all_) {
+					depth3 as uid
+				}
 			}
 		}
 	}`
@@ -120,6 +133,7 @@ func (repo *repository) DeleteScript(ctx context.Context, id string) error {
 		DelNquads: []byte(`
 			uid(script) * * .
 			uid(depth2) * * .
+			uid(depth3) * * .
 		`),
 	}
 
@@ -137,22 +151,7 @@ func (repo *repository) DeleteScript(ctx context.Context, id string) error {
 }
 
 func (repo *repository) UpdateScript(ctx context.Context, script *editorsvc.Script) error {
-	q := `query script($id: string) {
-		script as var(func: uid($id)) {
-			expand(_all_) {
-				depth2 as uid
-			}
-		}
-	}`
-
-	mu1 := &api.Mutation{
-		DelNquads: []byte(`
-			uid(script) <frames> * .
-			uid(depth2) * * .
-		`),
-	}
-
-	script = configureScript(script)
+	script = classifyScript(script)
 	scriptB, err := json.Marshal(script)
 	if err != nil {
 		return err
@@ -163,9 +162,7 @@ func (repo *repository) UpdateScript(ctx context.Context, script *editorsvc.Scri
 	}
 
 	req := &api.Request{
-		Query:     q,
-		Mutations: []*api.Mutation{mu1, mu2},
-		Vars:      map[string]string{"$id": script.UID},
+		Mutations: []*api.Mutation{mu2},
 		CommitNow: true,
 	}
 
@@ -176,23 +173,61 @@ func (repo *repository) UpdateScript(ctx context.Context, script *editorsvc.Scri
 	return nil
 }
 
-func configureScript(script *editorsvc.Script) *editorsvc.Script {
-	script.DType = []string{"Script"}
-
-	for i := range script.Frames {
-		frame := &script.Frames[i]
-		frame.UID = fmt.Sprintf("_:frame-%s", frame.UID)
-		frame.DType = []string{"Frame"}
-
-		for j := range frame.Actions {
-			action := &frame.Actions[j]
-			action.DType = []string{"Action"}
-
-			action.NextFrame.UID = fmt.Sprintf("_:frame-%s", action.NextFrame.UID)
-		}
+func (repo *repository) AddBranchPoint(ctx context.Context, bp *editorsvc.BranchPoint) (map[string]string, error) {
+	if len(bp.ConnectedFrames) == 0 {
+		return nil, nil
 	}
 
-	script.FirstFrame.UID = fmt.Sprintf("_:frame-%s", script.FirstFrame.UID)
+	frames := classifyFrames(bp.ConnectedFrames)
 
+	for i := range frames {
+		frame := &frames[i]
+		frame.UID = fmt.Sprintf("_:%s", frame.UID)
+
+		action := &frame.Actions[0]
+		action.UID = fmt.Sprintf("_:%s", action.UID)
+		action.NextFrame.UID = fmt.Sprintf("_:%s", action.NextFrame.UID)
+	}
+
+	firstMainFrame := editorsvc.Frame{
+		UID:     bp.FirstMainFrameID,
+		Actions: frames[0].Actions,
+	}
+
+	frames[len(frames)-1].Actions[0].NextFrame.UID = bp.LastMainFrameID
+
+	frames = append(frames[1:], firstMainFrame)
+
+	framesB, err := json.Marshal(frames)
+	if err != nil {
+		return nil, err
+	}
+
+	mu := &api.Mutation{
+		SetJson:   framesB,
+		CommitNow: true,
+	}
+
+	assigned, err := repo.dg.NewTxn().Mutate(ctx, mu)
+	if err != nil {
+		return nil, err
+	}
+	return assigned.Uids, nil
+}
+
+func classifyScript(script *editorsvc.Script) *editorsvc.Script {
+	script.DType = []string{"Script"}
+	script.Frames = classifyFrames(script.Frames)
 	return script
+}
+
+func classifyFrames(frames []editorsvc.Frame) []editorsvc.Frame {
+	for i := range frames {
+		frame := &frames[i]
+		frames[i].DType = []string{"Frame"}
+		for j := range frame.Actions {
+			frame.Actions[j].DType = []string{"Action"}
+		}
+	}
+	return frames
 }

@@ -66,3 +66,16 @@ type UpdateScriptResponse struct {
 }
 
 func (r UpdateScriptResponse) Error() error { return r.Err }
+
+// AddBranchPointRequest holds the request parameters for the AddBranchPoint method
+type AddBranchPointRequest struct {
+	BranchPoint *editorsvc.BranchPoint `json:"branchPoint"`
+}
+
+// AddBranchPointResponse holds the response parameters for the AddBranchPoint method
+type AddBranchPointResponse struct {
+	Uids map[string]string `json:"uids"`
+	Err  error             `json:"error,omitempty"`
+}
+
+func (r AddBranchPointResponse) Error() error { return r.Err }

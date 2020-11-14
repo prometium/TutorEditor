@@ -3,8 +3,6 @@ package implementation
 import (
 	"archive/zip"
 	"context"
-	"editorsvc"
-	"editorsvc/utils"
 	"encoding/json"
 	"io"
 	"os"
@@ -14,6 +12,9 @@ import (
 	"sync"
 
 	"golang.org/x/sync/errgroup"
+
+	"editorsvc"
+	"editorsvc/utils"
 )
 
 type rawMouseAction struct {

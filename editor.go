@@ -60,6 +60,13 @@ type Script struct {
 	DType      []string   `json:"dgraph.type,omitempty"`
 }
 
+// BranchPoint represents a branch point
+type BranchPoint struct {
+	FirstMainFrameID string  `json:"firstMainFrameId,omitempty"`
+	LastMainFrameID  string  `json:"lastMainFrameId,omitempty"`
+	ConnectedFrames  []Frame `json:"connectedFrames,omitempty"`
+}
+
 // Repository describes the persistence on editor model
 type Repository interface {
 	Setup(ctx context.Context) error
@@ -68,4 +75,5 @@ type Repository interface {
 	GetScript(ctx context.Context, id string) ([]Script, error)
 	DeleteScript(ctx context.Context, id string) error
 	UpdateScript(ctx context.Context, script *Script) error
+	AddBranchPoint(ctx context.Context, bp *BranchPoint) (map[string]string, error)
 }
