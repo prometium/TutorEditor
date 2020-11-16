@@ -5,7 +5,7 @@ import (
 
 	"github.com/go-kit/kit/endpoint"
 
-	"editorsvc"
+	"github.com/prometium/tutoreditor/editorsvc"
 )
 
 // Endpoints are exposed

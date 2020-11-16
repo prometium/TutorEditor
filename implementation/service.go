@@ -4,7 +4,7 @@ import (
 	"context"
 	"io"
 
-	"editorsvc"
+	"github.com/prometium/tutoreditor/editorsvc"
 )
 
 type service struct {

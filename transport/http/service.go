@@ -2,7 +2,7 @@ package http
 
 import (
 	"context"
-	"editorsvc"
+	"github.com/prometium/tutoreditor/editorsvc"
 	"encoding/json"
 	"net/http"
 
@@ -11,7 +11,7 @@ import (
 	httptransport "github.com/go-kit/kit/transport/http"
 	"github.com/gorilla/mux"
 
-	"editorsvc/transport"
+	"github.com/prometium/tutoreditor/editorsvc/transport"
 )
 
 // MakeHTTPHandler mounts all of the service endpoints into an http.Handler

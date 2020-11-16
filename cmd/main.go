@@ -3,23 +3,20 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"net/http"
 	"os"
-	"os/signal"
-	"syscall"
 
-	"github.com/dgraph-io/dgo"
-	"github.com/dgraph-io/dgo/protos/api"
+	"github.com/dgraph-io/dgo/v200"
+	"github.com/dgraph-io/dgo/v200/protos/api"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"google.golang.org/grpc"
 
-	"editorsvc"
-	"editorsvc/dgraphdb"
-	"editorsvc/implementation"
-	"editorsvc/transport"
-	httptransport "editorsvc/transport/http"
+	"github.com/prometium/tutoreditor/editorsvc"
+	"github.com/prometium/tutoreditor/editorsvc/dgraphdb"
+	"github.com/prometium/tutoreditor/editorsvc/implementation"
+	"github.com/prometium/tutoreditor/editorsvc/transport"
+	httptransport "github.com/prometium/tutoreditor/editorsvc/transport/http"
 )
 
 func main() {
@@ -70,12 +67,6 @@ func main() {
 	}
 
 	errs := make(chan error)
-
-	go func() {
-		c := make(chan os.Signal)
-		signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
-		errs <- fmt.Errorf("%s", <-c)
-	}()
 
 	go func() {
 		level.Info(logger).Log("transport", "HTTP", "addr", *httpAddr)

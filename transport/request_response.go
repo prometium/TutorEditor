@@ -1,7 +1,7 @@
 package transport
 
 import (
-	"editorsvc"
+	"github.com/prometium/tutoreditor/editorsvc"
 	"io"
 )
 

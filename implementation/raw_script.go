@@ -13,8 +13,8 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	"editorsvc"
-	"editorsvc/utils"
+	"github.com/prometium/tutoreditor/editorsvc"
+	"github.com/prometium/tutoreditor/editorsvc/utils"
 )
 
 type rawMouseAction struct {
