@@ -2,9 +2,10 @@ package http
 
 import (
 	"context"
-	"github.com/prometium/tutoreditor/editorsvc"
 	"encoding/json"
 	"net/http"
+
+	"github.com/prometium/tutoreditor/editorsvc"
 
 	"github.com/go-kit/kit/log"
 	kittransport "github.com/go-kit/kit/transport"
@@ -80,6 +81,13 @@ func MakeHTTPHandler(e transport.Endpoints, logger log.Logger) http.Handler {
 		options...,
 	))
 
+	r.Methods("DELETE").Path("/frames/{id}").Handler(httptransport.NewServer(
+		e.DeleteFrameEndpoint,
+		decodeDeleteFrameRequest,
+		encodeResponse,
+		options...,
+	))
+
 	return r
 }
 
@@ -142,6 +150,11 @@ func decodeDeleteBranchRequest(ctx context.Context, r *http.Request) (interface{
 		return nil, err
 	}
 	return req, nil
+}
+
+func decodeDeleteFrameRequest(ctx context.Context, r *http.Request) (interface{}, error) {
+	vars := mux.Vars(r)
+	return transport.DeleteFrameRequest{ID: vars["id"]}, nil
 }
 
 func encodeResponse(ctx context.Context, w http.ResponseWriter, response interface{}) error {

@@ -35,7 +35,7 @@ type Script {
 }
 
 actionType: int .
-nextFrame: uid .
+nextFrame: uid @reverse .
 xLeft: float .
 xRight: float .
 yLeft: float .

@@ -254,6 +254,45 @@ func (repo *repository) DeleteBranch(ctx context.Context, branchToDelete *editor
 	return nil
 }
 
+func (repo *repository) DeleteFrame(ctx context.Context, id string) error {
+	q := `query frame($id: string) {
+		frame as var(func: uid($id)) {
+			prevAction: ~nextFrame {
+				prevAction as uid
+			}
+			actions {
+				nextFrame {
+					nextFrame as uid
+				}
+			}
+		}
+	}`
+
+	mu := &api.Mutation{
+		DelNquads: []byte(`
+			uid(frame) * * .
+			uid(prevAction) <nextFrame> uid(frame) .
+		`),
+		SetNquads: []byte(`
+			uid(prevAction) <nextFrame> uid(nextFrame) .
+		`),
+	}
+
+	req := &api.Request{
+		Query:     q,
+		Mutations: []*api.Mutation{mu},
+		Vars: map[string]string{
+			"$id": id,
+		},
+		CommitNow: true,
+	}
+
+	if _, err := repo.dg.NewTxn().Do(ctx, req); err != nil {
+		return err
+	}
+	return nil
+}
+
 func classifyScript(script *editorsvc.Script) *editorsvc.Script {
 	script.DType = []string{"Script"}
 	script.Frames = classifyFrames(script.Frames)

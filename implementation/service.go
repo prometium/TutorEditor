@@ -77,3 +77,7 @@ func (s *service) AddBranch(ctx context.Context, branch *editorsvc.Branch) (map[
 func (s *service) DeleteBranch(ctx context.Context, branchToDelete *editorsvc.BranchToDelete) error {
 	return s.repository.DeleteBranch(ctx, branchToDelete)
 }
+
+func (s *service) DeleteFrame(ctx context.Context, id string) error {
+	return s.repository.DeleteFrame(ctx, id)
+}

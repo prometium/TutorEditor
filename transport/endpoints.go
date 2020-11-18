@@ -18,6 +18,7 @@ type Endpoints struct {
 	CopyScriptEndpoint     endpoint.Endpoint
 	AddBranchEndpoint      endpoint.Endpoint
 	DeleteBranchEndpoint   endpoint.Endpoint
+	DeleteFrameEndpoint    endpoint.Endpoint
 }
 
 // MakeServerEndpoints returns an Endpoints struct where each endpoint invokes
@@ -32,6 +33,7 @@ func MakeServerEndpoints(s editorsvc.Service) Endpoints {
 		CopyScriptEndpoint:     makeCopyScriptEndpoint(s),
 		AddBranchEndpoint:      makeAddBranchEndpoint(s),
 		DeleteBranchEndpoint:   makeDeleteBranchEndpoint(s),
+		DeleteFrameEndpoint:    makeDeleteFrame(s),
 	}
 }
 
@@ -95,5 +97,13 @@ func makeDeleteBranchEndpoint(s editorsvc.Service) endpoint.Endpoint {
 		req := request.(DeleteBranchRequest)
 		err := s.DeleteBranch(ctx, req.BranchToDelete)
 		return DeleteBranchResponse{Err: err}, nil
+	}
+}
+
+func makeDeleteFrame(s editorsvc.Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(DeleteFrameRequest)
+		err := s.DeleteFrame(ctx, req.ID)
+		return DeleteFrameResponse{Err: err}, nil
 	}
 }

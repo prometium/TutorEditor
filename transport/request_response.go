@@ -1,8 +1,9 @@
 package transport
 
 import (
-	"github.com/prometium/tutoreditor/editorsvc"
 	"io"
+
+	"github.com/prometium/tutoreditor/editorsvc"
 )
 
 // AddRawScriptRequest holds the request parameters for the AddRawScript method
@@ -106,3 +107,15 @@ type DeleteBranchResponse struct {
 }
 
 func (r DeleteBranchResponse) Error() error { return r.Err }
+
+// DeleteFrameRequest holds the request parameters for the DeleteFrame method
+type DeleteFrameRequest struct {
+	ID string `json:"id"`
+}
+
+// DeleteFrameResponse holds the response parameters for the DeleteFrame method
+type DeleteFrameResponse struct {
+	Err error `json:"error,omitempty"`
+}
+
+func (r DeleteFrameResponse) Error() error { return r.Err }

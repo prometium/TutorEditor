@@ -52,3 +52,12 @@
       dgraph.type
   }
 }
+
+{
+  scripts(func: uid("0xa")) {
+    uid
+    prevAction: ~nextFrame {
+    	uid
+  	}
+  }
+}
