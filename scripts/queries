@@ -2,6 +2,7 @@
   scripts(func: type("Script")) {
     uid
     name
+    version
     firstFrame {
       uid
     }

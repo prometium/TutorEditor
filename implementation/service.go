@@ -5,11 +5,14 @@ import (
 	"io"
 
 	"github.com/prometium/tutoreditor/editorsvc"
+	"github.com/prometium/tutoreditor/editorsvc/utils"
 )
 
 type service struct {
 	repository editorsvc.Repository
 }
+
+const versionLen = 10
 
 // NewService makes a new Service
 func NewService(rep editorsvc.Repository) editorsvc.Service {
@@ -36,6 +39,7 @@ func (s *service) AddRawScript(ctx context.Context, name string, fileReader io.R
 		return "", err
 	}
 
+	script.Version = utils.RandSeq(versionLen)
 	id, err := s.repository.AddScript(ctx, script)
 	if err != nil {
 		return id, err
@@ -61,23 +65,70 @@ func (s *service) DeleteScript(ctx context.Context, id string) error {
 	return s.repository.DeleteScript(ctx, id)
 }
 
-func (s *service) UpdateScript(ctx context.Context, id string, script *editorsvc.Script) (map[string]string, error) {
+func (s *service) UpdateScript(ctx context.Context, id string, script *editorsvc.Script) (string, map[string]string, error) {
+	version, err := s.repository.GetScriptVersion(ctx, id)
+	if err != nil {
+		return "", nil, err
+	} else if version != script.Version {
+		return "", nil, editorsvc.ErrVersionsDoNotMatch
+	}
+
 	script.UID = id
-	return s.repository.UpdateScript(ctx, script)
+	script.Version = utils.RandSeq(versionLen)
+	uids, err := s.repository.UpdateScript(ctx, script)
+	if err != nil {
+		return "", uids, err
+	}
+	return script.Version, uids, nil
 }
 
 func (s *service) CopyScript(ctx context.Context, script *editorsvc.Script) (string, error) {
+	script.Version = utils.RandSeq(versionLen)
 	return s.repository.AddScript(ctx, script)
 }
 
-func (s *service) AddBranch(ctx context.Context, branch *editorsvc.Branch) (map[string]string, error) {
-	return s.repository.AddBranch(ctx, branch)
+func (s *service) AddBranch(ctx context.Context, script *editorsvc.Script, branch *editorsvc.Branch) (string, map[string]string, error) {
+	version, err := s.repository.GetScriptVersion(ctx, script.UID)
+	if err != nil {
+		return "", nil, err
+	} else if version != script.Version {
+		return "", nil, editorsvc.ErrVersionsDoNotMatch
+	}
+
+	script.Version = utils.RandSeq(versionLen)
+	uids, err := s.repository.AddBranch(ctx, script, branch)
+	if err != nil {
+		return "", uids, err
+	}
+	return script.Version, uids, nil
 }
 
-func (s *service) DeleteBranch(ctx context.Context, branchToDelete *editorsvc.BranchToDelete) error {
-	return s.repository.DeleteBranch(ctx, branchToDelete)
+func (s *service) DeleteBranch(ctx context.Context, script *editorsvc.Script, branchToDelete *editorsvc.BranchToDelete) (string, error) {
+	version, err := s.repository.GetScriptVersion(ctx, script.UID)
+	if err != nil {
+		return "", err
+	} else if version != script.Version {
+		return "", editorsvc.ErrVersionsDoNotMatch
+	}
+
+	script.Version = utils.RandSeq(versionLen)
+	if err := s.repository.DeleteBranch(ctx, script, branchToDelete); err != nil {
+		return "", err
+	}
+	return script.Version, nil
 }
 
-func (s *service) DeleteFrame(ctx context.Context, id string) error {
-	return s.repository.DeleteFrame(ctx, id)
+func (s *service) DeleteFrame(ctx context.Context, script *editorsvc.Script, id string) (string, error) {
+	version, err := s.repository.GetScriptVersion(ctx, script.UID)
+	if err != nil {
+		return "", err
+	} else if version != script.Version {
+		return "", editorsvc.ErrVersionsDoNotMatch
+	}
+
+	script.Version = utils.RandSeq(versionLen)
+	if err := s.repository.DeleteFrame(ctx, script, id); err != nil {
+		return "", err
+	}
+	return script.Version, nil
 }

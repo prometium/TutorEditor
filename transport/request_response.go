@@ -64,8 +64,9 @@ type UpdateScriptRequest struct {
 
 // UpdateScriptResponse holds the response parameters for the UpdateScript method
 type UpdateScriptResponse struct {
-	Uids map[string]string `json:"uids"`
-	Err  error             `json:"error,omitempty"`
+	Version string            `json:"version"`
+	Uids    map[string]string `json:"uids"`
+	Err     error             `json:"error,omitempty"`
 }
 
 func (r UpdateScriptResponse) Error() error { return r.Err }
@@ -85,37 +86,43 @@ func (r CopyScriptResponse) Error() error { return r.Err }
 
 // AddBranchRequest holds the request parameters for the AddBranch method
 type AddBranchRequest struct {
+	Script *editorsvc.Script `json:"script"`
 	Branch *editorsvc.Branch `json:"branch"`
 }
 
 // AddBranchResponse holds the response parameters for the AddBranch method
 type AddBranchResponse struct {
-	Uids map[string]string `json:"uids"`
-	Err  error             `json:"error,omitempty"`
+	Version string            `json:"version"`
+	Uids    map[string]string `json:"uids"`
+	Err     error             `json:"error,omitempty"`
 }
 
 func (r AddBranchResponse) Error() error { return r.Err }
 
 // DeleteBranchRequest holds the request parameters for the DeleteBranch method
 type DeleteBranchRequest struct {
+	Script         *editorsvc.Script         `json:"script"`
 	BranchToDelete *editorsvc.BranchToDelete `json:"branchToDelete"`
 }
 
 // DeleteBranchResponse holds the response parameters for the DeleteBranch method
 type DeleteBranchResponse struct {
-	Err error `json:"error,omitempty"`
+	Version string `json:"version"`
+	Err     error  `json:"error,omitempty"`
 }
 
 func (r DeleteBranchResponse) Error() error { return r.Err }
 
 // DeleteFrameRequest holds the request parameters for the DeleteFrame method
 type DeleteFrameRequest struct {
-	ID string `json:"id"`
+	Script *editorsvc.Script `json:"script"`
+	ID     string            `json:"id"`
 }
 
 // DeleteFrameResponse holds the response parameters for the DeleteFrame method
 type DeleteFrameResponse struct {
-	Err error `json:"error,omitempty"`
+	Version string `json:"version"`
+	Err     error  `json:"error,omitempty"`
 }
 
 func (r DeleteFrameResponse) Error() error { return r.Err }

@@ -70,6 +70,7 @@ func (repo *repository) GetScriptsList(ctx context.Context) ([]editorsvc.Script,
 		scripts(func: type("Script")) {
 			uid
 			name
+			version
 		}
 	}`
 
@@ -92,6 +93,7 @@ func (repo *repository) GetScript(ctx context.Context, id string) ([]editorsvc.S
 		script(func: uid($id)) @filter(type("Script")) {
 			uid
 			name
+			version
 			firstFrame {
 			  uid
 			}
@@ -123,7 +125,7 @@ func (repo *repository) GetScript(ctx context.Context, id string) ([]editorsvc.S
 
 func (repo *repository) DeleteScript(ctx context.Context, id string) error {
 	q := `query script($id: string) {
-		script as var(func: uid($id)) {
+		script as var(func: uid($id)) @filter(type("Script")) {
 			expand(_all_) {
 				depth2 as uid
 				expand(_all_) {
@@ -161,12 +163,12 @@ func (repo *repository) UpdateScript(ctx context.Context, script *editorsvc.Scri
 		return nil, err
 	}
 
-	mu2 := &api.Mutation{
+	mu := &api.Mutation{
 		SetJson: scriptB,
 	}
 
 	req := &api.Request{
-		Mutations: []*api.Mutation{mu2},
+		Mutations: []*api.Mutation{mu},
 		CommitNow: true,
 	}
 
@@ -177,12 +179,12 @@ func (repo *repository) UpdateScript(ctx context.Context, script *editorsvc.Scri
 	return assigned.Uids, nil
 }
 
-func (repo *repository) AddBranch(ctx context.Context, branch *editorsvc.Branch) (map[string]string, error) {
+func (repo *repository) AddBranch(ctx context.Context, script *editorsvc.Script, branch *editorsvc.Branch) (map[string]string, error) {
 	if len(branch.ConnectedFrames) == 0 {
 		return nil, nil
 	}
 
-	frames := classifyFrames(branch.ConnectedFrames)
+	frames := branch.ConnectedFrames
 
 	for i := range frames {
 		frame := &frames[i]
@@ -202,28 +204,20 @@ func (repo *repository) AddBranch(ctx context.Context, branch *editorsvc.Branch)
 
 	frames = append(frames[1:], firstMainFrame)
 
-	framesB, err := json.Marshal(frames)
-	if err != nil {
-		return nil, err
-	}
-
-	mu := &api.Mutation{
-		SetJson:   framesB,
-		CommitNow: true,
-	}
-
-	assigned, err := repo.dg.NewTxn().Mutate(ctx, mu)
-	if err != nil {
-		return nil, err
-	}
-	return assigned.Uids, nil
+	script.Frames = frames
+	return repo.UpdateScript(ctx, script)
 }
 
-func (repo *repository) DeleteBranch(ctx context.Context, branchToDelete *editorsvc.BranchToDelete) error {
-	q := `query script($branchFrameId: string, $firstActionId: string, $lastActionId: string) {
-		root as var(func: uid($branchFrameId))
-		first as var(func: uid($firstActionId))
-		last as var(func: uid($lastActionId))
+func (repo *repository) DeleteBranch(ctx context.Context, script *editorsvc.Script, branchToDelete *editorsvc.BranchToDelete) error {
+	q := `query script($scriptId: string, $branchFrameId: string, $firstActionId: string, $lastActionId: string) {
+		var(func: uid($scriptId)) @filter(type("Script")) {
+			frames as frames {
+				actions as actions
+			}
+		}
+		root as var(func: uid($branchFrameId)) @filter(uid(frames))
+		first as var(func: uid($firstActionId)) @filter(uid(actions))
+		last as var(func: uid($lastActionId)) @filter(uid(actions))
 		path as shortest(from: uid(first), to: uid(last)) {
 			actions
 			nextFrame
@@ -241,6 +235,7 @@ func (repo *repository) DeleteBranch(ctx context.Context, branchToDelete *editor
 		Query:     q,
 		Mutations: []*api.Mutation{mu},
 		Vars: map[string]string{
+			"$scriptId":      script.UID,
 			"$branchFrameId": branchToDelete.BranchFrameID,
 			"$firstActionId": branchToDelete.FirstActionID,
 			"$lastActionId":  branchToDelete.LastActionID,
@@ -251,12 +246,18 @@ func (repo *repository) DeleteBranch(ctx context.Context, branchToDelete *editor
 	if _, err := repo.dg.NewTxn().Do(ctx, req); err != nil {
 		return err
 	}
+	if _, err := repo.UpdateScript(ctx, script); err != nil {
+		return err
+	}
 	return nil
 }
 
-func (repo *repository) DeleteFrame(ctx context.Context, id string) error {
-	q := `query frame($id: string) {
-		frame as var(func: uid($id)) {
+func (repo *repository) DeleteFrame(ctx context.Context, script *editorsvc.Script, id string) error {
+	q := `query frame($scriptId: string, $frameId: string) {
+		var(func: uid($scriptId)) @filter(type("Script")) {
+			frames as frames
+		}
+		frame as var(func: uid($frameId)) @filter(uid(frames)) {
 			prevAction: ~nextFrame {
 				prevAction as uid
 			}
@@ -282,7 +283,8 @@ func (repo *repository) DeleteFrame(ctx context.Context, id string) error {
 		Query:     q,
 		Mutations: []*api.Mutation{mu},
 		Vars: map[string]string{
-			"$id": id,
+			"$scriptId": script.UID,
+			"$frameId":  id,
 		},
 		CommitNow: true,
 	}
@@ -290,7 +292,33 @@ func (repo *repository) DeleteFrame(ctx context.Context, id string) error {
 	if _, err := repo.dg.NewTxn().Do(ctx, req); err != nil {
 		return err
 	}
+	if _, err := repo.UpdateScript(ctx, script); err != nil {
+		return err
+	}
 	return nil
+}
+
+func (repo *repository) GetScriptVersion(ctx context.Context, id string) (string, error) {
+	q := `query script($id: string) {
+		script(func: uid($id)) @filter(type("Script")) {
+			version
+		}
+	}`
+
+	res, err := repo.dg.NewTxn().QueryWithVars(ctx, q, map[string]string{"$id": id})
+	if err != nil {
+		return "", err
+	}
+
+	var decode struct {
+		Script []editorsvc.Script
+	}
+	if err := json.Unmarshal(res.GetJson(), &decode); err != nil {
+		return "", err
+	} else if len(decode.Script) > 0 {
+		return decode.Script[0].Version, nil
+	}
+	return "", nil
 }
 
 func classifyScript(script *editorsvc.Script) *editorsvc.Script {

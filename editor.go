@@ -55,6 +55,7 @@ type Frame struct {
 type Script struct {
 	UID        string     `json:"uid,omitempty"`
 	Name       string     `json:"name,omitempty"`
+	Version    string     `json:"version,omitempty"`
 	FirstFrame *NextFrame `json:"firstFrame,omitempty"`
 	Frames     []Frame    `json:"frames,omitempty"`
 	DType      []string   `json:"dgraph.type,omitempty"`
@@ -82,7 +83,8 @@ type Repository interface {
 	GetScript(ctx context.Context, id string) ([]Script, error)
 	DeleteScript(ctx context.Context, id string) error
 	UpdateScript(ctx context.Context, script *Script) (map[string]string, error)
-	AddBranch(ctx context.Context, branch *Branch) (map[string]string, error)
-	DeleteBranch(ctx context.Context, branchToDelete *BranchToDelete) error
-	DeleteFrame(ctx context.Context, id string) error
+	AddBranch(ctx context.Context, script *Script, branch *Branch) (map[string]string, error)
+	DeleteBranch(ctx context.Context, script *Script, branchToDelete *BranchToDelete) error
+	DeleteFrame(ctx context.Context, script *Script, id string) error
+	GetScriptVersion(ctx context.Context, id string) (string, error)
 }

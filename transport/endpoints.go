@@ -71,8 +71,8 @@ func makeDeleteScriptEndpoint(s editorsvc.Service) endpoint.Endpoint {
 func makeUpdateScriptEndpoint(s editorsvc.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(UpdateScriptRequest)
-		uids, err := s.UpdateScript(ctx, req.ID, req.Script)
-		return UpdateScriptResponse{Uids: uids, Err: err}, nil
+		version, uids, err := s.UpdateScript(ctx, req.ID, req.Script)
+		return UpdateScriptResponse{Version: version, Uids: uids, Err: err}, nil
 	}
 }
 
@@ -87,23 +87,23 @@ func makeCopyScriptEndpoint(s editorsvc.Service) endpoint.Endpoint {
 func makeAddBranchEndpoint(s editorsvc.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(AddBranchRequest)
-		uids, err := s.AddBranch(ctx, req.Branch)
-		return AddBranchResponse{Uids: uids, Err: err}, nil
+		version, uids, err := s.AddBranch(ctx, req.Script, req.Branch)
+		return AddBranchResponse{Version: version, Uids: uids, Err: err}, nil
 	}
 }
 
 func makeDeleteBranchEndpoint(s editorsvc.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(DeleteBranchRequest)
-		err := s.DeleteBranch(ctx, req.BranchToDelete)
-		return DeleteBranchResponse{Err: err}, nil
+		version, err := s.DeleteBranch(ctx, req.Script, req.BranchToDelete)
+		return DeleteBranchResponse{Version: version, Err: err}, nil
 	}
 }
 
 func makeDeleteFrame(s editorsvc.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(DeleteFrameRequest)
-		err := s.DeleteFrame(ctx, req.ID)
-		return DeleteFrameResponse{Err: err}, nil
+		version, err := s.DeleteFrame(ctx, req.Script, req.ID)
+		return DeleteFrameResponse{Version: version, Err: err}, nil
 	}
 }

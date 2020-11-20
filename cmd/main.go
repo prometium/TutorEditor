@@ -3,8 +3,10 @@ package main
 import (
 	"context"
 	"flag"
+	"math/rand"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/dgraph-io/dgo/v200"
 	"github.com/dgraph-io/dgo/v200/protos/api"
@@ -76,6 +78,8 @@ func main() {
 		}
 		errs <- server.ListenAndServe()
 	}()
+
+	rand.Seed(time.Now().UnixNano())
 
 	level.Error(logger).Log("exit", <-errs)
 }

@@ -7,10 +7,22 @@ import (
 	"encoding/hex"
 	"io"
 	"io/ioutil"
+	"math/rand"
 	"os"
 )
 
-// HashZipFileMD5 generate MD5 hash number of a zip file
+var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
+// RandSeq generates a random sequence
+func RandSeq(n int) string {
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(b)
+}
+
+// HashZipFileMD5 generates MD5 hash number of a zip file
 func HashZipFileMD5(f *zip.File) (string, error) {
 	var returnMD5String string
 	file, err := f.Open()

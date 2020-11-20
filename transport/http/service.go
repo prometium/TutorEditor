@@ -153,8 +153,13 @@ func decodeDeleteBranchRequest(ctx context.Context, r *http.Request) (interface{
 }
 
 func decodeDeleteFrameRequest(ctx context.Context, r *http.Request) (interface{}, error) {
+	var req transport.DeleteFrameRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		return nil, err
+	}
 	vars := mux.Vars(r)
-	return transport.DeleteFrameRequest{ID: vars["id"]}, nil
+	req.ID = vars["id"]
+	return req, nil
 }
 
 func encodeResponse(ctx context.Context, w http.ResponseWriter, response interface{}) error {
@@ -179,6 +184,8 @@ func encodeError(_ context.Context, err error, w http.ResponseWriter) {
 func codeFrom(err error) int {
 	switch err {
 	case editorsvc.ErrScriptNotFound:
+		return http.StatusBadRequest
+	case editorsvc.ErrVersionsDoNotMatch:
 		return http.StatusBadRequest
 	default:
 		return http.StatusInternalServerError
