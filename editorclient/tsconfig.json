@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      "src/*": ["./src/*"]
+    },
+    "outDir": "dist",
+    "rootDir": "src",
+    "target": "es2015",
+    "module": "es6",
+    "moduleResolution": "node",
+    "jsx": "react",
+    "strict": true,
+    "allowSyntheticDefaultImports": true,
+    "sourceMap": true
+  }
+}
