@@ -100,16 +100,16 @@ func (rs *rawScript) saveImages(ctx context.Context, imagesDir string) (map[stri
 	errs, ctx := errgroup.WithContext(ctx)
 	var linksMap map[string]string = make(map[string]string)
 	for _, file := range rs.Images {
-		fileName := file.Name
+		currentFile := file
 		errs.Go(func() error {
-			hash, err := utils.HashZipFileMD5(file)
+			hash, err := utils.HashZipFileMD5(currentFile)
 			if err != nil {
 				return err
 			}
 
 			path := filepath.Join(imagesDir, hash+".png")
 			if _, err := os.Stat(path); os.IsNotExist(err) {
-				err = utils.CopyZipFile(file, path)
+				err = utils.CopyZipFile(currentFile, path)
 				if err != nil {
 					return err
 				}
@@ -117,7 +117,7 @@ func (rs *rawScript) saveImages(ctx context.Context, imagesDir string) (map[stri
 
 			lock.Lock()
 			defer lock.Unlock()
-			linksMap[fileName] = path
+			linksMap[currentFile.Name] = path
 
 			return nil
 		})
