@@ -70,14 +70,11 @@ func (s *service) DeleteScript(ctx context.Context, id string) error {
 }
 
 func (s *service) UpdateScript(ctx context.Context, id string, script *editorsvc.Script) (string, map[string]string, error) {
-	version, err := s.repository.GetScriptVersion(ctx, id)
-	if err != nil {
+	script.UID = id
+	if err := checkScriptVersion(ctx, s, script); err != nil {
 		return "", nil, err
-	} else if version != script.Version {
-		return "", nil, editorsvc.ErrVersionsDoNotMatch
 	}
 
-	script.UID = id
 	script.Version = utils.RandSeq(versionLen)
 	uids, err := s.repository.UpdateScript(ctx, script)
 	if err != nil {
@@ -92,11 +89,9 @@ func (s *service) CopyScript(ctx context.Context, script *editorsvc.Script) (str
 }
 
 func (s *service) AddBranch(ctx context.Context, script *editorsvc.Script, branch *editorsvc.Branch) (string, map[string]string, error) {
-	version, err := s.repository.GetScriptVersion(ctx, script.UID)
+	err := checkScriptVersion(ctx, s, script)
 	if err != nil {
 		return "", nil, err
-	} else if version != script.Version {
-		return "", nil, editorsvc.ErrVersionsDoNotMatch
 	}
 
 	script.Version = utils.RandSeq(versionLen)
@@ -108,11 +103,8 @@ func (s *service) AddBranch(ctx context.Context, script *editorsvc.Script, branc
 }
 
 func (s *service) DeleteBranch(ctx context.Context, script *editorsvc.Script, branchToDelete *editorsvc.BranchToDelete) (string, error) {
-	version, err := s.repository.GetScriptVersion(ctx, script.UID)
-	if err != nil {
+	if err := checkScriptVersion(ctx, s, script); err != nil {
 		return "", err
-	} else if version != script.Version {
-		return "", editorsvc.ErrVersionsDoNotMatch
 	}
 
 	script.Version = utils.RandSeq(versionLen)
@@ -122,12 +114,11 @@ func (s *service) DeleteBranch(ctx context.Context, script *editorsvc.Script, br
 	return script.Version, nil
 }
 
+//func (s *service) AddFrame(ctx context.Context, script *editorsvc.Script, id string) (string, error)
+
 func (s *service) DeleteFrame(ctx context.Context, script *editorsvc.Script, id string) (string, error) {
-	version, err := s.repository.GetScriptVersion(ctx, script.UID)
-	if err != nil {
+	if err := checkScriptVersion(ctx, s, script); err != nil {
 		return "", err
-	} else if version != script.Version {
-		return "", editorsvc.ErrVersionsDoNotMatch
 	}
 
 	script.Version = utils.RandSeq(versionLen)
@@ -135,4 +126,14 @@ func (s *service) DeleteFrame(ctx context.Context, script *editorsvc.Script, id 
 		return "", err
 	}
 	return script.Version, nil
+}
+
+func checkScriptVersion(ctx context.Context, s *service, script *editorsvc.Script) error {
+	version, err := s.repository.GetScriptVersion(ctx, script.UID)
+	if err != nil {
+		return err
+	} else if version != script.Version {
+		return editorsvc.ErrVersionsDoNotMatch
+	}
+	return nil
 }

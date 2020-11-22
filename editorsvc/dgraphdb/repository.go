@@ -252,7 +252,7 @@ func (repo *repository) DeleteBranch(ctx context.Context, script *editorsvc.Scri
 		Mutations: []*api.Mutation{mu},
 		Vars: map[string]string{
 			"$scriptId":      script.UID,
-			"$rootFrameId":   branchToDelete.RootFrameId,
+			"$rootFrameId":   branchToDelete.RootFrameID,
 			"$firstActionId": branchToDelete.FirstActionID,
 			"$lastActionId":  branchToDelete.LastActionID,
 		},
@@ -368,5 +368,6 @@ func classifyFrames(frames []editorsvc.Frame) []editorsvc.Frame {
 			}
 		}
 	}
+
 	return frames
 }

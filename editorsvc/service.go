@@ -25,5 +25,6 @@ type Service interface {
 	CopyScript(ctx context.Context, script *Script) (string, error)
 	AddBranch(ctx context.Context, script *Script, branch *Branch) (string, map[string]string, error)
 	DeleteBranch(ctx context.Context, script *Script, branchToDelete *BranchToDelete) (string, error)
+	//AddFrame(ctx context.Context, script *Script, framesPair []Frame) (string, map[string]string, error)
 	DeleteFrame(ctx context.Context, script *Script, id string) (string, error)
 }
