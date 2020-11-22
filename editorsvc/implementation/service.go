@@ -89,6 +89,10 @@ func (s *service) CopyScript(ctx context.Context, script *editorsvc.Script) (str
 }
 
 func (s *service) AddBranch(ctx context.Context, script *editorsvc.Script, branch *editorsvc.Branch) (string, map[string]string, error) {
+	if len(branch.ConnectedFrames) == 0 {
+		return "", nil, editorsvc.ErrInvalidRequestParameters
+	}
+
 	err := checkScriptVersion(ctx, s, script)
 	if err != nil {
 		return "", nil, err
@@ -114,7 +118,25 @@ func (s *service) DeleteBranch(ctx context.Context, script *editorsvc.Script, br
 	return script.Version, nil
 }
 
-//func (s *service) AddFrame(ctx context.Context, script *editorsvc.Script, id string) (string, error)
+func (s *service) AddFrame(ctx context.Context, script *editorsvc.Script, framesPair []editorsvc.Frame) (string, map[string]string, error) {
+	if len(framesPair) != 2 ||
+		len(framesPair[0].Actions) != 1 ||
+		len(framesPair[1].Actions) != 1 ||
+		framesPair[0].Actions[0].NextFrame == nil {
+		return "", nil, editorsvc.ErrInvalidRequestParameters
+	}
+
+	if err := checkScriptVersion(ctx, s, script); err != nil {
+		return "", nil, err
+	}
+
+	script.Version = utils.RandSeq(versionLen)
+	uids, err := s.repository.AddFrame(ctx, script, framesPair)
+	if err != nil {
+		return "", nil, err
+	}
+	return script.Version, uids, nil
+}
 
 func (s *service) DeleteFrame(ctx context.Context, script *editorsvc.Script, id string) (string, error) {
 	if err := checkScriptVersion(ctx, s, script); err != nil {

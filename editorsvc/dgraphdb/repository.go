@@ -188,10 +188,6 @@ func (repo *repository) UpdateScript(ctx context.Context, script *editorsvc.Scri
 }
 
 func (repo *repository) AddBranch(ctx context.Context, script *editorsvc.Script, branch *editorsvc.Branch) (map[string]string, error) {
-	if len(branch.ConnectedFrames) == 0 {
-		return nil, nil
-	}
-
 	frames := branch.ConnectedFrames
 
 	for i := range frames {
@@ -268,6 +264,24 @@ func (repo *repository) DeleteBranch(ctx context.Context, script *editorsvc.Scri
 	return nil
 }
 
+func (repo *repository) AddFrame(ctx context.Context, script *editorsvc.Script, framesPair []editorsvc.Frame) (map[string]string, error) {
+	prevAction := &framesPair[0].Actions[0]
+	frameToAdd := &framesPair[1]
+	actionToAdd := &frameToAdd.Actions[0]
+
+	actionToAdd.NextFrame = &editorsvc.NextFrame{
+		UID: prevAction.NextFrame.UID,
+	}
+
+	prevAction.NextFrame.UID = fmt.Sprintf("_:%s", frameToAdd.UID)
+
+	frameToAdd.UID = fmt.Sprintf("_:%s", frameToAdd.UID)
+	actionToAdd.UID = fmt.Sprintf("_:%s", actionToAdd.UID)
+
+	script.Frames = framesPair
+	return repo.UpdateScript(ctx, script)
+}
+
 func (repo *repository) DeleteFrame(ctx context.Context, script *editorsvc.Script, id string) error {
 	q := `query frame($scriptId: string, $frameId: string) {
 		script as var(func: uid($scriptId)) @filter(type("Script")) {
@@ -307,7 +321,7 @@ func (repo *repository) DeleteFrame(ctx context.Context, script *editorsvc.Scrip
 		Mutations: []*api.Mutation{mu},
 		Vars: map[string]string{
 			"$scriptId": script.UID,
-			"$frameId":  fmt.Sprintf("[%s, %s]", id, id),
+			"$frameId":  id,
 		},
 		CommitNow: true,
 	}
@@ -346,14 +360,10 @@ func (repo *repository) GetScriptVersion(ctx context.Context, id string) (string
 
 func classifyScript(script *editorsvc.Script) *editorsvc.Script {
 	script.DType = []string{"Script"}
-	script.Frames = classifyFrames(script.Frames)
-	return script
-}
 
-func classifyFrames(frames []editorsvc.Frame) []editorsvc.Frame {
-	for i := range frames {
-		frame := &frames[i]
-		frames[i].DType = []string{"Frame"}
+	for i := range script.Frames {
+		frame := &script.Frames[i]
+		script.Frames[i].DType = []string{"Frame"}
 
 		for j := range frame.Actions {
 			action := &frame.Actions[j]
@@ -369,5 +379,5 @@ func classifyFrames(frames []editorsvc.Frame) []editorsvc.Frame {
 		}
 	}
 
-	return frames
+	return script
 }

@@ -97,6 +97,7 @@ type Repository interface {
 	UpdateScript(ctx context.Context, script *Script) (map[string]string, error)
 	AddBranch(ctx context.Context, script *Script, branch *Branch) (map[string]string, error)
 	DeleteBranch(ctx context.Context, script *Script, branchToDelete *BranchToDelete) error
+	AddFrame(ctx context.Context, script *Script, framesPair []Frame) (map[string]string, error)
 	DeleteFrame(ctx context.Context, script *Script, id string) error
 	GetScriptVersion(ctx context.Context, id string) (string, error)
 }

@@ -13,6 +13,8 @@ var (
 	ErrScriptNotFound = errors.New("script not found")
 	// ErrVersionsDoNotMatch denotes the script versions do not match
 	ErrVersionsDoNotMatch = errors.New("script versions do not match")
+	// ErrInvalidRequestParameters denotes the request parameters are invalid
+	ErrInvalidRequestParameters = errors.New("invalid request parameters")
 )
 
 // Service provides some "date capabilities" to application
@@ -25,6 +27,6 @@ type Service interface {
 	CopyScript(ctx context.Context, script *Script) (string, error)
 	AddBranch(ctx context.Context, script *Script, branch *Branch) (string, map[string]string, error)
 	DeleteBranch(ctx context.Context, script *Script, branchToDelete *BranchToDelete) (string, error)
-	//AddFrame(ctx context.Context, script *Script, framesPair []Frame) (string, map[string]string, error)
+	AddFrame(ctx context.Context, script *Script, framesPair []Frame) (string, map[string]string, error)
 	DeleteFrame(ctx context.Context, script *Script, id string) (string, error)
 }

@@ -113,6 +113,21 @@ type DeleteBranchResponse struct {
 
 func (r DeleteBranchResponse) Error() error { return r.Err }
 
+// AddFrameRequest holds the request parameters for the AddFrame method
+type AddFrameRequest struct {
+	Script     *editorsvc.Script `json:"script"`
+	FramesPair []editorsvc.Frame `json:"framesPair"`
+}
+
+// AddFrameResponse holds the response parameters for the AddFrame method
+type AddFrameResponse struct {
+	Version string            `json:"version"`
+	Uids    map[string]string `json:"uids"`
+	Err     error             `json:"error,omitempty"`
+}
+
+func (r AddFrameResponse) Error() error { return r.Err }
+
 // DeleteFrameRequest holds the request parameters for the DeleteFrame method
 type DeleteFrameRequest struct {
 	Script *editorsvc.Script `json:"script"`

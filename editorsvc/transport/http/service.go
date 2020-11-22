@@ -81,6 +81,13 @@ func MakeHTTPHandler(e transport.Endpoints, logger log.Logger) http.Handler {
 		options...,
 	))
 
+	r.Methods("POST").Path("/frames").Handler(httptransport.NewServer(
+		e.AddFrameEndpoint,
+		decodeAddFrameRequest,
+		encodeResponse,
+		options...,
+	))
+
 	r.Methods("DELETE").Path("/frames/{id}").Handler(httptransport.NewServer(
 		e.DeleteFrameEndpoint,
 		decodeDeleteFrameRequest,
@@ -152,6 +159,14 @@ func decodeDeleteBranchRequest(ctx context.Context, r *http.Request) (interface{
 	return req, nil
 }
 
+func decodeAddFrameRequest(ctx context.Context, r *http.Request) (interface{}, error) {
+	var req transport.AddFrameRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		return nil, err
+	}
+	return req, nil
+}
+
 func decodeDeleteFrameRequest(ctx context.Context, r *http.Request) (interface{}, error) {
 	var req transport.DeleteFrameRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -188,6 +203,8 @@ func codeFrom(err error) int {
 	case editorsvc.ErrScriptNotFound:
 		return http.StatusBadRequest
 	case editorsvc.ErrVersionsDoNotMatch:
+		return http.StatusBadRequest
+	case editorsvc.ErrInvalidRequestParameters:
 		return http.StatusBadRequest
 	default:
 		return http.StatusInternalServerError
