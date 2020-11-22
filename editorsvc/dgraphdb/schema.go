@@ -1,6 +1,13 @@
 package dgraphdb
 
 var schema = `
+type SwitchPicture {
+	pictureNumber
+	pictureLink
+	x
+	y
+}
+
 type Action {
 	actionType
 	nextFrame
@@ -19,6 +26,7 @@ type Action {
 	ticksCount
 	key
 	modKey
+	switchPictures
 }
 
 type Frame {
@@ -37,6 +45,8 @@ type Script {
 
 actionType: int .
 nextFrame: uid @reverse .
+x: float .
+y: float .
 xLeft: float .
 xRight: float .
 yLeft: float .
@@ -52,7 +62,9 @@ finishYRight: float .
 ticksCount: int .
 key: string .
 modKey: string .
+switchPictures: [uid] .
 pictureLink: string .
+pictureNumber: int .
 actions: [uid] .
 hintText: string .
 taskText: string .

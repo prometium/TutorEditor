@@ -101,8 +101,12 @@ func (repo *repository) GetScript(ctx context.Context, id string) ([]editorsvc.S
 				uid
 				expand(_all_) {
 					uid
-					expand(_all_) {
+					expand(_all_)(orderasc: pictureNumber) {
 						uid
+						pictureNumber
+          				pictureLink
+          				y
+          				x
 					}
 				}
 			}
@@ -130,6 +134,9 @@ func (repo *repository) DeleteScript(ctx context.Context, id string) error {
 				depth2 as uid
 				expand(_all_) {
 					depth3 as uid
+					expand(_all_) {
+						depth4 as uid
+					}
 				}
 			}
 		}
@@ -140,6 +147,7 @@ func (repo *repository) DeleteScript(ctx context.Context, id string) error {
 			uid(script) * * .
 			uid(depth2) * * .
 			uid(depth3) * * .
+			uid(depth4) * * .
 		`),
 	}
 
@@ -331,8 +339,18 @@ func classifyFrames(frames []editorsvc.Frame) []editorsvc.Frame {
 	for i := range frames {
 		frame := &frames[i]
 		frames[i].DType = []string{"Frame"}
+
 		for j := range frame.Actions {
-			frame.Actions[j].DType = []string{"Action"}
+			action := &frame.Actions[j]
+			action.DType = []string{"Action"}
+
+			if action.SwitchPictures == nil {
+				continue
+			}
+
+			for k := range action.SwitchPictures {
+				action.SwitchPictures[k].DType = []string{"SwitchPicture"}
+			}
 		}
 	}
 	return frames

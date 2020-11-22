@@ -183,6 +183,8 @@ func encodeError(_ context.Context, err error, w http.ResponseWriter) {
 
 func codeFrom(err error) int {
 	switch err {
+	case editorsvc.ErrFileNotAttached:
+		return http.StatusBadRequest
 	case editorsvc.ErrScriptNotFound:
 		return http.StatusBadRequest
 	case editorsvc.ErrVersionsDoNotMatch:

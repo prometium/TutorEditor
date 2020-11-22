@@ -19,8 +19,21 @@
         xRight
         yLeft
         yRight
+        startXLeft
+	      startYLeft
+	      startXRight
+	      startYRight
+	      finishXLeft
+	      finishYLeft
+	      finishXRight
+	      finishYRight
+	      ticksCount
         key
         modKey
+        switchPictures {
+          uid
+          dgraph.type
+        }
         dgraph.type
       }
       taskText

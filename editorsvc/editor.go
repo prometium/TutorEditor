@@ -9,6 +9,16 @@ type NextFrame struct {
 	UID string `json:"uid,omitempty"`
 }
 
+// SwitchPicture represents a switch picture
+type SwitchPicture struct {
+	UID           string   `json:"uid,omitempty"`
+	PictureNumber int      `json:"pictureNumber,omitempty"`
+	PictureLink   string   `json:"pictureLink,omitempty"`
+	X             float32  `json:"x,omitempty"`
+	Y             float32  `json:"y,omitempty"`
+	DType         []string `json:"dgraph.type,omitempty"`
+}
+
 // Action represents an action
 type Action struct {
 	UID        string     `json:"uid,omitempty"`
@@ -37,6 +47,8 @@ type Action struct {
 	// keyboard
 	Key    string `json:"key,omitempty"`
 	ModKey string `json:"modKey,omitempty"`
+
+	SwitchPictures []SwitchPicture `json:"switchPictures,omitempty"`
 
 	DType []string `json:"dgraph.type,omitempty"`
 }

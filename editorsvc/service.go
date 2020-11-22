@@ -7,6 +7,8 @@ import (
 )
 
 var (
+	// ErrFileNotAttached denotes the file was not attached
+	ErrFileNotAttached = errors.New("file not attached")
 	// ErrScriptNotFound denotes the script was not found
 	ErrScriptNotFound = errors.New("script not found")
 	// ErrVersionsDoNotMatch denotes the script versions do not match
