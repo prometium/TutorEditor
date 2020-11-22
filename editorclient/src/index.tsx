@@ -4,6 +4,7 @@ import { register } from './serviceWorker';
 import App from './App';
 
 import 'normalize.css';
+import 'src/theme/theme.scss'
 
 ReactDOM.render(<App />, document.getElementById('root'));
 

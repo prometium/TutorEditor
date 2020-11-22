@@ -1,0 +1,94 @@
+$theme-palette-default: #bdbdbd;
+$theme-palette-primary: #303f9f;
+
+$theme-palette-values: (
+  default: $theme-palette-default,
+  default-darken-less: darken($theme-palette-default, 8),
+  default-darken-more: darken($theme-palette-default, 14),
+  default-contrast-text: #000,
+  primary: $theme-palette-primary,
+  primary-darken-less: darken($theme-palette-primary, 8),
+  primary-darken-more: darken($theme-palette-primary, 14),
+  primary-contrast-text: #fff,
+  success: #4caf50,
+  error: #f44336,
+  divider: rgba(0, 0, 0, 0.12),
+  background: #fafafa,
+  background-paper: #fff,
+  text-primary: rgba(0, 0, 0, 0.87),
+  text-secondary: rgba(0, 0, 0, 0.54),
+  text-disabled: rgba(0, 0, 0, 0.38),
+  text-hint: rgba(0, 0, 0, 0.38),
+  action-active: rgba(0, 0, 0, 0.54),
+  action-hover: rgba(0, 0, 0, 0.08),
+  action-selected: rgba(0, 0, 0, 0.14),
+  action-disabled: rgba(0, 0, 0, 0.26),
+  action-disabled-background: rgba(0, 0, 0, 0.12)
+);
+
+$theme-shape-border-radius: 2px;
+
+$theme-breakpoints-values: (
+  xs: 0,
+  sm: 600px,
+  md: 960px,
+  lg: 1280px,
+  xl: 1920px
+);
+
+$theme-typography-values: (
+  h1: (
+    font-weight: 300,
+    font-size: 6rem,
+    line-height: 1.167,
+    letter-spacing: -0.01562em
+  ),
+  h2: (
+    font-weight: 300,
+    font-size: 3.75rem,
+    line-height: 1.2,
+    letter-spacing: -0.00833em
+  ),
+  h3: (
+    font-weight: 400,
+    font-size: 3rem,
+    line-height: 1.167,
+    letter-spacing: 0em
+  ),
+  h4: (
+    font-weight: 400,
+    font-size: 2.125rem,
+    line-height: 1.235,
+    letter-spacing: 0.00735em
+  ),
+  h5: (
+    font-weight: 400,
+    font-size: 1.5rem,
+    line-height: 1.334,
+    letter-spacing: 0em
+  ),
+  h6: (
+    font-weight: 500,
+    font-size: 1.25rem,
+    line-height: 1.6,
+    letter-spacing: 0.0075em
+  ),
+  body1: (
+    font-weight: 400,
+    font-size: 1rem,
+    line-height: 1.5,
+    letter-spacing: 0.00938em
+  ),
+  body2: (
+    font-weight: 400,
+    font-size: 0.875rem,
+    line-height: 1.43,
+    letter-spacing: 0.01071em
+  ),
+  button: (
+    font-weight: 500,
+    font-size: 0.875rem,
+    line-height: 1.75,
+    letter-spacing: 0.0075em
+  )
+);

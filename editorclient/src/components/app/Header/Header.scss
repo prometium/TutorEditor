@@ -1,0 +1,28 @@
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--palette-primary);
+  color: var(--palette-primary-contrast-text);
+
+  &__toolbar {
+    display: flex;
+    min-height: 48px;
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  &__left {
+    display: flex;
+    align-items: center;
+  }
+}
+
+.brand-link {
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.5;
+  text-decoration: none;
+  color: inherit;
+}
