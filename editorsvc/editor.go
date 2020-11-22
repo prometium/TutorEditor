@@ -82,7 +82,7 @@ type Branch struct {
 
 // BranchToDelete represents a branch to be deleted
 type BranchToDelete struct {
-	BranchFrameID string `json:"branchFrameId,omitempty"`
+	RootFrameId string `json:"rootFrameId,omitempty"`
 	FirstActionID string `json:"firstActionId,omitempty"`
 	LastActionID  string `json:"lastActionId,omitempty"`
 }

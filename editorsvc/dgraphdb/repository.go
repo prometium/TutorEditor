@@ -217,25 +217,33 @@ func (repo *repository) AddBranch(ctx context.Context, script *editorsvc.Script,
 }
 
 func (repo *repository) DeleteBranch(ctx context.Context, script *editorsvc.Script, branchToDelete *editorsvc.BranchToDelete) error {
-	q := `query script($scriptId: string, $branchFrameId: string, $firstActionId: string, $lastActionId: string) {
-		var(func: uid($scriptId)) @filter(type("Script")) {
+	q := `query script($scriptId: string, $rootFrameId: string, $firstActionId: string, $lastActionId: string) {
+		script as var(func: uid($scriptId)) @filter(type("Script")) {
 			frames as frames {
 				actions as actions
 			}
 		}
-		root as var(func: uid($branchFrameId)) @filter(uid(frames))
+		root as var(func: uid($rootFrameId)) @filter(uid(frames))
 		first as var(func: uid($firstActionId)) @filter(uid(actions))
 		last as var(func: uid($lastActionId)) @filter(uid(actions))
 		path as shortest(from: uid(first), to: uid(last)) {
 			actions
 			nextFrame
 		}
+		frames as var(func: uid(path)) @filter(type("Frame"))
+		var(func: uid(path)) @filter(type("Action")) {
+			switchPictures {
+				switchPictures as uid
+			}
+		}
 	}`
 
 	mu := &api.Mutation{
 		DelNquads: []byte(`
+			uid(script) <frames> uid(frames) .
 			uid(root) <actions> uid(first) .
 			uid(path) * * .
+			uid(switchPictures) * * .
 		`),
 	}
 
@@ -244,7 +252,7 @@ func (repo *repository) DeleteBranch(ctx context.Context, script *editorsvc.Scri
 		Mutations: []*api.Mutation{mu},
 		Vars: map[string]string{
 			"$scriptId":      script.UID,
-			"$branchFrameId": branchToDelete.BranchFrameID,
+			"$rootFrameId":   branchToDelete.RootFrameId,
 			"$firstActionId": branchToDelete.FirstActionID,
 			"$lastActionId":  branchToDelete.LastActionID,
 		},
@@ -262,7 +270,7 @@ func (repo *repository) DeleteBranch(ctx context.Context, script *editorsvc.Scri
 
 func (repo *repository) DeleteFrame(ctx context.Context, script *editorsvc.Script, id string) error {
 	q := `query frame($scriptId: string, $frameId: string) {
-		var(func: uid($scriptId)) @filter(type("Script")) {
+		script as var(func: uid($scriptId)) @filter(type("Script")) {
 			frames as frames
 		}
 		frame as var(func: uid($frameId)) @filter(uid(frames)) {
@@ -270,6 +278,10 @@ func (repo *repository) DeleteFrame(ctx context.Context, script *editorsvc.Scrip
 				prevAction as uid
 			}
 			actions {
+				actions as uid
+				switchPictures {
+					switchPictures as uid
+				}
 				nextFrame {
 					nextFrame as uid
 				}
@@ -279,8 +291,11 @@ func (repo *repository) DeleteFrame(ctx context.Context, script *editorsvc.Scrip
 
 	mu := &api.Mutation{
 		DelNquads: []byte(`
-			uid(frame) * * .
+			uid(script) <frames> uid(frame) .
 			uid(prevAction) <nextFrame> uid(frame) .
+			uid(frame) * * .
+			uid(actions) * * .
+			uid(switchPictures) * * .
 		`),
 		SetNquads: []byte(`
 			uid(prevAction) <nextFrame> uid(nextFrame) .
@@ -292,7 +307,7 @@ func (repo *repository) DeleteFrame(ctx context.Context, script *editorsvc.Scrip
 		Mutations: []*api.Mutation{mu},
 		Vars: map[string]string{
 			"$scriptId": script.UID,
-			"$frameId":  id,
+			"$frameId":  fmt.Sprintf("[%s, %s]", id, id),
 		},
 		CommitNow: true,
 	}
