@@ -2,6 +2,7 @@ import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import Header from 'src/components/app/Header';
 import ContentWrapper from 'src/components/app/ContentWrapper';
+import Home from 'src/components/routes/Home';
 import Editor from 'src/components/routes/Editor';
 
 function App(): JSX.Element {
@@ -12,7 +13,7 @@ function App(): JSX.Element {
         <Suspense fallback="loading....">
           <Switch>
             <Route exact path="/">
-              ROOT
+              <Home />
             </Route>
             <Route exact path="/editor">
               <Editor />

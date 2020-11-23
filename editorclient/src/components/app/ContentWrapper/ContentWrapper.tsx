@@ -2,11 +2,11 @@ import React from 'react';
 
 import './ContentWrapper.scss';
 
-interface Props {
-  children: JSX.Element;
-}
+type ContentWrapperProps = {
+  children: React.ReactNode;
+};
 
-function ContentWrapper({ children }: Props): JSX.Element {
+function ContentWrapper({ children }: ContentWrapperProps): JSX.Element {
   return <main className="content-wrapper">{children}</main>;
 }
 
