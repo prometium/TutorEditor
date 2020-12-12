@@ -49,17 +49,7 @@
       pictureLink
       actions {
         uid
-        nextFrame {
-          uid
-        }
-        actionType
-        xLeft
-        xRight
-        yLeft
-        yRight
-        key
-        modKey
-        dgraph.type
+        expand(_all_)
       }
       taskText
       hintText

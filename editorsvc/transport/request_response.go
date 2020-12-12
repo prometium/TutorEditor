@@ -14,7 +14,7 @@ type AddRawScriptRequest struct {
 
 // AddRawScriptResponse holds the response parameters for the AddRawScript method
 type AddRawScriptResponse struct {
-	ID  string `json:"id"`
+	UID string `json:"uid"`
 	Err error  `json:"error,omitempty"`
 }
 
@@ -33,7 +33,7 @@ func (r GetScriptsListResponse) Error() error { return r.Err }
 
 // GetScriptRequest holds the request parameters for the GetScript method
 type GetScriptRequest struct {
-	ID string `json:"id"`
+	UID string `json:"uid"`
 }
 
 // GetScriptResponse holds the response parameters for the GetScript method
@@ -46,7 +46,7 @@ func (r GetScriptResponse) Error() error { return r.Err }
 
 // DeleteScriptRequest holds the request parameters for the DeleteScript method
 type DeleteScriptRequest struct {
-	ID string `json:"id"`
+	UID string `json:"uid"`
 }
 
 // DeleteScriptResponse holds the response parameters for the DeleteScript method
@@ -58,15 +58,14 @@ func (r DeleteScriptResponse) Error() error { return r.Err }
 
 // UpdateScriptRequest holds the request parameters for the UpdateScript method
 type UpdateScriptRequest struct {
-	ID     string            `json:"id"`
+	UID    string            `json:"uid"`
 	Script *editorsvc.Script `json:"script"`
 }
 
 // UpdateScriptResponse holds the response parameters for the UpdateScript method
 type UpdateScriptResponse struct {
-	Version string            `json:"version"`
-	Uids    map[string]string `json:"uids"`
-	Err     error             `json:"error,omitempty"`
+	Uids map[string]string `json:"uids"`
+	Err  error             `json:"error,omitempty"`
 }
 
 func (r UpdateScriptResponse) Error() error { return r.Err }
@@ -78,66 +77,8 @@ type CopyScriptRequest struct {
 
 // CopyScriptResponse holds the response parameters for the CopyScript method
 type CopyScriptResponse struct {
-	ID  string `json:"id"`
+	UID string `json:"uid"`
 	Err error  `json:"error,omitempty"`
 }
 
 func (r CopyScriptResponse) Error() error { return r.Err }
-
-// AddBranchRequest holds the request parameters for the AddBranch method
-type AddBranchRequest struct {
-	Script *editorsvc.Script `json:"script"`
-	Branch *editorsvc.Branch `json:"branch"`
-}
-
-// AddBranchResponse holds the response parameters for the AddBranch method
-type AddBranchResponse struct {
-	Version string            `json:"version"`
-	Uids    map[string]string `json:"uids"`
-	Err     error             `json:"error,omitempty"`
-}
-
-func (r AddBranchResponse) Error() error { return r.Err }
-
-// DeleteBranchRequest holds the request parameters for the DeleteBranch method
-type DeleteBranchRequest struct {
-	Script         *editorsvc.Script         `json:"script"`
-	BranchToDelete *editorsvc.BranchToDelete `json:"branchToDelete"`
-}
-
-// DeleteBranchResponse holds the response parameters for the DeleteBranch method
-type DeleteBranchResponse struct {
-	Version string `json:"version"`
-	Err     error  `json:"error,omitempty"`
-}
-
-func (r DeleteBranchResponse) Error() error { return r.Err }
-
-// AddFrameRequest holds the request parameters for the AddFrame method
-type AddFrameRequest struct {
-	Script     *editorsvc.Script `json:"script"`
-	FramesPair []editorsvc.Frame `json:"framesPair"`
-}
-
-// AddFrameResponse holds the response parameters for the AddFrame method
-type AddFrameResponse struct {
-	Version string            `json:"version"`
-	Uids    map[string]string `json:"uids"`
-	Err     error             `json:"error,omitempty"`
-}
-
-func (r AddFrameResponse) Error() error { return r.Err }
-
-// DeleteFrameRequest holds the request parameters for the DeleteFrame method
-type DeleteFrameRequest struct {
-	Script *editorsvc.Script `json:"script"`
-	ID     string            `json:"id"`
-}
-
-// DeleteFrameResponse holds the response parameters for the DeleteFrame method
-type DeleteFrameResponse struct {
-	Version string `json:"version"`
-	Err     error  `json:"error,omitempty"`
-}
-
-func (r DeleteFrameResponse) Error() error { return r.Err }

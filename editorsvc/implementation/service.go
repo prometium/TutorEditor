@@ -59,103 +59,27 @@ func (s *service) GetScript(ctx context.Context, id string) (*editorsvc.Script, 
 	script, err := s.repository.GetScript(ctx, id)
 	if err != nil {
 		return nil, err
-	} else if len(script) == 0 {
+	} else if script == nil {
 		return nil, editorsvc.ErrScriptNotFound
 	}
-	return &script[0], err
+	return script, err
 }
 
 func (s *service) DeleteScript(ctx context.Context, id string) error {
 	return s.repository.DeleteScript(ctx, id)
 }
 
-func (s *service) UpdateScript(ctx context.Context, id string, script *editorsvc.Script) (string, map[string]string, error) {
+func (s *service) UpdateScript(ctx context.Context, id string, script *editorsvc.Script) (map[string]string, error) {
 	script.UID = id
-	if err := checkScriptVersion(ctx, s, script); err != nil {
-		return "", nil, err
-	}
-
 	script.Version = utils.RandSeq(versionLen)
 	uids, err := s.repository.UpdateScript(ctx, script)
 	if err != nil {
-		return "", uids, err
+		return uids, err
 	}
-	return script.Version, uids, nil
+	return uids, nil
 }
 
 func (s *service) CopyScript(ctx context.Context, script *editorsvc.Script) (string, error) {
 	script.Version = utils.RandSeq(versionLen)
 	return s.repository.AddScript(ctx, script)
-}
-
-func (s *service) AddBranch(ctx context.Context, script *editorsvc.Script, branch *editorsvc.Branch) (string, map[string]string, error) {
-	if len(branch.ConnectedFrames) == 0 {
-		return "", nil, editorsvc.ErrInvalidRequestParameters
-	}
-
-	err := checkScriptVersion(ctx, s, script)
-	if err != nil {
-		return "", nil, err
-	}
-
-	script.Version = utils.RandSeq(versionLen)
-	uids, err := s.repository.AddBranch(ctx, script, branch)
-	if err != nil {
-		return "", uids, err
-	}
-	return script.Version, uids, nil
-}
-
-func (s *service) DeleteBranch(ctx context.Context, script *editorsvc.Script, branchToDelete *editorsvc.BranchToDelete) (string, error) {
-	if err := checkScriptVersion(ctx, s, script); err != nil {
-		return "", err
-	}
-
-	script.Version = utils.RandSeq(versionLen)
-	if err := s.repository.DeleteBranch(ctx, script, branchToDelete); err != nil {
-		return "", err
-	}
-	return script.Version, nil
-}
-
-func (s *service) AddFrame(ctx context.Context, script *editorsvc.Script, framesPair []editorsvc.Frame) (string, map[string]string, error) {
-	if len(framesPair) != 2 ||
-		len(framesPair[0].Actions) != 1 ||
-		len(framesPair[1].Actions) != 1 ||
-		framesPair[0].Actions[0].NextFrame == nil {
-		return "", nil, editorsvc.ErrInvalidRequestParameters
-	}
-
-	if err := checkScriptVersion(ctx, s, script); err != nil {
-		return "", nil, err
-	}
-
-	script.Version = utils.RandSeq(versionLen)
-	uids, err := s.repository.AddFrame(ctx, script, framesPair)
-	if err != nil {
-		return "", nil, err
-	}
-	return script.Version, uids, nil
-}
-
-func (s *service) DeleteFrame(ctx context.Context, script *editorsvc.Script, id string) (string, error) {
-	if err := checkScriptVersion(ctx, s, script); err != nil {
-		return "", err
-	}
-
-	script.Version = utils.RandSeq(versionLen)
-	if err := s.repository.DeleteFrame(ctx, script, id); err != nil {
-		return "", err
-	}
-	return script.Version, nil
-}
-
-func checkScriptVersion(ctx context.Context, s *service, script *editorsvc.Script) error {
-	version, err := s.repository.GetScriptVersion(ctx, script.UID)
-	if err != nil {
-		return err
-	} else if version != script.Version {
-		return editorsvc.ErrVersionsDoNotMatch
-	}
-	return nil
 }

@@ -15,7 +15,7 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/prometium/tutoreditor/editorsvc"
-	"github.com/prometium/tutoreditor/editorsvc/dgraphdb"
+	dgraphdb "github.com/prometium/tutoreditor/editorsvc/database"
 	"github.com/prometium/tutoreditor/editorsvc/implementation"
 	"github.com/prometium/tutoreditor/editorsvc/transport"
 	httptransport "github.com/prometium/tutoreditor/editorsvc/transport/http"

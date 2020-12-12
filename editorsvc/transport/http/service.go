@@ -23,7 +23,13 @@ func MakeHTTPHandler(e transport.Endpoints, logger log.Logger) http.Handler {
 		httptransport.ServerErrorEncoder(encodeError),
 	}
 
-	r.PathPrefix("/images/").Handler(http.StripPrefix("/images/", http.FileServer(http.Dir("assets/images"))))
+	r.PathPrefix("/images/").Handler(http.StripPrefix("/images/",
+		cacheControlWrapper(
+			http.FileServer(
+				http.Dir("assets/images"),
+			),
+		),
+	))
 
 	r.Methods("POST").Path("/raw").Handler(httptransport.NewServer(
 		e.AddRawScriptEndpoint,
@@ -39,21 +45,21 @@ func MakeHTTPHandler(e transport.Endpoints, logger log.Logger) http.Handler {
 		options...,
 	))
 
-	r.Methods("GET").Path("/scripts/{id}").Handler(httptransport.NewServer(
+	r.Methods("GET").Path("/scripts/{uid}").Handler(httptransport.NewServer(
 		e.GetScriptEndpoint,
 		decodeGetScriptRequest,
 		encodeResponse,
 		options...,
 	))
 
-	r.Methods("DELETE").Path("/scripts/{id}").Handler(httptransport.NewServer(
+	r.Methods("DELETE").Path("/scripts/{uid}").Handler(httptransport.NewServer(
 		e.DeleteScriptEndpoint,
 		decodeDeleteScriptRequest,
 		encodeResponse,
 		options...,
 	))
 
-	r.Methods("PUT").Path("/scripts/{id}").Handler(httptransport.NewServer(
+	r.Methods("PUT").Path("/scripts/{uid}").Handler(httptransport.NewServer(
 		e.UpdateScriptEndpoint,
 		decodeUpdateScriptRequest,
 		encodeResponse,
@@ -67,35 +73,14 @@ func MakeHTTPHandler(e transport.Endpoints, logger log.Logger) http.Handler {
 		options...,
 	))
 
-	r.Methods("POST").Path("/branches").Handler(httptransport.NewServer(
-		e.AddBranchEndpoint,
-		decodeAddBranchRequest,
-		encodeResponse,
-		options...,
-	))
-
-	r.Methods("DELETE").Path("/branches").Handler(httptransport.NewServer(
-		e.DeleteBranchEndpoint,
-		decodeDeleteBranchRequest,
-		encodeResponse,
-		options...,
-	))
-
-	r.Methods("POST").Path("/frames").Handler(httptransport.NewServer(
-		e.AddFrameEndpoint,
-		decodeAddFrameRequest,
-		encodeResponse,
-		options...,
-	))
-
-	r.Methods("DELETE").Path("/frames/{id}").Handler(httptransport.NewServer(
-		e.DeleteFrameEndpoint,
-		decodeDeleteFrameRequest,
-		encodeResponse,
-		options...,
-	))
-
 	return r
+}
+
+func cacheControlWrapper(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "max-age=0, must-revalidate")
+		h.ServeHTTP(w, r)
+	})
 }
 
 func decodeAddRawScriptRequest(ctx context.Context, r *http.Request) (interface{}, error) {
@@ -117,18 +102,18 @@ func decodeGetScriptsListRequest(ctx context.Context, r *http.Request) (interfac
 
 func decodeGetScriptRequest(ctx context.Context, r *http.Request) (interface{}, error) {
 	vars := mux.Vars(r)
-	return transport.GetScriptRequest{ID: vars["id"]}, nil
+	return transport.GetScriptRequest{UID: vars["uid"]}, nil
 }
 
 func decodeDeleteScriptRequest(ctx context.Context, r *http.Request) (interface{}, error) {
 	vars := mux.Vars(r)
-	return transport.DeleteScriptRequest{ID: vars["id"]}, nil
+	return transport.DeleteScriptRequest{UID: vars["uid"]}, nil
 }
 
 func decodeUpdateScriptRequest(ctx context.Context, r *http.Request) (interface{}, error) {
 	vars := mux.Vars(r)
 	var req transport.UpdateScriptRequest
-	req.ID = vars["id"]
+	req.UID = vars["uid"]
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return nil, err
 	}
@@ -140,40 +125,6 @@ func decodeCopyScriptRequest(ctx context.Context, r *http.Request) (interface{},
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return nil, err
 	}
-	return req, nil
-}
-
-func decodeAddBranchRequest(ctx context.Context, r *http.Request) (interface{}, error) {
-	var req transport.AddBranchRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		return nil, err
-	}
-	return req, nil
-}
-
-func decodeDeleteBranchRequest(ctx context.Context, r *http.Request) (interface{}, error) {
-	var req transport.DeleteBranchRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		return nil, err
-	}
-	return req, nil
-}
-
-func decodeAddFrameRequest(ctx context.Context, r *http.Request) (interface{}, error) {
-	var req transport.AddFrameRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		return nil, err
-	}
-	return req, nil
-}
-
-func decodeDeleteFrameRequest(ctx context.Context, r *http.Request) (interface{}, error) {
-	var req transport.DeleteFrameRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		return nil, err
-	}
-	vars := mux.Vars(r)
-	req.ID = vars["id"]
 	return req, nil
 }
 
@@ -205,8 +156,6 @@ func codeFrom(err error) int {
 	case editorsvc.ErrScriptNotFound:
 		return http.StatusBadRequest
 	case editorsvc.ErrVersionsDoNotMatch:
-		return http.StatusBadRequest
-	case editorsvc.ErrInvalidRequestParameters:
 		return http.StatusBadRequest
 	default:
 		return http.StatusInternalServerError

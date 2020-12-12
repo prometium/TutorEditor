@@ -48,7 +48,8 @@ type Action struct {
 	Key    string `json:"key,omitempty"`
 	ModKey string `json:"modKey,omitempty"`
 
-	SwitchPictures []SwitchPicture `json:"switchPictures,omitempty"`
+	SwitchPictures     []SwitchPicture `json:"switchPictures,omitempty"`
+	SwitchPicturesJSON string          `json:"switchPicturesJSON,omitempty"`
 
 	DType []string `json:"dgraph.type,omitempty"`
 }
@@ -73,31 +74,12 @@ type Script struct {
 	DType      []string   `json:"dgraph.type,omitempty"`
 }
 
-// Branch represents a branch
-type Branch struct {
-	FirstMainFrameID string  `json:"firstMainFrameId,omitempty"`
-	LastMainFrameID  string  `json:"lastMainFrameId,omitempty"`
-	ConnectedFrames  []Frame `json:"connectedFrames,omitempty"`
-}
-
-// BranchToDelete represents a branch to be deleted
-type BranchToDelete struct {
-	RootFrameID   string `json:"rootFrameId,omitempty"`
-	FirstActionID string `json:"firstActionId,omitempty"`
-	LastActionID  string `json:"lastActionId,omitempty"`
-}
-
 // Repository describes the persistence on editor model
 type Repository interface {
 	Setup(ctx context.Context) error
 	AddScript(ctx context.Context, script *Script) (string, error)
 	GetScriptsList(ctx context.Context) ([]Script, error)
-	GetScript(ctx context.Context, id string) ([]Script, error)
+	GetScript(ctx context.Context, id string) (*Script, error)
 	DeleteScript(ctx context.Context, id string) error
 	UpdateScript(ctx context.Context, script *Script) (map[string]string, error)
-	AddBranch(ctx context.Context, script *Script, branch *Branch) (map[string]string, error)
-	DeleteBranch(ctx context.Context, script *Script, branchToDelete *BranchToDelete) error
-	AddFrame(ctx context.Context, script *Script, framesPair []Frame) (map[string]string, error)
-	DeleteFrame(ctx context.Context, script *Script, id string) error
-	GetScriptVersion(ctx context.Context, id string) (string, error)
 }

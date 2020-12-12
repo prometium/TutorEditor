@@ -16,10 +16,6 @@ type Endpoints struct {
 	DeleteScriptEndpoint   endpoint.Endpoint
 	UpdateScriptEndpoint   endpoint.Endpoint
 	CopyScriptEndpoint     endpoint.Endpoint
-	AddBranchEndpoint      endpoint.Endpoint
-	DeleteBranchEndpoint   endpoint.Endpoint
-	AddFrameEndpoint       endpoint.Endpoint
-	DeleteFrameEndpoint    endpoint.Endpoint
 }
 
 // MakeServerEndpoints returns an Endpoints struct where each endpoint invokes
@@ -32,18 +28,14 @@ func MakeServerEndpoints(s editorsvc.Service) Endpoints {
 		DeleteScriptEndpoint:   makeDeleteScriptEndpoint(s),
 		UpdateScriptEndpoint:   makeUpdateScriptEndpoint(s),
 		CopyScriptEndpoint:     makeCopyScriptEndpoint(s),
-		AddBranchEndpoint:      makeAddBranchEndpoint(s),
-		DeleteBranchEndpoint:   makeDeleteBranchEndpoint(s),
-		AddFrameEndpoint:       makeAddFrameEndpoint(s),
-		DeleteFrameEndpoint:    makeDeleteFrame(s),
 	}
 }
 
 func makeAddRawScriptEndpoint(s editorsvc.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(AddRawScriptRequest)
-		id, err := s.AddRawScript(ctx, req.Name, req.FileReader)
-		return AddRawScriptResponse{ID: id, Err: err}, nil
+		uid, err := s.AddRawScript(ctx, req.Name, req.FileReader)
+		return AddRawScriptResponse{UID: uid, Err: err}, nil
 	}
 }
 
@@ -57,7 +49,7 @@ func makeGetScriptsListEndpoint(s editorsvc.Service) endpoint.Endpoint {
 func makeGetScriptEndpoint(s editorsvc.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(GetScriptRequest)
-		script, err := s.GetScript(ctx, req.ID)
+		script, err := s.GetScript(ctx, req.UID)
 		return GetScriptResponse{Script: script, Err: err}, nil
 	}
 }
@@ -65,7 +57,7 @@ func makeGetScriptEndpoint(s editorsvc.Service) endpoint.Endpoint {
 func makeDeleteScriptEndpoint(s editorsvc.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(DeleteScriptRequest)
-		err := s.DeleteScript(ctx, req.ID)
+		err := s.DeleteScript(ctx, req.UID)
 		return DeleteScriptResponse{Err: err}, nil
 	}
 }
@@ -73,47 +65,15 @@ func makeDeleteScriptEndpoint(s editorsvc.Service) endpoint.Endpoint {
 func makeUpdateScriptEndpoint(s editorsvc.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(UpdateScriptRequest)
-		version, uids, err := s.UpdateScript(ctx, req.ID, req.Script)
-		return UpdateScriptResponse{Version: version, Uids: uids, Err: err}, nil
+		uids, err := s.UpdateScript(ctx, req.UID, req.Script)
+		return UpdateScriptResponse{Uids: uids, Err: err}, nil
 	}
 }
 
 func makeCopyScriptEndpoint(s editorsvc.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(CopyScriptRequest)
-		id, err := s.CopyScript(ctx, req.Script)
-		return CopyScriptResponse{ID: id, Err: err}, nil
-	}
-}
-
-func makeAddBranchEndpoint(s editorsvc.Service) endpoint.Endpoint {
-	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		req := request.(AddBranchRequest)
-		version, uids, err := s.AddBranch(ctx, req.Script, req.Branch)
-		return AddBranchResponse{Version: version, Uids: uids, Err: err}, nil
-	}
-}
-
-func makeDeleteBranchEndpoint(s editorsvc.Service) endpoint.Endpoint {
-	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		req := request.(DeleteBranchRequest)
-		version, err := s.DeleteBranch(ctx, req.Script, req.BranchToDelete)
-		return DeleteBranchResponse{Version: version, Err: err}, nil
-	}
-}
-
-func makeAddFrameEndpoint(s editorsvc.Service) endpoint.Endpoint {
-	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		req := request.(AddFrameRequest)
-		version, uids, err := s.AddFrame(ctx, req.Script, req.FramesPair)
-		return AddFrameResponse{Version: version, Uids: uids, Err: err}, nil
-	}
-}
-
-func makeDeleteFrame(s editorsvc.Service) endpoint.Endpoint {
-	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		req := request.(DeleteFrameRequest)
-		version, err := s.DeleteFrame(ctx, req.Script, req.ID)
-		return DeleteFrameResponse{Version: version, Err: err}, nil
+		uid, err := s.CopyScript(ctx, req.Script)
+		return CopyScriptResponse{UID: uid, Err: err}, nil
 	}
 }

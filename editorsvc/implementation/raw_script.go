@@ -18,11 +18,9 @@ import (
 )
 
 type switchPicture struct {
-	PictureNumber int      `json:"pictureNumber,omitempty"`
-	PictureLink   string   `json:"pictureLink,omitempty"`
-	X             float32  `json:"x,omitempty"`
-	Y             float32  `json:"y,omitempty"`
-	DType         []string `json:"dgraph.type,omitempty"`
+	PictureLink string  `json:"pictureLink,omitempty"`
+	X           float32 `json:"x,omitempty"`
+	Y           float32 `json:"y,omitempty"`
 }
 
 type rawMouseAction struct {
@@ -53,7 +51,7 @@ type rawKeyboardAction struct {
 }
 
 type rawAction struct {
-	ActionType int `json:"actionId"`
+	ActionType int `json:"actionId,omitempty"`
 	rawMouseAction
 	rawDragAction
 	rawWheelAction
@@ -62,16 +60,16 @@ type rawAction struct {
 }
 
 type rawFrame struct {
-	FrameNumber  int       `json:"frameNumber"`
-	PictureLink  string    `json:"pictureLink"`
-	ActionSwitch rawAction `json:"actionSwitch"`
+	FrameNumber  int       `json:"frameNumber,omitempty"`
+	PictureLink  string    `json:"pictureLink,omitempty"`
+	ActionSwitch rawAction `json:"actionSwitch,omitempty"`
 	Task         string    `json:"task,omitempty"`
 	Hint         string    `json:"hint,omitempty"`
 }
 
 type rawScript struct {
 	Images []*zip.File
-	Frames []rawFrame `json:"frames"`
+	Frames []rawFrame `json:"frames,omitempty"`
 }
 
 func (rs *rawScript) init(r io.Reader) error {
@@ -126,7 +124,7 @@ func (rs *rawScript) saveImages(ctx context.Context, imagesDir string) (map[stri
 
 			lock.Lock()
 			defer lock.Unlock()
-			linksMap[currentFile.Name] = path
+			linksMap[currentFile.Name] = filepath.Join("/images", hash+".png")
 
 			return nil
 		})
@@ -183,20 +181,22 @@ func (rs *rawScript) createScript(name string, linksMap map[string]string) (*edi
 		frames[i].Actions[0].SwitchPictures = make([]editorsvc.SwitchPicture, len(action.SwitchPictures))
 		for j, switchPicture := range action.SwitchPictures {
 			frames[i].Actions[0].SwitchPictures[j] = editorsvc.SwitchPicture{
-				PictureNumber: switchPicture.PictureNumber,
-				PictureLink:   linksMap[switchPicture.PictureLink],
-				X:             switchPicture.X,
-				Y:             switchPicture.Y,
+				PictureLink: linksMap[switchPicture.PictureLink],
+				X:           switchPicture.X,
+				Y:           switchPicture.Y,
 			}
 		}
 	}
 
 	script := editorsvc.Script{
-		Name: name,
-		FirstFrame: &editorsvc.NextFrame{
-			UID: frames[0].UID,
-		},
+		Name:   name,
 		Frames: frames,
+	}
+
+	if len(frames) > 0 {
+		script.FirstFrame = &editorsvc.NextFrame{
+			UID: frames[0].UID,
+		}
 	}
 
 	return &script, nil
