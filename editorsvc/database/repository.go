@@ -102,7 +102,9 @@ func (repo *repository) GetScript(ctx context.Context, id string) (*editorsvc.Sc
 				uid
 				expand(_all_) {
 					uid
-					expand(_all_)
+					expand(_all_) {
+						uid
+					}
 				}
 			}
 		}
