@@ -1,4 +1,0 @@
-export enum ActionTypes {
-  LOAD_SCRIPTS_INFO = "LOAD_SCRIPTS_INFO",
-  LOAD_SCRIPT = "LOAD_SCRIPT"
-}
