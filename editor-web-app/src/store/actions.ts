@@ -28,7 +28,10 @@ export const actions: ActionTree<State, State> & Actions = {
     return new Promise((resolve, reject) => {
       getScriptsInfo()
         .then(data => {
-          commit(MutationTypes.SET_SCRIPTS_INFO, data as Array<ScriptInfo>);
+          commit(
+            MutationTypes.SET_SCRIPTS_INFO,
+            (data as { scripts: Array<ScriptInfo> }).scripts
+          );
           resolve();
         })
         .catch(err => {
@@ -55,6 +58,7 @@ export const actions: ActionTree<State, State> & Actions = {
             branchNumByUid: {}
           };
           commit(MutationTypes.SET_SCRIPT, traversableScript);
+          commit(MutationTypes.SET_FRAME, traversableScript.firstFrame.uid);
           commit(MutationTypes.CONFIGURE_PATH);
           resolve();
         })

@@ -1,18 +1,57 @@
 <template>
-  <aside class="frame-previews">
-    <img
+  <div class="frame-previews">
+    <div
       v-for="(pathItem, index) in path"
-      :src="script.frameByUid[pathItem.frameUid].pictureLink"
       :key="pathItem.frameUid"
-      v-on:click="setFrame(pathItem.frameUid)"
-      :alt="`Кадр ${index}`"
-      loading="lazy"
-      :class="[
-        'frame-previews__img',
-        { active: pathItem.frameUid == frame.uid }
-      ]"
-    />
-  </aside>
+      class="frame-previews__item"
+    >
+      <img
+        :src="script.frameByUid[pathItem.frameUid].pictureLink"
+        :alt="
+          `Кадр
+      ${index}`
+        "
+        :class="[
+          'frame-previews__img',
+          {
+            active: pathItem.frameUid === frame.uid
+          }
+        ]"
+        @click="setFrame(pathItem.frameUid)"
+        loading="lazy"
+      />
+      <div
+        v-if="
+          script.frameByUid[pathItem.frameUid].actions &&
+            script.frameByUid[pathItem.frameUid].actions.length > 1
+        "
+        class="frame-previews__branches"
+      >
+        <span
+          v-for="offsetBranchNum in script.frameByUid[pathItem.frameUid].actions
+            .length"
+          :key="offsetBranchNum"
+          :style="{
+            width: `calc(100% / ${
+              script.frameByUid[pathItem.frameUid].actions.length
+            })`
+          }"
+          :class="[
+            'frame-previews__branch',
+            {
+              active: offsetBranchNum - 1 === pathItem.branchNum
+            }
+          ]"
+          @click="
+            configurePath({
+              frameUid: pathItem.frameUid,
+              branchNum: offsetBranchNum - 1
+            })
+          "
+        ></span>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script lang="ts">
@@ -28,7 +67,8 @@ export default Vue.extend({
   },
   methods: {
     ...mapMutations({
-      setFrame: MutationTypes.SET_FRAME
+      setFrame: MutationTypes.SET_FRAME,
+      configurePath: MutationTypes.CONFIGURE_PATH
     })
   }
 });
@@ -37,18 +77,42 @@ export default Vue.extend({
 <style scoped lang="scss">
 .frame-previews {
   overflow-y: auto;
-}
 
-.frame-previews__img {
-  width: 100%;
-  outline-offset: -3px;
-
-  &:hover {
-    outline: 3px solid var(--palette-default);
+  &__item {
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 8px;
   }
 
-  &.active {
-    outline: 3px solid var(--palette-primary);
+  &__img {
+    width: 100%;
+    outline-offset: -3px;
+
+    &:hover {
+      outline: 3px solid var(--v-secondary-base);
+    }
+
+    &.active {
+      outline: 3px solid var(--v-accent-base);
+    }
+  }
+
+  &__branches {
+    display: flex;
+    height: 16px;
+  }
+
+  &__branch {
+    height: 100%;
+    cursor: pointer;
+
+    &:hover {
+      background-color: var(--v-secondary-base);
+    }
+
+    &.active {
+      background-color: var(--v-accent-base);
+    }
   }
 }
 </style>

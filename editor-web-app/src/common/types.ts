@@ -22,7 +22,7 @@ export interface TraversableScript extends Omit<Script, "frames"> {
 
 export interface PathItem {
   frameUid: string;
-  branchNumber: number;
+  branchNum: number;
 }
 
 export interface Frame {

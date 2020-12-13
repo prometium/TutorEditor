@@ -49,7 +49,9 @@
       pictureLink
       actions {
         uid
-        expand(_all_)
+        expand(_all_) {
+          uid
+        }
       }
       taskText
       hintText

@@ -32,6 +32,7 @@ export const mutations: MutationTree<State> & Mutations = {
   [MutationTypes.CONFIGURE_PATH](state, fork) {
     if (fork != null) {
       state.script.branchNumByUid[fork.frameUid] = fork.branchNum;
+      console.log(state.script.branchNumByUid, fork.branchNum);
     }
 
     let frameUid = state.script.firstFrame.uid;
@@ -39,7 +40,7 @@ export const mutations: MutationTree<State> & Mutations = {
     while (path.length <= Object.keys(state.script.frameByUid).length) {
       const pathItem: PathItem = {
         frameUid,
-        branchNumber: state.script.branchNumByUid[frameUid] || 0
+        branchNum: state.script.branchNumByUid[frameUid] || 0
       };
       path.push(pathItem);
 
@@ -47,7 +48,7 @@ export const mutations: MutationTree<State> & Mutations = {
       if (actions == null || actions.length == 0) {
         break;
       }
-      frameUid = actions[pathItem.branchNumber].nextFrame.uid;
+      frameUid = actions[pathItem.branchNum].nextFrame.uid;
     }
 
     state.script.path = path;

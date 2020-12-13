@@ -2,9 +2,11 @@
   <v-app>
     <AppBar />
     <main class="workspace">
+      <v-sheet elevation="2" tag="aside" class="workspace__aside">
+        <FramePreviews class="workspace__aside-previews" />
+        <FrameTools />
+      </v-sheet>
       <Frame class="workspace__frame" />
-      <FramePreviews class="workspace__frame-previews" />
-      <FrameTools class="workspace__frame-tools" />
     </main>
   </v-app>
 </template>
@@ -55,30 +57,24 @@ body {
 }
 
 .workspace {
-  display: grid;
-  grid-template-areas:
-    "previews frame"
-    "tools frame ";
-  grid-template-rows: 1fr auto;
-  grid-template-columns: minmax(120px, 12%) 1fr;
+  display: flex;
   height: 100%;
   min-height: 0px;
-  padding-top: 4px;
+}
+
+.workspace__aside {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 144px;
+  max-width: 12%;
+}
+
+.workspace__aside-previews {
+  flex: 1;
 }
 
 .workspace__frame {
-  grid-area: frame;
-}
-
-.workspace__frame-previews {
-  grid-area: previews;
-}
-
-.workspace__frame-tools {
-  grid-area: tools;
-}
-
-.workspace__action {
-  grid-area: action;
+  flex: 1;
 }
 </style>

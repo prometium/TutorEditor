@@ -1,11 +1,5 @@
 <template>
   <div class="frame">
-    <!-- <button @click="loadScriptsInfo">Загрузить скрипты</button>
-    {{ scriptsInfo }}
-    <input v-model="scriptUid" />
-    <button @click="loadScript(scriptUid)">Загрузить скрипт</button>
-    {{ scriptUid }}
-    {{ frame }} -->
     <img
       :src="frame.pictureLink + '#' + new Date().getTime()"
       :alt="frame.uid"
@@ -16,29 +10,12 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { mapState, mapMutations, mapActions, mapGetters } from "vuex";
-import { MutationTypes } from "@/store/mutation-types";
-import { ActionTypes } from "@/store/action-types";
+import { mapState } from "vuex";
 
 export default Vue.extend({
   name: "Frame",
-  data() {
-    return {
-      scriptUid: ""
-    };
-  },
   computed: {
-    ...mapState(["scriptsInfo", "script", "frame"]),
-    ...mapGetters(["path"])
-  },
-  methods: {
-    ...mapMutations({
-      setFrame: MutationTypes.SET_FRAME
-    }),
-    ...mapActions({
-      loadScriptsInfo: ActionTypes.LOAD_SCRIPTS_INFO,
-      loadScript: ActionTypes.LOAD_SCRIPT
-    })
+    ...mapState(["frame"])
   }
 });
 </script>
