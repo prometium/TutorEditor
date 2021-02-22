@@ -1,3 +1,5 @@
+import { Script, ScriptInfo } from "./types";
+
 export const API_ROOT = "http://localhost:9000";
 
 type RequestPayload = {
@@ -6,11 +8,11 @@ type RequestPayload = {
   data?: string | null;
 };
 
-function executeRequest({
+function executeRequest<T>({
   endpoint = "",
   method = "GET",
   data = null
-}: RequestPayload) {
+}: RequestPayload): Promise<T> {
   return new Promise((resolve, reject) => {
     fetch(API_ROOT + endpoint, {
       method,
@@ -31,13 +33,21 @@ function executeRequest({
   });
 }
 
-export function getScriptsInfo() {
+type ScriptsInfoResponse = {
+  scripts: ScriptInfo[];
+};
+
+export function getScriptsInfo(): Promise<ScriptsInfoResponse> {
   return executeRequest({
     endpoint: "/scripts"
   });
 }
 
-export function getScript(uid: string) {
+type ScriptResponse = {
+  script: Script;
+};
+
+export function getScript(uid: string): Promise<ScriptResponse> {
   return executeRequest({
     endpoint: `/scripts/${uid}`
   });

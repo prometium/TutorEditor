@@ -3,7 +3,7 @@ import { State } from "./state";
 import { ActionTypes } from "./action-types";
 import { Mutations } from "./mutations";
 import { MutationTypes } from "./mutation-types";
-import { ScriptInfo, Script, TraversableScript, Frame } from "@/common/types";
+import { Script, TraversableScript, Frame } from "@/common/types";
 import { API_ROOT, getScriptsInfo, getScript } from "@/common/requests";
 
 type AugmentedActionContext = {
@@ -28,10 +28,7 @@ export const actions: ActionTree<State, State> & Actions = {
     return new Promise((resolve, reject) => {
       getScriptsInfo()
         .then(data => {
-          commit(
-            MutationTypes.SET_SCRIPTS_INFO,
-            (data as { scripts: Array<ScriptInfo> }).scripts
-          );
+          commit(MutationTypes.SET_SCRIPTS_INFO, data.scripts);
           resolve();
         })
         .catch(err => {
@@ -43,7 +40,7 @@ export const actions: ActionTree<State, State> & Actions = {
     return new Promise((resolve, reject) => {
       getScript(uid)
         .then(data => {
-          const script: Script = (data as { script: unknown }).script as Script;
+          const script: Script = data.script;
 
           const frameByUid: Record<string, Frame> = {};
           script.frames.forEach(frame => {
