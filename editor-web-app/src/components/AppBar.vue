@@ -13,9 +13,7 @@
             <OpenScriptDialog />
           </v-list>
         </v-menu>
-        <v-btn small text elevation="0">
-          Редактирование
-        </v-btn>
+        <v-btn small text elevation="0"> Редактирование </v-btn>
       </div>
       <v-btn icon large class="user-button">
         <v-icon>mdi-account-circle</v-icon>
@@ -70,7 +68,7 @@ export default Vue.extend({
     };
   },
   methods: {
-    toggleExpansion: function() {
+    toggleExpansion: function () {
       this.expanded = !this.expanded;
     }
   },

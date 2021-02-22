@@ -7,10 +7,8 @@
     >
       <img
         :src="script.frameByUid[pathItem.frameUid].pictureLink"
-        :alt="
-          `Кадр
-      ${index}`
-        "
+        :alt="`Кадр
+      ${index}`"
         :class="[
           'frame-previews__img',
           {
@@ -23,7 +21,7 @@
       <div
         v-if="
           script.frameByUid[pathItem.frameUid].actions &&
-            script.frameByUid[pathItem.frameUid].actions.length > 1
+          script.frameByUid[pathItem.frameUid].actions.length > 1
         "
         class="frame-previews__branches"
       >

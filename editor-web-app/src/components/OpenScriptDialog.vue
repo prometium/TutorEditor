@@ -9,7 +9,7 @@
       <v-card-title class="headline lighten-2">
         Обучающие программы
       </v-card-title>
-      <v-card-text style="max-height: 300px;">
+      <v-card-text style="max-height: 300px">
         <v-radio-group v-model="radioGroup" column>
           <v-radio
             v-for="scriptInfo in scriptsInfo"
@@ -22,9 +22,7 @@
       <v-divider></v-divider>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn @click="dialog = false" text>
-          Отменить
-        </v-btn>
+        <v-btn @click="dialog = false" text> Отменить </v-btn>
         <v-btn
           @click="
             dialog = false;
