@@ -31,9 +31,7 @@ export const actions: ActionTree<State, State> & Actions = {
           commit(MutationTypes.SET_SCRIPTS_INFO, data.scripts);
           resolve();
         })
-        .catch(err => {
-          reject(err);
-        });
+        .catch(reject);
     });
   },
   [ActionTypes.LOAD_SCRIPT]({ commit }, uid) {

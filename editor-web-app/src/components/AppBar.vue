@@ -10,7 +10,8 @@
             </v-btn>
           </template>
           <v-list>
-            <OpenScriptDialog />
+            <CreateScriptDialogButton />
+            <OpenScriptDialogButton />
           </v-list>
         </v-menu>
         <v-btn small text elevation="0"> Редактирование </v-btn>
@@ -55,12 +56,14 @@
 <script lang="ts">
 import Vue from "vue";
 import { mapState } from "vuex";
-import OpenScriptDialog from "./OpenScriptDialog.vue";
+import OpenScriptDialogButton from "./OpenScriptDialogButton.vue";
+import CreateScriptDialogButton from "./CreateScriptDialogButton.vue";
 
 export default Vue.extend({
   name: "AppBar",
   components: {
-    OpenScriptDialog
+    OpenScriptDialogButton,
+    CreateScriptDialogButton
   },
   data() {
     return {

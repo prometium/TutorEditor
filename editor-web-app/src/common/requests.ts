@@ -4,8 +4,8 @@ export const API_ROOT = "http://localhost:9000";
 
 type RequestPayload = {
   endpoint: string;
-  method?: string;
-  data?: string | null;
+  method?: "GET" | "PUT" | "POST";
+  data?: string | FormData | null;
 };
 
 function executeRequest<T>({
@@ -33,22 +33,34 @@ function executeRequest<T>({
   });
 }
 
-type ScriptsInfoResponse = {
+type GetScriptsInfoResponse = {
   scripts: ScriptInfo[];
 };
 
-export function getScriptsInfo(): Promise<ScriptsInfoResponse> {
+export function getScriptsInfo(): Promise<GetScriptsInfoResponse> {
   return executeRequest({
     endpoint: "/scripts"
   });
 }
 
-type ScriptResponse = {
+type GetScriptResponse = {
   script: Script;
 };
 
-export function getScript(uid: string): Promise<ScriptResponse> {
+export function getScript(uid: string): Promise<GetScriptResponse> {
   return executeRequest({
     endpoint: `/scripts/${uid}`
+  });
+}
+
+type CreateScriptResponse = {
+  uid: string
+}
+
+export function createScript(script: FormData): Promise<CreateScriptResponse> {
+  return executeRequest({
+    endpoint: '/raw',
+    method: 'POST',
+    data: script
   });
 }
