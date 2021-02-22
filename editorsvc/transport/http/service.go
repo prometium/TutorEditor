@@ -59,7 +59,7 @@ func MakeHTTPHandler(e transport.Endpoints, logger log.Logger) http.Handler {
 		options...,
 	))
 
-	r.Methods("PUT").Path("/scripts/{uid}").Handler(httptransport.NewServer(
+	r.Methods("PUT").Path("/scripts").Handler(httptransport.NewServer(
 		e.UpdateScriptEndpoint,
 		decodeUpdateScriptRequest,
 		encodeResponse,
@@ -111,9 +111,7 @@ func decodeDeleteScriptRequest(ctx context.Context, r *http.Request) (interface{
 }
 
 func decodeUpdateScriptRequest(ctx context.Context, r *http.Request) (interface{}, error) {
-	vars := mux.Vars(r)
 	var req transport.UpdateScriptRequest
-	req.UID = vars["uid"]
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return nil, err
 	}

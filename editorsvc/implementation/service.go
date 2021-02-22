@@ -69,10 +69,11 @@ func (s *service) DeleteScript(ctx context.Context, id string) error {
 	return s.repository.DeleteScript(ctx, id)
 }
 
-func (s *service) UpdateScript(ctx context.Context, id string, script *editorsvc.Script) (map[string]string, error) {
-	script.UID = id
+func (s *service) UpdateScript(
+	ctx context.Context, script *editorsvc.Script, frameIdsToDel []string, actionIdsToDel []string,
+) (map[string]string, error) {
 	script.Version = utils.RandSeq(versionLen)
-	uids, err := s.repository.UpdateScript(ctx, script)
+	uids, err := s.repository.UpdateScript(ctx, script, frameIdsToDel, actionIdsToDel)
 	if err != nil {
 		return uids, err
 	}

@@ -58,8 +58,10 @@ func (r DeleteScriptResponse) Error() error { return r.Err }
 
 // UpdateScriptRequest holds the request parameters for the UpdateScript method
 type UpdateScriptRequest struct {
-	UID    string            `json:"uid"`
-	Script *editorsvc.Script `json:"script"`
+	UID            string            `json:"uid"`
+	Script         *editorsvc.Script `json:"script"`
+	FrameIdsToDel  []string          `json:"frameIdsToDel"`
+	ActionIdsToDel []string          `json:"actionIdsToDel"`
 }
 
 // UpdateScriptResponse holds the response parameters for the UpdateScript method

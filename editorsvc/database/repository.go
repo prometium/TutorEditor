@@ -177,18 +177,13 @@ func (repo *repository) DeleteScript(ctx context.Context, id string) error {
 	return nil
 }
 
-func (repo *repository) UpdateScript(ctx context.Context, script *editorsvc.Script) (map[string]string, error) {
-	q := `query script($scriptId: string, $frameIds: string, $actionIds: string) {
-		script as var(func: type("Script")) {
-			frames {
-				frames as uid
-				actions {
-					actions as uid
-		  		}
-			}
-		}
-		framesToDel as var(func: uid(frames)) @filter(NOT uid($frameIds))
-		actionsToDel as var(func: uid(actions)) @filter(NOT uid($actionIds))
+func (repo *repository) UpdateScript(
+	ctx context.Context, script *editorsvc.Script, frameIdsToDel []string, actionIdsToDel []string,
+) (map[string]string, error) {
+	q := `query script($scriptId: string, $frameIdsToDel: string, $actionIdsToDel: string) {
+		script as var(func: uid($scriptId)) @filter(type("Script"))
+		framesToDel as var(func: uid($frameIdsToDel))
+		actionsToDel as var(func: uid($actionIdsToDel))
 		var(func: uid(actionsToDel)) {
 			~actions {
 				prevFrames as uid
@@ -215,29 +210,13 @@ func (repo *repository) UpdateScript(ctx context.Context, script *editorsvc.Scri
 		SetJson: scriptB,
 	}
 
-	frameUids := make([]string, len(script.Frames))
-	actionUids := make([]string, len(script.Frames))
-
-	for i := range script.Frames {
-		frame := &script.Frames[i]
-		if !strings.HasPrefix(frame.UID, "_:") {
-			frameUids = append(frameUids, frame.UID)
-		}
-
-		for j := range frame.Actions {
-			if !strings.HasPrefix(frame.Actions[j].UID, "_:") {
-				actionUids = append(actionUids, frame.Actions[j].UID)
-			}
-		}
-	}
-
 	req := &api.Request{
 		Query:     q,
 		Mutations: []*api.Mutation{mu1, mu2},
 		Vars: map[string]string{
-			"$scriptId":  script.UID,
-			"$frameIds":  fmt.Sprintf("[%s]", strings.Join(frameUids, ",")),
-			"$actionIds": fmt.Sprintf("[%s]", strings.Join(actionUids, ",")),
+			"$scriptId":       script.UID,
+			"$frameIdsToDel":  fmt.Sprintf("[%s]", strings.Join(frameIdsToDel, ",")),
+			"$actionIdsToDel": fmt.Sprintf("[%s]", strings.Join(actionIdsToDel, ",")),
 		},
 		CommitNow: true,
 	}

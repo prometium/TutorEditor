@@ -65,7 +65,7 @@ func makeDeleteScriptEndpoint(s editorsvc.Service) endpoint.Endpoint {
 func makeUpdateScriptEndpoint(s editorsvc.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(UpdateScriptRequest)
-		uids, err := s.UpdateScript(ctx, req.UID, req.Script)
+		uids, err := s.UpdateScript(ctx, req.Script, req.FrameIdsToDel, req.ActionIdsToDel)
 		return UpdateScriptResponse{Uids: uids, Err: err}, nil
 	}
 }
