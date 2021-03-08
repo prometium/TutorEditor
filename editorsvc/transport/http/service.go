@@ -127,8 +127,7 @@ func decodeCopyScriptRequest(ctx context.Context, r *http.Request) (interface{},
 }
 
 func encodeResponse(ctx context.Context, w http.ResponseWriter, response interface{}) error {
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Content-Type", "application/json")
 	if e, ok := response.(errorer); ok && e.Error() != nil {
 		encodeError(ctx, e.Error(), w)
 		return nil

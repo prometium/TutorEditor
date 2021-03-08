@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="dialog" width="500">
+  <v-dialog v-model="dialog" width="600">
     <template v-slot:activator="{ on, attrs }">
       <v-list-item v-bind="attrs" v-on="on" @click="loadScriptsInfo">
         <v-list-item-title>Открыть</v-list-item-title>

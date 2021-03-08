@@ -2,7 +2,12 @@
   <v-app>
     <AppBar />
     <main class="workspace">
-      <v-sheet elevation="2" tag="aside" class="workspace__aside">
+      <v-sheet
+        v-if="showSidePanel"
+        elevation="2"
+        tag="aside"
+        class="workspace__aside"
+      >
         <FramePreviews class="workspace__aside-previews" />
         <FrameTools />
       </v-sheet>
@@ -35,7 +40,10 @@ export default Vue.extend({
     };
   },
   computed: {
-    ...mapState(["frame"])
+    ...mapState(["script", "frame"]),
+    showSidePanel(): boolean {
+      return !!this.script.uid;
+    }
   }
 });
 </script>

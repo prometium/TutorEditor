@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="dialog" width="500">
+  <v-dialog v-model="dialog" width="600">
     <template v-slot:activator="{ on, attrs }">
       <v-list-item v-bind="attrs" v-on="on">
         <v-list-item-title>Создать</v-list-item-title>
@@ -53,7 +53,6 @@ export default Vue.extend({
 
       const formData = new FormData();
       formData.append("script", this.file);
-      console.log(this.name);
       formData.append("name", this.name);
 
       createScript(formData)

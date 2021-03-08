@@ -6,17 +6,20 @@ type RequestPayload = {
   endpoint: string;
   method?: "GET" | "PUT" | "POST";
   data?: string | FormData | null;
+  headers?: Headers
 };
 
 function executeRequest<T>({
   endpoint = "",
   method = "GET",
-  data = null
+  data = null,
+  headers
 }: RequestPayload): Promise<T> {
   return new Promise((resolve, reject) => {
     fetch(API_ROOT + endpoint, {
       method,
-      body: data
+      body: data,
+      headers,
     })
       .then(response => {
         if (!response.ok) {
@@ -39,7 +42,7 @@ type GetScriptsInfoResponse = {
 
 export function getScriptsInfo(): Promise<GetScriptsInfoResponse> {
   return executeRequest({
-    endpoint: "/scripts"
+    endpoint: "/scripts",
   });
 }
 
@@ -61,6 +64,18 @@ export function createScript(script: FormData): Promise<CreateScriptResponse> {
   return executeRequest({
     endpoint: '/raw',
     method: 'POST',
-    data: script
+    data: script,
+  });
+}
+
+type UpdateScriptResponse = {
+  uids: string[] | null
+}
+
+export function updateScript(script: Script, actionIdsToDel?: string[]): Promise<UpdateScriptResponse> {
+  return executeRequest({
+    endpoint: '/scripts',
+    method: 'PUT',
+    data: JSON.stringify({ script, actionIdsToDel }),
   });
 }

@@ -4,7 +4,7 @@ import { ActionTypes } from "./action-types";
 import { Mutations } from "./mutations";
 import { MutationTypes } from "./mutation-types";
 import { Script, TraversableScript, Frame } from "@/common/types";
-import { API_ROOT, getScriptsInfo, getScript } from "@/common/requests";
+import { API_ROOT, getScriptsInfo, getScript, updateScript } from "@/common/requests";
 
 type AugmentedActionContext = {
   commit<K extends keyof Mutations>(
@@ -20,6 +20,10 @@ type Actions = {
   [ActionTypes.LOAD_SCRIPT](
     { commit }: AugmentedActionContext,
     uid: string
+  ): Promise<void>;
+  [ActionTypes.UPDATE_FRAMES](
+    { state }: AugmentedActionContext,
+    frames: Frame[]
   ): Promise<void>;
 };
 
@@ -61,5 +65,16 @@ export const actions: ActionTree<State, State> & Actions = {
           reject(err);
         });
     });
+  },
+  [ActionTypes.UPDATE_FRAMES]({ state }, frames) {
+    return new Promise((resolve, reject) => {
+      if (!state.script.uid) return;
+
+      return updateScript({ uid: state.script.uid, frames } as Script).then(() => {
+        resolve();
+      }).catch(err => {
+        reject(err);
+      });
+    })
   }
 };

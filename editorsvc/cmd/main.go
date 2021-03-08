@@ -12,6 +12,7 @@ import (
 	"github.com/dgraph-io/dgo/v200/protos/api"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
+	"github.com/rs/cors"
 	"google.golang.org/grpc"
 
 	"github.com/prometium/tutoreditor/editorsvc"
@@ -65,7 +66,15 @@ func main() {
 
 	var handler http.Handler
 	{
-		handler = httptransport.MakeHTTPHandler(endpoints, logger)
+		router := httptransport.MakeHTTPHandler(endpoints, logger)
+		cors := cors.New(cors.Options{
+        	AllowedOrigins: []string{"*"},
+			AllowedHeaders: []string{"X-Requested-With"},
+			AllowedMethods: []string{"GET", "HEAD", "POST", "PUT", "OPTIONS"},
+        	AllowCredentials: true,
+		})
+
+		handler = cors.Handler(router)
 	}
 
 	errs := make(chan error)
