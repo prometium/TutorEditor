@@ -16,10 +16,10 @@
             :key="scriptInfo.uid"
             :label="scriptInfo.name"
             :value="scriptInfo.uid"
-          ></v-radio>
+          />
         </v-radio-group>
       </v-card-text>
-      <v-divider></v-divider>
+      <v-divider />
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn @click="dialog = false" text> Отменить </v-btn>

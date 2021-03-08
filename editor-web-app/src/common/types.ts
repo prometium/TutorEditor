@@ -1,31 +1,33 @@
-export interface ScriptInfo {
+import { ActionType } from "./constants"
+
+export type ScriptInfo = {
   uid: string;
   name: string;
   version: string;
 }
 
-export interface Script {
+export type Script = {
   uid: string;
   name: string;
   version: string;
   firstFrame: {
     uid: string;
   };
-  frames: Array<Frame>;
+  frames: Frame[];
 }
 
-export interface TraversableScript extends Omit<Script, "frames"> {
+export type TraversableScript = Omit<Script, "frames"> & {
   frameByUid: Record<string, Frame>;
-  path: Array<PathItem>;
+  path: PathItem[];
   branchNumByUid: Record<string, number>;
 }
 
-export interface PathItem {
+export type PathItem = {
   frameUid: string;
   branchNum: number;
 }
 
-export interface Frame {
+export type Frame = {
   uid: string;
   pictureLink: string;
   actions?: Array<
@@ -51,64 +53,64 @@ export interface Frame {
   hintText: string;
 }
 
-export interface Action {
+export type Action = {
   uid: string;
   nextFrame: {
     uid: string;
   };
 }
 
-interface MouseAction extends Action {
+type MouseAction = Action & {
   xLeft: number;
   xRight: number;
   yLeft: number;
   yRight: number;
 }
 
-interface LeftMouseClick extends MouseAction {
-  actionType: 1;
+type LeftMouseClick = MouseAction & {
+  actionType: ActionType.LeftMouseClick;
 }
-interface LeftMouseDown extends MouseAction {
-  actionType: 2;
+type LeftMouseDown = MouseAction & {
+  actionType: ActionType.LeftMouseDown;
 }
-interface LeftMouseUp extends MouseAction {
-  actionType: 3;
+type LeftMouseUp = MouseAction & {
+  actionType: ActionType.LeftMouseUp;
 }
-interface LeftMouseDoubleClick extends MouseAction {
-  actionType: 4;
+type LeftMouseDoubleClick = MouseAction & {
+  actionType: ActionType.LeftMouseDoubleClick;
 }
-interface RightMouseClick extends MouseAction {
-  actionType: 5;
+type RightMouseClick = MouseAction & {
+  actionType: ActionType.RightMouseClick;
 }
-interface RightMouseDown extends MouseAction {
-  actionType: 6;
+type RightMouseDown = MouseAction & {
+  actionType: ActionType.RightMouseDown;
 }
-interface RightMouseUp extends MouseAction {
-  actionType: 7;
+type RightMouseUp = MouseAction & {
+  actionType: ActionType.RightMouseUp;
 }
-interface RightMouseDobleClick extends MouseAction {
-  actionType: 8;
+type RightMouseDobleClick = MouseAction & {
+  actionType: ActionType.RightMouseDobleClick;
 }
 
-interface KeyboardAction extends Action {
+type KeyboardAction = Action & {
   key: string;
 }
-interface KeyClick extends KeyboardAction {
-  actionType: 9;
+type KeyClick = KeyboardAction & {
+  actionType: ActionType.KeyClick;
 }
-interface KeyDown extends KeyboardAction {
-  actionType: 10;
+type KeyDown = KeyboardAction & {
+  actionType: ActionType.KeyDown;
 }
-interface KeyUp extends KeyboardAction {
-  actionType: 11;
+type KeyUp = KeyboardAction & {
+  actionType: ActionType.KeyUp;
 }
-interface KeyWithMod extends KeyboardAction {
-  actionType: 12;
+type KeyWithMod = KeyboardAction & {
+  actionType: ActionType.KeyWithMod;
   modKey: string;
 }
 
-interface Drag extends Action {
-  actionType: 13;
+type Drag = Action & {
+  actionType: ActionType.Drag;
   startXLeft: number;
   startYLeft: number;
   startXRight: number;
@@ -119,21 +121,21 @@ interface Drag extends Action {
   finishYRight: number;
 }
 
-interface WheelMotionAction extends Action {
+type WheelMotionAction = Action & {
   ticksCount: number;
 }
-interface WheelUp extends WheelMotionAction {
-  actionType: 14;
+type WheelUp = WheelMotionAction & {
+  actionType: ActionType.WheelUp;
 }
-interface WheelDown extends WheelMotionAction {
-  actionType: 15;
-}
-
-interface WheelClick extends Action {
-  actionType: 16;
+type WheelDown = WheelMotionAction & {
+  actionType: ActionType.WheelDown;
 }
 
-interface Pause extends Action {
-  actionType: 17;
+type WheelClick = Action & {
+  actionType: ActionType.WheelClick;
+}
+
+type Pause = Action & {
+  actionType: ActionType.Pause;
   duration: number;
 }

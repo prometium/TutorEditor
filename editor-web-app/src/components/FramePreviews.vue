@@ -46,7 +46,7 @@
               branchNum: offsetBranchNum - 1
             })
           "
-        ></span>
+        />
       </div>
     </div>
   </div>

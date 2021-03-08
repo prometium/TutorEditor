@@ -7,20 +7,18 @@
     </template>
     <v-card>
       <v-card-title class="headline lighten-2">
-        Создание обачающей программы
+        Создание обучающей программы
       </v-card-title>
-      <v-card-text style="max-height: 300px"
-        ><v-text-field
-          v-model="name"
-          label="Название обучающей программы"
-        ></v-text-field>
+      <v-card-text style="max-height: 300px">
+        <v-text-field v-model="name" label="Название обучающей программы">
+        </v-text-field>
         <v-file-input
           label="Выбрать заготовку"
           truncate-length="15"
           v-model="file"
-        ></v-file-input
-      ></v-card-text>
-      <v-divider></v-divider>
+        />
+      </v-card-text>
+      <v-divider />
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn @click="dialog = false" text> Отменить </v-btn>
