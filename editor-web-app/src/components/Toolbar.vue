@@ -17,12 +17,11 @@
         </v-col>
       </v-row>
       <v-row v-if="showAction" v-show="expanded">
-        <v-col>
+        <v-col class="d-flex" cols="4">
           <v-select
-            class="d-flex"
             item-text="text"
             item-value="value"
-            v-model="selectedAction"
+            v-model="selectedActionType"
             :items="actionItems"
             label="Действие"
             dense
@@ -33,7 +32,7 @@
   </div>
 </template>
 
-<script lang="ts">
+<script>
 import Vue from "vue";
 import { mapState, mapGetters, mapActions } from "vuex";
 import { ActionType } from "@/common/constants";
@@ -127,68 +126,46 @@ export default Vue.extend({
   computed: {
     ...mapState(["frame", "script"]),
     ...mapGetters(["path"]),
-    showAction(): boolean {
+    showAction() {
       return !!this.frame.actions?.length;
     },
-    selectedAction: {
-      get(): ActionType | null {
-        const currentBranchNum =
-          this.script.branchNumByUid[this.frame.uid] || 0;
-        return this.frame.actions[currentBranchNum].actionType;
+    currentBranchNum() {
+      return this.script.branchNumByUid[this.frame.uid] || 0;
+    },
+    selectedAction() {
+      return this.frame.actions && this.frame.actions[this.currentBranchNum];
+    },
+    selectedActionType: {
+      get() {
+        return this.selectedAction?.actionType;
       },
       set(newValue) {
-        const currentFrame = this.frame;
-        const currentBranchNum =
-          this.script.branchNumByUid[this.frame.uid] || 0;
-        const currentAction = this.frame.actions[currentBranchNum];
-        this.updateFrames([
-          {
-            uid: currentFrame.uid,
-            actions: [
-              {
-                uid: currentAction.uid,
-                actionType: newValue
-              }
-            ]
-          }
-        ]);
         this.frame.actions[
           this.script.branchNumByUid[this.frame.uid] || 0
         ].actionType = newValue;
       }
+    }
+  },
+  watch: {
+    selectedActionType(newValue) {
+      const currentAction = this.frame.actions[this.currentBranchNum];
+      this.updateFrames([
+        {
+          uid: this.frame.uid,
+          actions: [
+            {
+              uid: currentAction.uid,
+              actionType: newValue
+            }
+          ]
+        }
+      ]);
     }
   }
 });
 </script>
 
 <style scoped lang="scss">
-.header {
-  position: relative;
-  padding: 4px 16px 0;
-}
-
-.menubar-container {
-  display: grid;
-  grid-template-areas:
-    "script-title user-button"
-    "menubar user-button";
-}
-
-.script-title {
-  grid-area: script-title;
-  padding-left: 12px;
-}
-
-.menubar {
-  grid-area: menubar;
-}
-
-.user-button {
-  grid-area: user-button;
-  align-self: center;
-  justify-self: end;
-}
-
 .toolbar {
   display: flex;
   padding: 4px 12px 0;
