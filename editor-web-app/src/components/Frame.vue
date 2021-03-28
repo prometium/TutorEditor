@@ -1,13 +1,13 @@
 <template>
   <div class="frame">
-    <div class="frame__img-wrapper" v-show="frame.uid">
+    <div v-show="frame.uid" class="frame__img-wrapper">
       <img
         ref="img"
         :src="frame.pictureLink + '#' + new Date().getTime()"
         :alt="frame.uid"
         class="frame__img"
       />
-      <div ref="resizeDrag" class="resize-drag" />
+      <div v-show="showDragMoveArea" ref="resizeDrag" class="resize-drag" />
     </div>
   </div>
 </template>
@@ -19,11 +19,6 @@ import interact from "interactjs";
 
 export default Vue.extend({
   name: "Frame",
-  data() {
-    return {
-      scale: 1
-    };
-  },
   mounted() {
     const resizeDrag = this.$refs.resizeDrag;
     if (resizeDrag) {
@@ -42,6 +37,14 @@ export default Vue.extend({
     },
     selectedAction() {
       return this.frame.actions && this.frame.actions[this.currentBranchNum];
+    },
+    showDragMoveArea() {
+      return Boolean(
+        this.selectedAction?.xLeft &&
+          this.selectedAction?.yLeft &&
+          this.selectedAction?.xRight &&
+          this.selectedAction?.yRight
+      );
     }
   },
   watch: {
@@ -49,7 +52,7 @@ export default Vue.extend({
       const img = this.$refs.img;
       const resizeDrag = this.$refs.resizeDrag;
 
-      if (!img || !resizeDrag) return;
+      if (!img || !resizeDrag || !this.showDragMoveArea) return;
 
       const width = action.xRight - action.xLeft;
       const height = action.yRight - action.yLeft;

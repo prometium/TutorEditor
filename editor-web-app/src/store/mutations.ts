@@ -44,10 +44,12 @@ export const mutations: MutationTree<State> & Mutations = {
       path.push(pathItem);
 
       const actions = state.script.frameByUid[frameUid].actions;
-      if (actions == null || !actions.length) {
-        break;
-      }
-      frameUid = actions[pathItem.branchNum].nextFrame.uid;
+      if (actions == null || !actions.length) break;
+
+      const nextFrame = actions[pathItem.branchNum].nextFrame;
+      if (!nextFrame) break;
+
+      frameUid = nextFrame.uid;
     }
 
     state.script.path = path;
