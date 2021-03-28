@@ -104,7 +104,7 @@ func (rs *rawScript) saveImages(ctx context.Context, imagesDir string) (map[stri
 	os.MkdirAll(imagesDir, os.ModePerm)
 
 	lock := sync.RWMutex{}
-	errs, ctx := errgroup.WithContext(ctx)
+	errs, _ := errgroup.WithContext(ctx)
 	var linksMap map[string]string = make(map[string]string)
 	for _, file := range rs.Images {
 		currentFile := file
@@ -140,37 +140,40 @@ func (rs *rawScript) createScript(name string, linksMap map[string]string) (*edi
 	frames := make([]editorsvc.Frame, len(rs.Frames))
 
 	for i, frame := range rs.Frames {
+		action := &frame.ActionSwitch
+		
+		var nextFrame *editorsvc.NextFrame
+		if i+1 < len(rs.Frames) {
+			nextFrame = &editorsvc.NextFrame{
+				UID: strconv.Itoa(rs.Frames[i+1].FrameNumber),
+			}
+		}
+
 		frames[i] = editorsvc.Frame{
 			UID:         strconv.Itoa(frame.FrameNumber),
 			PictureLink: linksMap[frame.PictureLink],
 			TaskText:    frame.Task,
 			HintText:    frame.Hint,
-		}
-	}
-
-	for i, frame := range rs.Frames[1:] {
-		action := &frame.ActionSwitch
-		frames[i].Actions = []editorsvc.Action{
-			editorsvc.Action{
-				NextFrame: &editorsvc.NextFrame{
-					UID: strconv.Itoa(frame.FrameNumber),
+			Actions: []editorsvc.Action{
+				{
+					NextFrame:    nextFrame,
+					ActionType:   action.ActionType,
+					XLeft:        action.XLeft,
+					XRight:       action.XRight,
+					YLeft:        action.YLeft,
+					YRight:       action.YRight,
+					StartXLeft:   action.StartXLeft,
+					StartYLeft:   action.StartYLeft,
+					StartXRight:  action.StartXRight,
+					StartYRight:  action.StartYRight,
+					FinishXLeft:  action.FinishXLeft,
+					FinishYLeft:  action.FinishYLeft,
+					FinishXRight: action.FinishXRight,
+					FinishYRight: action.FinishYRight,
+					TicksCount:   action.TicksCount,
+					Key:          action.Key,
+					ModKey:       action.ModKey,
 				},
-				ActionType:   action.ActionType,
-				XLeft:        action.XLeft,
-				XRight:       action.XRight,
-				YLeft:        action.YLeft,
-				YRight:       action.YRight,
-				StartXLeft:   action.StartXLeft,
-				StartYLeft:   action.StartYLeft,
-				StartXRight:  action.StartXRight,
-				StartYRight:  action.StartYRight,
-				FinishXLeft:  action.FinishXLeft,
-				FinishYLeft:  action.FinishYLeft,
-				FinishXRight: action.FinishXRight,
-				FinishYRight: action.FinishYRight,
-				TicksCount:   action.TicksCount,
-				Key:          action.Key,
-				ModKey:       action.ModKey,
 			},
 		}
 

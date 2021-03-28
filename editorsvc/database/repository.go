@@ -44,6 +44,9 @@ func (repo *repository) AddScript(ctx context.Context, script *editorsvc.Script)
 			action.UID = ""
 
 			nextFrame := action.NextFrame
+			if nextFrame == nil {
+				continue
+			}
 			nextFrame.UID = fmt.Sprintf("_:f%s", nextFrame.UID)
 		}
 	}
