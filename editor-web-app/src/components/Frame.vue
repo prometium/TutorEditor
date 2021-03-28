@@ -1,6 +1,6 @@
 <template>
   <div class="frame">
-    <div class="frame__img-wrapper">
+    <div class="frame__img-wrapper" v-show="frame.uid">
       <img
         ref="img"
         :src="frame.pictureLink + '#' + new Date().getTime()"
@@ -26,7 +26,9 @@ export default Vue.extend({
   },
   mounted() {
     const resizeDrag = this.$refs.resizeDrag;
-    this.initInteract(resizeDrag);
+    if (resizeDrag) {
+      this.initInteract(resizeDrag);
+    }
 
     window.addEventListener("resize", this.onResize);
   },
@@ -44,51 +46,45 @@ export default Vue.extend({
   },
   watch: {
     selectedAction(action) {
-      this.onResize();
       const img = this.$refs.img;
-      const scale = img.clientWidth / img.naturalWidth || 1;
-
       const resizeDrag = this.$refs.resizeDrag;
-      resizeDrag.setAttribute("data-scale", scale);
 
-      resizeDrag.style.webkitTransform = resizeDrag.style.transform = `
-      translate(${action.xLeft * scale}px, ${action.yLeft * scale}px)
-      `;
-      resizeDrag.style.width = `${(action.xRight - action.xLeft) * scale}px`;
-      resizeDrag.style.height = `${(action.yRight - action.yLeft) * scale}px`;
+      if (!img || !resizeDrag) return;
 
-      resizeDrag.setAttribute("data-x", action.xLeft * scale);
-      resizeDrag.setAttribute("data-y", action.yLeft * scale);
+      const width = action.xRight - action.xLeft;
+      const height = action.yRight - action.yLeft;
+
       resizeDrag.setAttribute("data-fixed-x", action.xLeft);
       resizeDrag.setAttribute("data-fixed-y", action.yLeft);
-      resizeDrag.setAttribute("data-fixed-width", action.xRight - action.xLeft);
-      resizeDrag.setAttribute(
-        "data-fixed-height",
-        action.yRight - action.yLeft
-      );
+      resizeDrag.setAttribute("data-fixed-width", width);
+      resizeDrag.setAttribute("data-fixed-height", height);
+
+      setTimeout(() => {
+        this.onResize();
+      }, 100);
     }
   },
   methods: {
     onResize() {
       const img = this.$refs.img;
+      const resizeDrag = this.$refs.resizeDrag;
       const scale = img.clientWidth / img.naturalWidth || 1;
 
-      const resizeDrag = this.$refs.resizeDrag;
       resizeDrag.setAttribute("data-scale", scale);
-
       const x = parseFloat(resizeDrag.getAttribute("data-fixed-x")) || 0;
       const y = parseFloat(resizeDrag.getAttribute("data-fixed-y")) || 0;
-      const width = +resizeDrag.getAttribute("data-fixed-width") || 0;
-      const height = +resizeDrag.getAttribute("data-fixed-height") || 0;
-      console.log(width, width * scale);
-      resizeDrag.style.webkitTransform = resizeDrag.style.transform = `
-      translate(${x * scale}px, ${y * scale}px)
-      `;
+      const width = resizeDrag.getAttribute("data-fixed-width") || 0;
+      const height = resizeDrag.getAttribute("data-fixed-height") || 0;
+
+      const scaledX = x * scale;
+      const scaledY = y * scale;
+
+      resizeDrag.style.transform = `translate(${scaledX}px, ${scaledY}px)`;
       resizeDrag.style.width = `${width * scale}px`;
       resizeDrag.style.height = `${height * scale}px`;
 
-      resizeDrag.setAttribute("data-x", x * scale);
-      resizeDrag.setAttribute("data-y", y * scale);
+      resizeDrag.setAttribute("data-x", scaledX);
+      resizeDrag.setAttribute("data-y", scaledY);
     },
     initInteract(selector) {
       interact(selector)
@@ -122,9 +118,7 @@ export default Vue.extend({
               x += event.deltaRect.left;
               y += event.deltaRect.top;
 
-              target.style.webkitTransform = target.style.transform = `
-              translate(${x}px, ${y}px)
-              `;
+              target.style.transform = `translate(${x}px, ${y}px)`;
 
               target.setAttribute("data-x", x);
               target.setAttribute("data-y", y);
