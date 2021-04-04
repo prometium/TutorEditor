@@ -1,9 +1,7 @@
 <template>
   <v-dialog v-model="dialog" width="600">
-    <template v-slot:activator="{ on, attrs }">
-      <v-list-item v-bind="attrs" v-on="on" @click="loadScriptsInfo">
-        <v-list-item-title>Открыть</v-list-item-title>
-      </v-list-item>
+    <template v-slot:activator="activator">
+      <slot name="activator" v-bind="activator" />
     </template>
     <v-card>
       <v-card-title class="headline lighten-2">
@@ -44,7 +42,6 @@ export default Vue.extend({
   },
   methods: {
     ...mapActions({
-      loadScriptsInfo: ActionTypes.LOAD_SCRIPTS_INFO,
       loadScript: ActionTypes.LOAD_SCRIPT
     }),
     handleOpen() {

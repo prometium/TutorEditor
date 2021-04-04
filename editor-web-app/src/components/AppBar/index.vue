@@ -3,15 +3,27 @@
     <div class="menubar-container">
       <div class="script-title text-h6">{{ script.name || "..." }}</div>
       <div class="menubar">
-        <v-menu close-on-click>
+        <v-menu>
           <template v-slot:activator="{ on, attrs }">
             <v-btn v-bind="attrs" v-on="on" small text elevation="0">
               Файл
             </v-btn>
           </template>
           <v-list>
-            <CreateScriptDialogButton />
-            <OpenScriptDialogButton />
+            <CreateScriptDialogButton>
+              <template v-slot:activator="{ on, attrs }">
+                <v-list-item v-bind="attrs" v-on="on">
+                  <v-list-item-title>Создать</v-list-item-title>
+                </v-list-item>
+              </template>
+            </CreateScriptDialogButton>
+            <OpenScriptDialogButton>
+              <template v-slot:activator="{ on, attrs }">
+                <v-list-item v-bind="attrs" v-on="on" @click="loadScriptsInfo">
+                  <v-list-item-title>Открыть</v-list-item-title>
+                </v-list-item>
+              </template>
+            </OpenScriptDialogButton>
           </v-list>
         </v-menu>
         <v-btn small text elevation="0"> Редактирование </v-btn>
@@ -26,10 +38,11 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { mapState } from "vuex";
+import { mapState, mapActions } from "vuex";
+import { ActionTypes } from "@/store/action-types";
 import OpenScriptDialogButton from "./OpenScriptDialogButton.vue";
 import CreateScriptDialogButton from "./CreateScriptDialogButton.vue";
-import Toolbar from "./Toolbar.vue";
+import Toolbar from "./Toolbar/index.vue";
 
 export default Vue.extend({
   name: "AppBar",
@@ -43,6 +56,11 @@ export default Vue.extend({
     showToolbar(): boolean {
       return !!this.frame;
     }
+  },
+  methods: {
+    ...mapActions({
+      loadScriptsInfo: ActionTypes.LOAD_SCRIPTS_INFO
+    })
   }
 });
 </script>

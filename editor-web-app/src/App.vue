@@ -20,7 +20,7 @@
 import Vue from "vue";
 import { mapState } from "vuex";
 import store from "@/store";
-import AppBar from "@/components/AppBar.vue";
+import AppBar from "@/components/AppBar/index.vue";
 import Frame from "@/components/Frame.vue";
 import FramePreviews from "@/components/FramePreviews.vue";
 import FrameTools from "@/components/FrameTools.vue";

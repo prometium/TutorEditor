@@ -1,9 +1,7 @@
 <template>
   <v-dialog v-model="dialog" width="600">
-    <template v-slot:activator="{ on, attrs }">
-      <v-list-item v-bind="attrs" v-on="on">
-        <v-list-item-title>Создать</v-list-item-title>
-      </v-list-item>
+    <template v-slot:activator="activator">
+      <slot name="activator" v-bind="activator" />
     </template>
     <v-card>
       <v-card-title class="headline lighten-2">
@@ -60,7 +58,7 @@ export default Vue.extend({
           this.loadScript(data.uid);
           this.dialog = false;
         })
-        .catch(console.error); // TODO error
+        .catch(console.error); // TODO: error handling
     }
   },
   computed: {
