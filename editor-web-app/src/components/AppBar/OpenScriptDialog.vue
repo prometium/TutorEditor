@@ -19,7 +19,7 @@
       </v-card-text>
       <v-divider />
       <v-card-actions>
-        <v-spacer></v-spacer>
+        <v-spacer />
         <v-btn @click="dialog = false" text> Отменить </v-btn>
         <v-btn @click="handleOpen" text color="primary"> Открыть </v-btn>
       </v-card-actions>
@@ -33,7 +33,7 @@ import { mapState, mapActions } from "vuex";
 import { ActionTypes } from "@/store/action-types";
 
 export default Vue.extend({
-  name: "OpenScriptDialogButton",
+  name: "OpenScriptDialog",
   data() {
     return {
       dialog: false,

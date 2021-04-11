@@ -8,8 +8,7 @@
         Создание обучающей программы
       </v-card-title>
       <v-card-text style="max-height: 300px">
-        <v-text-field v-model="name" label="Название обучающей программы">
-        </v-text-field>
+        <v-text-field v-model="name" label="Название обучающей программы" />
         <v-file-input
           label="Выбрать заготовку"
           truncate-length="15"
@@ -18,7 +17,7 @@
       </v-card-text>
       <v-divider />
       <v-card-actions>
-        <v-spacer></v-spacer>
+        <v-spacer />
         <v-btn @click="dialog = false" text> Отменить </v-btn>
         <v-btn @click="handleCreate" text color="primary"> Создать </v-btn>
       </v-card-actions>
@@ -33,7 +32,7 @@ import { createScript } from "@/common/requests";
 import { ActionTypes } from "@/store/action-types";
 
 export default Vue.extend({
-  name: "CreateScriptDialogButton",
+  name: "CreateScriptDialog",
   data() {
     return {
       dialog: false,

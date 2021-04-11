@@ -10,20 +10,20 @@
             </v-btn>
           </template>
           <v-list>
-            <CreateScriptDialogButton>
+            <CreateScriptDialog>
               <template v-slot:activator="{ on, attrs }">
                 <v-list-item v-bind="attrs" v-on="on">
                   <v-list-item-title>Создать</v-list-item-title>
                 </v-list-item>
               </template>
-            </CreateScriptDialogButton>
-            <OpenScriptDialogButton>
+            </CreateScriptDialog>
+            <OpenScriptDialog>
               <template v-slot:activator="{ on, attrs }">
                 <v-list-item v-bind="attrs" v-on="on" @click="loadScriptsInfo">
                   <v-list-item-title>Открыть</v-list-item-title>
                 </v-list-item>
               </template>
-            </OpenScriptDialogButton>
+            </OpenScriptDialog>
           </v-list>
         </v-menu>
         <v-btn small text elevation="0"> Редактирование </v-btn>
@@ -38,21 +38,22 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { mapState, mapActions } from "vuex";
+import { mapState, mapActions, mapGetters } from "vuex";
 import { ActionTypes } from "@/store/action-types";
-import OpenScriptDialogButton from "./OpenScriptDialogButton.vue";
-import CreateScriptDialogButton from "./CreateScriptDialogButton.vue";
+import OpenScriptDialog from "./OpenScriptDialog.vue";
+import CreateScriptDialog from "./CreateScriptDialog.vue";
 import Toolbar from "./Toolbar/index.vue";
 
 export default Vue.extend({
   name: "AppBar",
   components: {
-    OpenScriptDialogButton,
-    CreateScriptDialogButton,
+    OpenScriptDialog,
+    CreateScriptDialog,
     Toolbar
   },
   computed: {
-    ...mapState(["script", "frame"]),
+    ...mapState(["script"]),
+    ...mapGetters(["frame"]),
     showToolbar(): boolean {
       return !!this.frame;
     }

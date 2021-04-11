@@ -33,9 +33,13 @@
             dense
             hide-details
           />
-          <v-btn elevation="1" icon>
-            <v-icon> mdi-cog </v-icon>
-          </v-btn>
+          <EditActionDialog :frameUid="frame.uid" :action="selectedAction">
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn v-bind="attrs" v-on="on" elevation="1" icon>
+                <v-icon> mdi-cog </v-icon>
+              </v-btn>
+            </template>
+          </EditActionDialog>
         </v-col>
       </v-row>
     </v-container>
@@ -47,9 +51,13 @@ import Vue from "vue";
 import { mapState, mapGetters, mapActions } from "vuex";
 import { ActionTypes } from "@/store/action-types";
 import { initialActionItems } from "./constants";
+import EditActionDialog from "./EditActionDialog.vue";
 
 export default Vue.extend({
   name: "Toolbar",
+  components: {
+    EditActionDialog
+  },
   data() {
     return {
       expanded: false,
@@ -65,8 +73,8 @@ export default Vue.extend({
     }
   },
   computed: {
-    ...mapState(["frame", "script"]),
-    ...mapGetters(["path"]),
+    ...mapState(["script"]),
+    ...mapGetters(["frame", "path"]),
     showAction() {
       return !!this.frame.actions?.length;
     },
@@ -93,21 +101,6 @@ export default Vue.extend({
           }
         ]);
       }
-    }
-  },
-  watch: {
-    selectedActionType(newValue) {
-      this.updateFrames([
-        {
-          uid: this.frame.uid,
-          actions: [
-            {
-              uid: this.selectedAction.uid,
-              actionType: newValue
-            }
-          ]
-        }
-      ]);
     }
   }
 });

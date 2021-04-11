@@ -14,7 +14,7 @@
 
 <script>
 import Vue from "vue";
-import { mapState } from "vuex";
+import { mapGetters, mapState } from "vuex";
 import interact from "interactjs";
 
 export default Vue.extend({
@@ -31,7 +31,8 @@ export default Vue.extend({
     window.removeEventListener("resize", this.onResize);
   },
   computed: {
-    ...mapState(["frame", "script"]),
+    ...mapState(["script"]),
+    ...mapGetters(["frame"]),
     currentBranchNum() {
       return this.script.branchNumByUid[this.frame.uid] || 0;
     },

@@ -57,7 +57,7 @@ export const actions: ActionTree<State, State> & Actions = {
             branchNumByUid: {}
           };
           commit(MutationTypes.SET_SCRIPT, traversableScript);
-          commit(MutationTypes.SET_FRAME, traversableScript.firstFrame.uid);
+          commit(MutationTypes.SELECT_FRAME, traversableScript.firstFrame.uid);
           commit(MutationTypes.CONFIGURE_PATH);
           resolve();
         })
@@ -66,11 +66,12 @@ export const actions: ActionTree<State, State> & Actions = {
         });
     });
   },
-  [ActionTypes.UPDATE_FRAMES]({ state }, frames) {
+  [ActionTypes.UPDATE_FRAMES]({ state, commit }, frames) {
     return new Promise((resolve, reject) => {
       if (!state.script.uid) return;
 
       return updateScript({ uid: state.script.uid, frames } as Script).then(() => {
+        commit(MutationTypes.UPDATE_FRAMES, frames);
         resolve();
       }).catch(err => {
         reject(err);

@@ -15,7 +15,7 @@
             active: pathItem.frameUid === frame.uid
           }
         ]"
-        @click="setFrame(pathItem.frameUid)"
+        @click="selectFrame(pathItem.frameUid)"
         loading="lazy"
       />
       <div
@@ -60,12 +60,12 @@ import { MutationTypes } from "@/store/mutation-types";
 export default Vue.extend({
   name: "FramePreviews",
   computed: {
-    ...mapState(["script", "frame"]),
-    ...mapGetters(["path"])
+    ...mapState(["script"]),
+    ...mapGetters(["path", "frame"])
   },
   methods: {
     ...mapMutations({
-      setFrame: MutationTypes.SET_FRAME,
+      selectFrame: MutationTypes.SELECT_FRAME,
       configurePath: MutationTypes.CONFIGURE_PATH
     })
   }

@@ -3,7 +3,7 @@ import { ScriptInfo, TraversableScript, Frame } from "@/common/types";
 export interface State {
   scriptsInfo: Array<ScriptInfo>;
   script: TraversableScript;
-  frame: Frame;
+  frameUid: string;
 }
 
 export const state: State = {
@@ -19,10 +19,5 @@ export const state: State = {
     path: [],
     branchNumByUid: {}
   },
-  frame: {
-    uid: "",
-    pictureLink: "",
-    taskText: "",
-    hintText: ""
-  }
+  frameUid: "",
 };
