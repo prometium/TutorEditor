@@ -9,7 +9,7 @@ export type Mutations<S = State> = {
     scriptsInfo: ScriptInfo[]
   ): void;
   [MutationTypes.SET_SCRIPT](state: S, script: TraversableScript): void;
-  [MutationTypes.UPDATE_FRAMES](state: S, frame: Frame[]): void;
+  [MutationTypes.UPDATE_FRAMES](state: S, data: Frame[]): void;
   [MutationTypes.SELECT_FRAME](state: S, uid: string): void;
   [MutationTypes.CONFIGURE_PATH](
     state: S,
@@ -27,7 +27,7 @@ export const mutations: MutationTree<State> & Mutations = {
   [MutationTypes.SET_SCRIPT](state, script) {
     state.script = script;
   },
-  [MutationTypes.UPDATE_FRAMES](state, frames) {
+  [MutationTypes.UPDATE_FRAMES](state, frames = []) {
     frames.forEach(frame => {
       const currentFrame = state.script?.frameByUid[frame.uid];
       state.script.frameByUid[frame.uid] = {

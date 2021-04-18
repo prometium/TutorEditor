@@ -32,13 +32,7 @@ export default Vue.extend({
   },
   computed: {
     ...mapState(["script"]),
-    ...mapGetters(["frame"]),
-    currentBranchNum() {
-      return this.script.branchNumByUid[this.frame.uid] || 0;
-    },
-    selectedAction() {
-      return this.frame.actions && this.frame.actions[this.currentBranchNum];
-    },
+    ...mapGetters(["frame", "selectedAction"]),
     showDragMoveArea() {
       return Boolean(
         this.selectedAction?.xLeft &&

@@ -72,10 +72,13 @@ type UpdateScriptResponse = {
   uids: string[] | null
 }
 
-export function updateScript(script: Script, actionIdsToDel?: string[]): Promise<UpdateScriptResponse> {
+export function updateScript(
+  script: Script,
+  { frameIdsToDel, actionIdsToDel }: { frameIdsToDel?: string[], actionIdsToDel?: string[] } = {}
+): Promise<UpdateScriptResponse> {
   return executeRequest({
     endpoint: '/scripts',
     method: 'PUT',
-    data: JSON.stringify({ script, actionIdsToDel }),
+    data: JSON.stringify({ script, frameIdsToDel, actionIdsToDel }),
   });
 }

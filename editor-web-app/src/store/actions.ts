@@ -23,7 +23,7 @@ type Actions = {
   ): Promise<void>;
   [ActionTypes.UPDATE_FRAMES](
     { state }: AugmentedActionContext,
-    frames: Frame[]
+    data: { frames?: Frame[], frameIdsToDel?: string[], actionIdsToDel?: string[] }
   ): Promise<void>;
 };
 
@@ -66,11 +66,14 @@ export const actions: ActionTree<State, State> & Actions = {
         });
     });
   },
-  [ActionTypes.UPDATE_FRAMES]({ state, commit }, frames) {
+  [ActionTypes.UPDATE_FRAMES]({ state, commit }, { frames, frameIdsToDel, actionIdsToDel }) {
     return new Promise((resolve, reject) => {
       if (!state.script.uid) return;
 
-      return updateScript({ uid: state.script.uid, frames } as Script).then(() => {
+      return updateScript(
+        { uid: state.script.uid, frames } as Script,
+        { frameIdsToDel, actionIdsToDel }
+      ).then(() => {
         commit(MutationTypes.UPDATE_FRAMES, frames);
         resolve();
       }).catch(err => {

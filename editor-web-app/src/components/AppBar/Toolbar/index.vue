@@ -33,13 +33,18 @@
             dense
             hide-details
           />
-          <EditActionDialog :frameUid="frame.uid" :action="selectedAction">
+          <component
+            v-if="actionDialogComponent"
+            :is="actionDialogComponent"
+            :frameUid="frame.uid"
+            :action="selectedAction"
+          >
             <template v-slot:activator="{ on, attrs }">
               <v-btn v-bind="attrs" v-on="on" elevation="1" icon>
                 <v-icon> mdi-cog </v-icon>
               </v-btn>
             </template>
-          </EditActionDialog>
+          </component>
         </v-col>
       </v-row>
     </v-container>
@@ -51,12 +56,13 @@ import Vue from "vue";
 import { mapState, mapGetters, mapActions } from "vuex";
 import { ActionTypes } from "@/store/action-types";
 import { initialActionItems } from "./constants";
-import EditActionDialog from "./EditActionDialog.vue";
+import EditKeyboardActionDialog from "./EditKeyboardActionDialog.vue";
+import { ActionGroup } from "@/common/constants";
 
 export default Vue.extend({
   name: "Toolbar",
   components: {
-    EditActionDialog
+    EditKeyboardActionDialog
   },
   data() {
     return {
@@ -74,32 +80,36 @@ export default Vue.extend({
   },
   computed: {
     ...mapState(["script"]),
-    ...mapGetters(["frame", "path"]),
+    ...mapGetters(["frame", "path", "selectedAction", "selectedActionGroup"]),
     showAction() {
       return !!this.frame.actions?.length;
     },
-    currentBranchNum() {
-      return this.script.branchNumByUid[this.frame.uid] || 0;
-    },
-    selectedAction() {
-      return this.frame.actions && this.frame.actions[this.currentBranchNum];
+    actionDialogComponent() {
+      switch (this.selectedActionGroup) {
+        case ActionGroup.Keyboard:
+          return "EditKeyboardActionDialog";
+        default:
+          return null;
+      }
     },
     selectedActionType: {
       get() {
         return this.selectedAction?.actionType;
       },
       set(newValue) {
-        this.updateFrames([
-          {
-            uid: this.frame.uid,
-            actions: [
-              {
-                uid: this.selectedAction.uid,
-                actionType: newValue
-              }
-            ]
-          }
-        ]);
+        this.updateFrames({
+          frames: [
+            {
+              uid: this.frame.uid,
+              actions: [
+                {
+                  uid: this.selectedAction.uid,
+                  actionType: newValue
+                }
+              ]
+            }
+          ]
+        });
       }
     }
   }

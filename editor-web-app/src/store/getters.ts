@@ -1,6 +1,7 @@
 import { GetterTree } from "vuex";
 import { State } from "./state";
 import { Frame, PathItem } from "@/common/types";
+import { ActionGroup, ActionType } from "@/common/constants";
 
 type Getters = {
   path(state: State): Array<PathItem>;
@@ -14,5 +15,26 @@ export const getters: GetterTree<State, State> & Getters = {
   },
   frame(state) {
     return state.script.frameByUid[state.frameUid] || {}
+  },
+  selectedAction(state, getters) {
+    return getters.frame.actions && getters.frame.actions[
+      state.script.branchNumByUid[getters.frame.uid] || 0
+    ];
+  },
+  selectedActionGroup(_, getters) {
+    switch (getters.selectedAction.actionType) {
+      case ActionType.LeftMouseClick:
+      case ActionType.LeftMouseDown:
+      case ActionType.LeftMouseUp:
+      case ActionType.LeftMouseDoubleClick:
+        return ActionGroup.Mouse;
+      case ActionType.KeyClick:
+      case ActionType.KeyDown:
+      case ActionType.KeyUp:
+      case ActionType.KeyWithMod:
+        return ActionGroup.Keyboard;
+      default:
+        return ActionGroup.Other;
+    }
   }
 };

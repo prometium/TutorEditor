@@ -17,3 +17,9 @@ export enum ActionType {
     WheelClick,
     Pause
 }
+
+export enum ActionGroup {
+    Mouse,
+    Keyboard,
+    Other
+}

@@ -20,19 +20,19 @@
         <template v-else>
           <p class="body-1">
             Клавиша: <b>{{ action.key || "[нет]" }}</b>
-            <v-btn @click="handleClickChangeKey" icon>
+            <v-btn @click="handleChangeKey" icon>
               <v-icon> mdi-pencil </v-icon>
             </v-btn>
-            <v-btn icon>
+            <v-btn @click="handleDeleteKey" icon>
               <v-icon> mdi-delete </v-icon>
             </v-btn>
           </p>
           <p class="body-1">
             Модификатор: <b>{{ action.modKey || "[нет]" }}</b>
-            <v-btn @click="handleClickChangeModKey" icon>
+            <v-btn @click="handleChangeModKey" icon>
               <v-icon> mdi-pencil </v-icon>
             </v-btn>
-            <v-btn icon>
+            <v-btn @click="handleDeleteModKey" icon>
               <v-icon> mdi-delete </v-icon>
             </v-btn>
           </p>
@@ -41,7 +41,6 @@
       <v-divider />
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn @click="dialog = false" text> Отменить </v-btn>
         <v-btn @click="dialog = false" text color="primary"> Сохранить </v-btn>
       </v-card-actions>
     </v-card>
@@ -60,7 +59,7 @@ enum EditMode {
 }
 
 export default Vue.extend({
-  name: "ConfigureActionDialog",
+  name: "EditKeyboardActionDialog",
   props: {
     frameUid: { type: String, required: true },
     action: { type: Object, required: true }
@@ -75,27 +74,55 @@ export default Vue.extend({
     ...mapActions({
       updateFrames: ActionTypes.UPDATE_FRAMES
     }),
-    handleClickChangeKey() {
+    handleChangeKey() {
       this.editMode = EditMode.Key;
     },
-    handleClickChangeModKey() {
+    handleChangeModKey() {
       this.editMode = EditMode.ModKey;
     },
     handleKeyUp(event: KeyboardEvent) {
-      this.updateFrames([
-        {
-          uid: this.frameUid,
-          actions: [
-            {
-              uid: this.action.uid,
-              [this.editMode]: event.code
-            }
-          ]
-        }
-      ]);
+      this.updateFrames({
+        frames: [
+          {
+            uid: this.frameUid,
+            actions: [
+              {
+                uid: this.action.uid,
+                [this.editMode]: event.code
+              }
+            ]
+          }
+        ]
+      });
       this.editMode = EditMode.None;
+    },
+    handleDeleteKey() {
+      this.handleDelete(EditMode.Key);
+    },
+    handleDeleteModKey() {
+      this.handleDelete(EditMode.ModKey);
+    },
+    async handleDelete(editMode: EditMode) {
+      await this.updateFrames({
+        actionIdsToDel: [this.action.uid]
+      });
+      this.updateFrames({
+        frames: [
+          {
+            uid: this.frameUid,
+            actions: [
+              {
+                uid: this.action.uid,
+                ...this.action,
+                [editMode]: ""
+              }
+            ]
+          }
+        ]
+      });
     }
   },
+
   computed: {
     ...mapState(["scriptsInfo"])
   }
