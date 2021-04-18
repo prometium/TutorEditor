@@ -40,17 +40,18 @@ export default Vue.extend({
       radioGroup: ""
     };
   },
+  computed: {
+    ...mapState(["scriptsInfo", "script"])
+  },
   methods: {
     ...mapActions({
       loadScript: ActionTypes.LOAD_SCRIPT
     }),
-    handleOpen() {
+    async handleOpen() {
       this.dialog = false;
-      this.loadScript(this.radioGroup);
+      await this.loadScript(this.radioGroup);
+      this.$router.push({ path: "/", query: { scriptUid: this.script.uid } });
     }
-  },
-  computed: {
-    ...mapState(["scriptsInfo"])
   }
 });
 </script>
