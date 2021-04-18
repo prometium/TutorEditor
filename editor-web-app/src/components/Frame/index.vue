@@ -1,5 +1,5 @@
 <template>
-  <div class="frame">
+  <div class="frame" tabindex="0" @blur="handleBlur">
     <div v-show="frame.uid" class="frame__img-wrapper">
       <img
         ref="img"
@@ -14,8 +14,10 @@
 
 <script>
 import Vue from "vue";
-import { mapGetters, mapState } from "vuex";
+import { mapActions, mapGetters, mapState } from "vuex";
 import interact from "interactjs";
+import { ActionGroup } from "@/common/constants";
+import { ActionTypes } from "@/store/action-types";
 
 export default Vue.extend({
   name: "Frame",
@@ -32,14 +34,9 @@ export default Vue.extend({
   },
   computed: {
     ...mapState(["script"]),
-    ...mapGetters(["frame", "selectedAction"]),
+    ...mapGetters(["frame", "selectedAction", "selectedActionGroup"]),
     showDragMoveArea() {
-      return Boolean(
-        this.selectedAction?.xLeft &&
-          this.selectedAction?.yLeft &&
-          this.selectedAction?.xRight &&
-          this.selectedAction?.yRight
-      );
+      return this.selectedActionGroup === ActionGroup.Mouse;
     }
   },
   watch: {
@@ -63,6 +60,9 @@ export default Vue.extend({
     }
   },
   methods: {
+    ...mapActions({
+      updateFrames: ActionTypes.UPDATE_FRAMES
+    }),
     onResize() {
       const img = this.$refs.img;
       const resizeDrag = this.$refs.resizeDrag;
@@ -167,6 +167,32 @@ export default Vue.extend({
       // update the posiion attributes
       target.setAttribute("data-x", x);
       target.setAttribute("data-y", y);
+    },
+    handleBlur() {
+      const resizeDrag = this.$refs.resizeDrag;
+
+      const x = parseFloat(resizeDrag.getAttribute("data-fixed-x")) || 0;
+      const y = parseFloat(resizeDrag.getAttribute("data-fixed-y")) || 0;
+      const scale = parseFloat(resizeDrag.getAttribute("data-scale")) || 1;
+
+      const rect = resizeDrag.getBoundingClientRect();
+
+      this.updateFrames({
+        frames: [
+          {
+            uid: this.frame.uid,
+            actions: [
+              {
+                uid: this.selectedAction.uid,
+                xLeft: x,
+                xRight: x + rect.width / scale,
+                yLeft: y,
+                yRight: y + rect.height / scale
+              }
+            ]
+          }
+        ]
+      });
     }
   }
 });
@@ -178,6 +204,7 @@ export default Vue.extend({
   align-items: center;
   justify-content: center;
   overflow-y: auto;
+  outline: none;
 }
 
 .frame__img-wrapper {

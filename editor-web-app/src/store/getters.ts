@@ -22,11 +22,15 @@ export const getters: GetterTree<State, State> & Getters = {
     ];
   },
   selectedActionGroup(_, getters) {
-    switch (getters.selectedAction.actionType) {
+    switch (getters.selectedAction?.actionType) {
       case ActionType.LeftMouseClick:
       case ActionType.LeftMouseDown:
       case ActionType.LeftMouseUp:
       case ActionType.LeftMouseDoubleClick:
+      case ActionType.RightMouseClick:
+      case ActionType.RightMouseDown:
+      case ActionType.RightMouseUp:
+      case ActionType.RightMouseDobleClick:
         return ActionGroup.Mouse;
       case ActionType.KeyClick:
       case ActionType.KeyDown:
