@@ -68,10 +68,10 @@ func main() {
 	{
 		router := httptransport.MakeHTTPHandler(endpoints, logger)
 		cors := cors.New(cors.Options{
-        	AllowedOrigins: []string{"*"},
-			AllowedHeaders: []string{"X-Requested-With"},
-			AllowedMethods: []string{"GET", "HEAD", "POST", "PUT", "OPTIONS"},
-        	AllowCredentials: true,
+			AllowedOrigins:   []string{"*"},
+			AllowedHeaders:   []string{"X-Requested-With"},
+			AllowedMethods:   []string{"GET", "HEAD", "POST", "PUT", "OPTIONS"},
+			AllowCredentials: true,
 		})
 
 		handler = cors.Handler(router)

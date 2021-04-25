@@ -66,12 +66,13 @@ type Frame struct {
 
 // Script represents a script
 type Script struct {
-	UID        string     `json:"uid,omitempty"`
-	Name       string     `json:"name,omitempty"`
-	Version    string     `json:"version,omitempty"`
-	FirstFrame *NextFrame `json:"firstFrame,omitempty"`
-	Frames     []Frame    `json:"frames,omitempty"`
-	DType      []string   `json:"dgraph.type,omitempty"`
+	UID              string     `json:"uid,omitempty"`
+	Name             string     `json:"name,omitempty"`
+	Version          string     `json:"version,omitempty"`
+	ModificationDate string     `json:"modificationDate,omitempty"`
+	FirstFrame       *NextFrame `json:"firstFrame,omitempty"`
+	Frames           []Frame    `json:"frames,omitempty"`
+	DType            []string   `json:"dgraph.type,omitempty"`
 }
 
 // Repository describes the persistence on editor model

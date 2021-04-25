@@ -32,6 +32,7 @@ type Frame {
 type Script {
 	name
 	version
+	modificationDate
 	firstFrame
 	frames
 }
@@ -63,7 +64,8 @@ actions: [uid] @reverse .
 hintText: string .
 taskText: string .
 name: string @index(exact) .
-version: string @index(exact) .
+modificationDate: string .
+version: string .
 firstFrame: uid .
 frames: [uid] .
 `
