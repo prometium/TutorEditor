@@ -53,9 +53,9 @@ export default Vue.extend({
   },
   computed: {
     ...mapState(["script"]),
-    ...mapGetters(["frame"]),
+    ...mapGetters(["currentFrame"]),
     showToolbar(): boolean {
-      return !!this.frame;
+      return !!this.currentFrame;
     }
   },
   methods: {

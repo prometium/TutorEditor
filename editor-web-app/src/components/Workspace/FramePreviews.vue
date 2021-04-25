@@ -12,7 +12,7 @@
         :class="[
           'frame-previews__img',
           {
-            active: pathItem.frameUid === frame.uid
+            active: pathItem.frameUid === currentFrame.uid
           }
         ]"
         @click="selectFrame(pathItem.frameUid)"
@@ -61,7 +61,7 @@ export default Vue.extend({
   name: "FramePreviews",
   computed: {
     ...mapState(["script"]),
-    ...mapGetters(["path", "frame"])
+    ...mapGetters(["path", "currentFrame"])
   },
   methods: {
     ...mapMutations({

@@ -1,10 +1,10 @@
 <template>
-  <div class="frame" tabindex="0" @blur="handleBlur">
-    <div v-show="frame.uid" class="frame__img-wrapper">
+  <div v-if="currentFrame" class="frame" tabindex="0" @blur="handleBlur">
+    <div v-show="currentFrame.uid" class="frame__img-wrapper">
       <img
         ref="img"
-        :src="`${frame.pictureLink}#${new Date().getTime()}`"
-        :alt="frame.uid"
+        :src="`${currentFrame.pictureLink}#${new Date().getTime()}`"
+        :alt="currentFrame.uid"
         class="frame__img"
       />
       <div v-show="showDragMoveArea" ref="resizeDrag" class="resize-drag" />
@@ -33,13 +33,13 @@ export default Vue.extend({
     window.removeEventListener("resize", this.onResize);
   },
   computed: {
-    ...mapGetters(["frame", "selectedAction", "selectedActionGroup"]),
+    ...mapGetters(["currentFrame", "currentAction", "currentActionGroup"]),
     showDragMoveArea(): boolean {
-      return this.selectedActionGroup === ActionGroup.Mouse;
+      return this.currentActionGroup === ActionGroup.Mouse;
     }
   },
   watch: {
-    selectedAction(action) {
+    currentAction(action) {
       const img = this.$refs.img as HTMLImageElement;
       const resizeDrag = this.$refs.resizeDrag as HTMLDivElement;
 
@@ -60,7 +60,7 @@ export default Vue.extend({
   },
   methods: {
     ...mapActions({
-      updateFrames: ActionTypes.UPDATE_FRAMES
+      updateFrames: ActionTypes.UPDATE_SCRIPT
     }),
     onResize() {
       const img = this.$refs.img as HTMLImageElement;
@@ -185,10 +185,10 @@ export default Vue.extend({
       this.updateFrames({
         frames: [
           {
-            uid: this.frame.uid,
+            uid: this.currentFrame.uid,
             actions: [
               {
-                uid: this.selectedAction.uid,
+                uid: this.currentAction.uid,
                 xLeft: x,
                 xRight: x + rect.width / scale,
                 yLeft: y,

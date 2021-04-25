@@ -1,10 +1,15 @@
-import { ActionTree, ActionContext } from "vuex";
+import { ActionContext } from "vuex";
 import { State } from "./state";
 import { ActionTypes } from "./action-types";
 import { Mutations } from "./mutations";
 import { MutationTypes } from "./mutation-types";
 import { Script, TraversableScript, Frame } from "@/common/types";
-import { API_ROOT, getScriptsInfo, getScript, updateScript } from "@/common/requests";
+import {
+  API_ROOT,
+  getScriptsInfo,
+  getScript,
+  updateScript
+} from "@/common/requests";
 
 type AugmentedActionContext = {
   commit<K extends keyof Mutations>(
@@ -21,9 +26,14 @@ type Actions = {
     { commit }: AugmentedActionContext,
     uid: string
   ): Promise<void>;
-  [ActionTypes.UPDATE_FRAMES](
+  [ActionTypes.UPDATE_SCRIPT](
     { state }: AugmentedActionContext,
-    data: { frames?: Frame[], frameIdsToDel?: string[], actionIdsToDel?: string[] }
+    data: {
+      script?: Script;
+      frames?: Frame[];
+      frameIdsToDel?: string[];
+      actionIdsToDel?: string[];
+    }
   ): Promise<void>;
 };
 
@@ -58,7 +68,6 @@ export const actions: Actions = {
           };
           commit(MutationTypes.SET_SCRIPT, traversableScript);
           commit(MutationTypes.SELECT_FRAME, traversableScript.firstFrame.uid);
-          commit(MutationTypes.CONFIGURE_PATH);
           resolve();
         })
         .catch(err => {
@@ -66,19 +75,27 @@ export const actions: Actions = {
         });
     });
   },
-  [ActionTypes.UPDATE_FRAMES]({ state, commit }, { frames, frameIdsToDel, actionIdsToDel }) {
+  [ActionTypes.UPDATE_SCRIPT](
+    { state, commit },
+    { script, frames, frameIdsToDel, actionIdsToDel }
+  ) {
     return new Promise((resolve, reject) => {
       if (!state.script.uid) return;
 
       return updateScript(
-        { uid: state.script.uid, frames } as Script,
-        { frameIdsToDel, actionIdsToDel }
-      ).then(() => {
-        commit(MutationTypes.UPDATE_FRAMES, frames);
-        resolve();
-      }).catch(err => {
-        reject(err);
-      });
-    })
+        { uid: state.script.uid, ...script, frames } as Script,
+        {
+          frameIdsToDel,
+          actionIdsToDel
+        }
+      )
+        .then(() => {
+          commit(MutationTypes.UPDATE_SCRIPT, { script, frames });
+          resolve();
+        })
+        .catch(err => {
+          reject(err);
+        });
+    });
   }
 };

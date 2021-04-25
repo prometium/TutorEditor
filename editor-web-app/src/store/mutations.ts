@@ -1,15 +1,18 @@
 import { MutationTypes } from "./mutation-types";
 import { State } from "./state";
-import { ScriptInfo, TraversableScript, PathItem, Frame } from "@/common/types";
+import { ScriptInfo, TraversableScript, Frame, Script } from "@/common/types";
 
 export type Mutations<S = State> = {
   [MutationTypes.SET_SCRIPTS_INFO](state: S, scriptsInfo: ScriptInfo[]): void;
   [MutationTypes.SET_SCRIPT](state: S, script: TraversableScript): void;
-  [MutationTypes.UPDATE_FRAMES](state: S, data: Frame[]): void;
-  [MutationTypes.SELECT_FRAME](state: S, uid: string): void;
+  [MutationTypes.UPDATE_SCRIPT](
+    state: S,
+    data: { script?: Script; frames?: Frame[] }
+  ): void;
+  [MutationTypes.SELECT_FRAME](state: S, uid?: string): void;
   [MutationTypes.CONFIGURE_PATH](
     state: S,
-    fork?: {
+    fork: {
       frameUid: string;
       branchNum: number;
     }
@@ -23,7 +26,11 @@ export const mutations: Mutations = {
   [MutationTypes.SET_SCRIPT](state, script) {
     state.script = script;
   },
-  [MutationTypes.UPDATE_FRAMES](state, frames = []) {
+  [MutationTypes.UPDATE_SCRIPT](state, { script = {}, frames = [] }) {
+    state.script = {
+      ...state.script,
+      ...script
+    };
     frames.forEach(frame => {
       const currentFrame = state.script?.frameByUid[frame.uid];
       state.script.frameByUid[frame.uid] = {
@@ -42,28 +49,6 @@ export const mutations: Mutations = {
     state.frameUid = uid;
   },
   [MutationTypes.CONFIGURE_PATH](state, fork) {
-    if (fork != null) {
-      state.script.branchNumByUid[fork.frameUid] = fork.branchNum;
-    }
-
-    let frameUid = state.script.firstFrame.uid;
-    const path: PathItem[] = [];
-    while (path.length <= Object.keys(state.script.frameByUid).length) {
-      const pathItem: PathItem = {
-        frameUid,
-        branchNum: state.script.branchNumByUid[frameUid] || 0
-      };
-      path.push(pathItem);
-
-      const actions = state.script.frameByUid[frameUid].actions;
-      if (actions == null || !actions.length) break;
-
-      const nextFrame = actions[pathItem.branchNum].nextFrame;
-      if (!nextFrame) break;
-
-      frameUid = nextFrame.uid;
-    }
-
-    state.script.path = path;
+    state.script.branchNumByUid[fork.frameUid] = fork.branchNum;
   }
 };

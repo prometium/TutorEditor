@@ -50,7 +50,11 @@ export default Vue.extend({
     async handleOpen() {
       this.dialog = false;
       await this.loadScript(this.radioGroup);
-      this.$router.push({ path: "/", query: { scriptUid: this.radioGroup } });
+      this.$router
+        .push({ path: "/", query: { scriptUid: this.radioGroup } })
+        .catch(() => {
+          /* ignore */
+        });
     }
   }
 });

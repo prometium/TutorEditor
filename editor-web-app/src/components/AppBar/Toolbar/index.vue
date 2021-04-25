@@ -8,11 +8,11 @@
     >
       <v-icon>{{ expanded ? "mdi-chevron-up" : "mdi-chevron-down" }}</v-icon>
     </v-btn>
-    <v-container fluid class="toolbar__container">
+    <v-container v-if="currentFrame" fluid class="toolbar__container">
       <v-row align="center" de>
         <v-col class="d-flex" cols="12" md="6">
           <v-text-field
-            v-model="frame.taskText"
+            v-model="currentFrame.taskText"
             label="Текст задания"
             dense
             hide-details
@@ -20,7 +20,7 @@
         </v-col>
         <v-col class="d-flex" cols="12" md="6">
           <v-text-field
-            v-model="frame.hintText"
+            v-model="currentFrame.hintText"
             label="Текст подсказки"
             dense
             hide-details
@@ -32,7 +32,7 @@
           <v-select
             item-text="text"
             item-value="value"
-            v-model="selectedActionType"
+            v-model="currentActionType"
             :items="actionItems"
             label="Действие"
             dense
@@ -41,8 +41,8 @@
           <component
             v-if="actionDialogComponent"
             :is="actionDialogComponent"
-            :frameUid="frame.uid"
-            :action="selectedAction"
+            :frameUid="currentFrame.uid"
+            :action="currentAction"
           >
             <template v-slot:activator="{ on, attrs }">
               <v-btn v-bind="attrs" v-on="on" elevation="1" icon>
@@ -76,30 +76,30 @@ export default Vue.extend({
     };
   },
   computed: {
-    ...mapGetters(["frame", "selectedAction", "selectedActionGroup"]),
+    ...mapGetters(["currentFrame", "currentAction", "currentActionGroup"]),
     showAction(): boolean {
-      return !!this.frame.actions?.length;
+      return !!this.currentFrame?.actions?.length;
     },
     actionDialogComponent() {
-      switch (this.selectedActionGroup) {
+      switch (this.currentActionGroup) {
         case ActionGroup.Keyboard:
           return "EditKeyboardActionDialog";
         default:
           return null;
       }
     },
-    selectedActionType: {
+    currentActionType: {
       get(): number {
-        return this.selectedAction?.actionType;
+        return this.currentAction?.actionType;
       },
       set(newValue: number) {
         this.updateFrames({
           frames: [
             {
-              uid: this.frame.uid,
+              uid: this.currentFrame.uid,
               actions: [
                 {
-                  uid: this.selectedAction.uid,
+                  uid: this.currentAction.uid,
                   actionType: newValue
                 }
               ]
@@ -111,7 +111,7 @@ export default Vue.extend({
   },
   methods: {
     ...mapActions({
-      updateFrames: ActionTypes.UPDATE_FRAMES
+      updateFrames: ActionTypes.UPDATE_SCRIPT
     }),
     handleToggleExpanded() {
       this.expanded = !this.expanded;

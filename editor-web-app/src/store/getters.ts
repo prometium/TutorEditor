@@ -3,27 +3,66 @@ import { Action, Frame, PathItem } from "@/common/types";
 import { ActionGroup, ActionType } from "@/common/constants";
 
 type Getters = {
-  path(state: State): Array<PathItem>;
-  frame(state: State): Frame;
-  selectedAction(state: State, getters: { [T in keyof Getters]: ReturnType<Getters[T]> }): Action | null;
-  selectedActionGroup(state: State, getters: { [T in keyof Getters]: ReturnType<Getters[T]> }): number;
+  path(state: State): PathItem[];
+  currentFrame(state: State): Frame | null;
+  currentAction(
+    state: State,
+    getters: { [T in keyof Getters]: ReturnType<Getters[T]> }
+  ): Action | null;
+  currentActionGroup(
+    state: State,
+    getters: { [T in keyof Getters]: ReturnType<Getters[T]> }
+  ): number;
+  prevPathItem(
+    state: State,
+    getters: { [T in keyof Getters]: ReturnType<Getters[T]> }
+  ): PathItem | null;
+  prevFrame(
+    state: State,
+    getters: { [T in keyof Getters]: ReturnType<Getters[T]> }
+  ): Frame | null;
+  prevAction(
+    state: State,
+    getters: { [T in keyof Getters]: ReturnType<Getters[T]> }
+  ): Action | null;
 };
 
 export const getters: Getters = {
   path(state) {
-    if (state.script == null) return [];
-    return state.script.path;
+    let frameUid = state.script.firstFrame.uid;
+    const path: PathItem[] = [];
+    while (path.length <= Object.keys(state.script.frameByUid).length) {
+      const pathItem: PathItem = {
+        frameUid,
+        branchNum: state.script.branchNumByUid[frameUid] || 0
+      };
+      path.push(pathItem);
+
+      const actions = state.script.frameByUid[frameUid].actions;
+      if (actions == null || !actions.length) break;
+
+      const nextFrame = actions[pathItem.branchNum].nextFrame;
+      if (!nextFrame) break;
+
+      frameUid = nextFrame.uid;
+    }
+
+    return path;
   },
-  frame(state) {
-    return state.script.frameByUid[state.frameUid] || {}
+  currentFrame(state) {
+    return state.frameUid ? state.script.frameByUid[state.frameUid] : null;
   },
-  selectedAction(state, getters) {
-    return getters.frame.actions && getters.frame.actions[
-      state.script.branchNumByUid[getters.frame.uid] || 0
-    ] || null;
+  currentAction(state, getters) {
+    return (
+      (getters.currentFrame?.actions &&
+        getters.currentFrame.actions[
+          state.script.branchNumByUid[getters.currentFrame.uid] || 0
+        ]) ||
+      null
+    );
   },
-  selectedActionGroup(_, getters) {
-    switch (getters.selectedAction?.actionType) {
+  currentActionGroup(_, getters) {
+    switch (getters.currentAction?.actionType) {
       case ActionType.LeftMouseClick:
       case ActionType.LeftMouseDown:
       case ActionType.LeftMouseUp:
@@ -41,5 +80,20 @@ export const getters: Getters = {
       default:
         return ActionGroup.Other;
     }
+  },
+  prevPathItem(_, getters) {
+    const pathItemIndex = getters.path.findIndex(
+      (pathItem: PathItem) => pathItem.frameUid === getters.currentFrame?.uid
+    );
+    const prevPathItem = getters.path[pathItemIndex - 1];
+    return prevPathItem || null;
+  },
+  prevFrame(state, getters) {
+    if (!getters.prevPathItem) return null;
+    return state.script.frameByUid[getters.prevPathItem.frameUid];
+  },
+  prevAction(_, getters) {
+    if (!getters.prevPathItem || !getters.prevFrame?.actions) return null;
+    return getters.prevFrame.actions[getters.prevPathItem.branchNum] || null;
   }
 };

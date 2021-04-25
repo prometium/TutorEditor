@@ -75,7 +75,7 @@ export default Vue.extend({
   },
   methods: {
     ...mapActions({
-      updateFrames: ActionTypes.UPDATE_FRAMES
+      updateFrames: ActionTypes.UPDATE_SCRIPT
     }),
     handleChangeModeKey() {
       this.editMode = EditMode.Key;

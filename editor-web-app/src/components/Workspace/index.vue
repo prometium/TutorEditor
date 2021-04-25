@@ -39,7 +39,7 @@ export default Vue.extend({
     this.loadScript(this.$route.query.scriptUid);
   },
   computed: {
-    ...mapState(["script", "frame"]),
+    ...mapState(["script"]),
     showSidePanel(): boolean {
       return !!this.script.uid;
     }

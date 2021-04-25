@@ -3,7 +3,7 @@ import { ScriptInfo, TraversableScript } from "@/common/types";
 export interface State {
   scriptsInfo: Array<ScriptInfo>;
   script: TraversableScript;
-  frameUid: string;
+  frameUid?: string;
 }
 
 export const state: State = {
