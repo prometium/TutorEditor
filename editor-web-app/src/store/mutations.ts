@@ -1,13 +1,9 @@
-import { MutationTree } from "vuex";
 import { MutationTypes } from "./mutation-types";
 import { State } from "./state";
 import { ScriptInfo, TraversableScript, PathItem, Frame } from "@/common/types";
 
 export type Mutations<S = State> = {
-  [MutationTypes.SET_SCRIPTS_INFO](
-    state: S,
-    scriptsInfo: ScriptInfo[]
-  ): void;
+  [MutationTypes.SET_SCRIPTS_INFO](state: S, scriptsInfo: ScriptInfo[]): void;
   [MutationTypes.SET_SCRIPT](state: S, script: TraversableScript): void;
   [MutationTypes.UPDATE_FRAMES](state: S, data: Frame[]): void;
   [MutationTypes.SELECT_FRAME](state: S, uid: string): void;
@@ -20,7 +16,7 @@ export type Mutations<S = State> = {
   ): void;
 };
 
-export const mutations: MutationTree<State> & Mutations = {
+export const mutations: Mutations = {
   [MutationTypes.SET_SCRIPTS_INFO](state, scriptsInfo) {
     state.scriptsInfo = scriptsInfo;
   },
@@ -31,12 +27,16 @@ export const mutations: MutationTree<State> & Mutations = {
     frames.forEach(frame => {
       const currentFrame = state.script?.frameByUid[frame.uid];
       state.script.frameByUid[frame.uid] = {
-        ...currentFrame, ...frame, actions: currentFrame.actions?.map(currentAction => {
-          const newAppropriateAction = frame.actions?.find(action => action.uid === currentAction.uid);
+        ...currentFrame,
+        ...frame,
+        actions: currentFrame.actions?.map(currentAction => {
+          const newAppropriateAction = frame.actions?.find(
+            action => action.uid === currentAction.uid
+          );
           return { ...currentAction, ...newAppropriateAction };
         })
       };
-    })
+    });
   },
   [MutationTypes.SELECT_FRAME](state, uid) {
     state.frameUid = uid;

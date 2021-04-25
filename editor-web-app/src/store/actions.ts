@@ -27,7 +27,7 @@ type Actions = {
   ): Promise<void>;
 };
 
-export const actions: ActionTree<State, State> & Actions = {
+export const actions: Actions = {
   [ActionTypes.LOAD_SCRIPTS_INFO]({ commit }) {
     return new Promise((resolve, reject) => {
       getScriptsInfo()

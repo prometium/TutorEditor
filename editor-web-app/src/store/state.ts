@@ -1,4 +1,4 @@
-import { ScriptInfo, TraversableScript, Frame } from "@/common/types";
+import { ScriptInfo, TraversableScript } from "@/common/types";
 
 export interface State {
   scriptsInfo: Array<ScriptInfo>;
@@ -19,5 +19,5 @@ export const state: State = {
     path: [],
     branchNumByUid: {}
   },
-  frameUid: "",
+  frameUid: ""
 };

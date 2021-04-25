@@ -41,6 +41,9 @@ export default Vue.extend({
       file: null as File | null
     };
   },
+  computed: {
+    ...mapState(["scriptsInfo"])
+  },
   methods: {
     ...mapActions({
       loadScript: ActionTypes.LOAD_SCRIPT
@@ -55,13 +58,11 @@ export default Vue.extend({
       createScript(formData)
         .then(data => {
           this.loadScript(data.uid);
+          this.$router.push({ path: "/", query: { scriptUid: data.uid } });
           this.dialog = false;
         })
         .catch(console.error); // TODO: error handling
     }
-  },
-  computed: {
-    ...mapState(["scriptsInfo"])
   }
 });
 </script>

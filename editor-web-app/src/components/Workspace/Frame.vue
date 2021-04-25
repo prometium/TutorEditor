@@ -3,7 +3,7 @@
     <div v-show="frame.uid" class="frame__img-wrapper">
       <img
         ref="img"
-        :src="frame.pictureLink + '#' + new Date().getTime()"
+        :src="`${frame.pictureLink}#${new Date().getTime()}`"
         :alt="frame.uid"
         class="frame__img"
       />
@@ -12,9 +12,9 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import Vue from "vue";
-import { mapActions, mapGetters, mapState } from "vuex";
+import { mapActions, mapGetters } from "vuex";
 import interact from "interactjs";
 import { ActionGroup } from "@/common/constants";
 import { ActionTypes } from "@/store/action-types";
@@ -22,7 +22,7 @@ import { ActionTypes } from "@/store/action-types";
 export default Vue.extend({
   name: "Frame",
   mounted() {
-    const resizeDrag = this.$refs.resizeDrag;
+    const resizeDrag = this.$refs.resizeDrag as HTMLElement;
     if (resizeDrag) {
       this.initInteract(resizeDrag);
     }
@@ -33,16 +33,15 @@ export default Vue.extend({
     window.removeEventListener("resize", this.onResize);
   },
   computed: {
-    ...mapState(["script"]),
     ...mapGetters(["frame", "selectedAction", "selectedActionGroup"]),
-    showDragMoveArea() {
+    showDragMoveArea(): boolean {
       return this.selectedActionGroup === ActionGroup.Mouse;
     }
   },
   watch: {
     selectedAction(action) {
-      const img = this.$refs.img;
-      const resizeDrag = this.$refs.resizeDrag;
+      const img = this.$refs.img as HTMLImageElement;
+      const resizeDrag = this.$refs.resizeDrag as HTMLDivElement;
 
       if (!img || !resizeDrag || !this.showDragMoveArea) return;
 
@@ -51,8 +50,8 @@ export default Vue.extend({
 
       resizeDrag.setAttribute("data-fixed-x", action.xLeft);
       resizeDrag.setAttribute("data-fixed-y", action.yLeft);
-      resizeDrag.setAttribute("data-fixed-width", width);
-      resizeDrag.setAttribute("data-fixed-height", height);
+      resizeDrag.setAttribute("data-fixed-width", String(width));
+      resizeDrag.setAttribute("data-fixed-height", String(height));
 
       setTimeout(() => {
         this.onResize();
@@ -64,15 +63,17 @@ export default Vue.extend({
       updateFrames: ActionTypes.UPDATE_FRAMES
     }),
     onResize() {
-      const img = this.$refs.img;
-      const resizeDrag = this.$refs.resizeDrag;
+      const img = this.$refs.img as HTMLImageElement;
+      const resizeDrag = this.$refs.resizeDrag as HTMLDivElement;
       const scale = img.clientWidth / img.naturalWidth || 1;
 
-      resizeDrag.setAttribute("data-scale", scale);
-      const x = parseFloat(resizeDrag.getAttribute("data-fixed-x")) || 0;
-      const y = parseFloat(resizeDrag.getAttribute("data-fixed-y")) || 0;
-      const width = resizeDrag.getAttribute("data-fixed-width") || 0;
-      const height = resizeDrag.getAttribute("data-fixed-height") || 0;
+      resizeDrag.setAttribute("data-scale", String(scale));
+      const x = parseFloat(resizeDrag.getAttribute("data-fixed-x") || "") || 0;
+      const y = parseFloat(resizeDrag.getAttribute("data-fixed-y") || "") || 0;
+      const width =
+        parseInt(resizeDrag.getAttribute("data-fixed-width") || "") || 0;
+      const height =
+        parseInt(resizeDrag.getAttribute("data-fixed-height") || "") || 0;
 
       const scaledX = x * scale;
       const scaledY = y * scale;
@@ -81,10 +82,10 @@ export default Vue.extend({
       resizeDrag.style.width = `${width * scale}px`;
       resizeDrag.style.height = `${height * scale}px`;
 
-      resizeDrag.setAttribute("data-x", scaledX);
-      resizeDrag.setAttribute("data-y", scaledY);
+      resizeDrag.setAttribute("data-x", String(scaledX));
+      resizeDrag.setAttribute("data-y", String(scaledY));
     },
-    initInteract(selector) {
+    initInteract(selector: HTMLElement) {
       interact(selector)
         .draggable({
           onend(event) {
@@ -154,26 +155,30 @@ export default Vue.extend({
           ]
         });
     },
-    dragMoveListener(event) {
-      var target = event.target;
+    dragMoveListener(event: DragEvent & { dx: number; dy: number }) {
+      const target = event.target as HTMLDivElement;
+
       // keep the dragged position in the data-x/data-y attributes
-      var x = (parseFloat(target.getAttribute("data-x")) || 0) + event.dx;
-      var y = (parseFloat(target.getAttribute("data-y")) || 0) + event.dy;
+      const x =
+        (parseFloat(target.getAttribute("data-x") || "") || 0) + event.dx;
+      const y =
+        (parseFloat(target.getAttribute("data-y") || "") || 0) + event.dy;
 
       // translate the element
       target.style.webkitTransform = target.style.transform =
         "translate(" + x + "px, " + y + "px)";
 
       // update the posiion attributes
-      target.setAttribute("data-x", x);
-      target.setAttribute("data-y", y);
+      target.setAttribute("data-x", String(x));
+      target.setAttribute("data-y", String(y));
     },
     handleBlur() {
-      const resizeDrag = this.$refs.resizeDrag;
+      const resizeDrag = this.$refs.resizeDrag as HTMLDivElement;
 
-      const x = parseFloat(resizeDrag.getAttribute("data-fixed-x")) || 0;
-      const y = parseFloat(resizeDrag.getAttribute("data-fixed-y")) || 0;
-      const scale = parseFloat(resizeDrag.getAttribute("data-scale")) || 1;
+      const x = parseFloat(resizeDrag.getAttribute("data-fixed-x") || "") || 0;
+      const y = parseFloat(resizeDrag.getAttribute("data-fixed-y") || "") || 0;
+      const scale =
+        parseFloat(resizeDrag.getAttribute("data-scale") || "") || 1;
 
       const rect = resizeDrag.getBoundingClientRect();
 

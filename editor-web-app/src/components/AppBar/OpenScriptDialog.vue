@@ -41,7 +41,7 @@ export default Vue.extend({
     };
   },
   computed: {
-    ...mapState(["scriptsInfo", "script"])
+    ...mapState(["scriptsInfo"])
   },
   methods: {
     ...mapActions({
@@ -50,7 +50,7 @@ export default Vue.extend({
     async handleOpen() {
       this.dialog = false;
       await this.loadScript(this.radioGroup);
-      this.$router.push({ path: "/", query: { scriptUid: this.script.uid } });
+      this.$router.push({ path: "/", query: { scriptUid: this.radioGroup } });
     }
   }
 });

@@ -11,7 +11,7 @@
         <p class="body-1" v-if="editMode">
           <v-text-field
             @keyup="handleKeyUp"
-            @keydown.prevent=""
+            @keydown.prevent
             solo
             label="Новая клавиша"
           />
@@ -19,8 +19,8 @@
         </p>
         <template v-else>
           <p class="body-1">
-            Клавиша: <b>{{ action.key || "[нет]" }}</b>
-            <v-btn @click="handleChangeKey" icon>
+            Клавиша: <b>{{ key || "[нет]" }}</b>
+            <v-btn @click="handleChangeModeKey" icon>
               <v-icon> mdi-pencil </v-icon>
             </v-btn>
             <v-btn @click="handleDeleteKey" icon>
@@ -28,8 +28,8 @@
             </v-btn>
           </p>
           <p class="body-1">
-            Модификатор: <b>{{ action.modKey || "[нет]" }}</b>
-            <v-btn @click="handleChangeModKey" icon>
+            Модификатор: <b>{{ modKey || "[нет]" }}</b>
+            <v-btn @click="handleChangeModeModKey" icon>
               <v-icon> mdi-pencil </v-icon>
             </v-btn>
             <v-btn @click="handleDeleteModKey" icon>
@@ -40,8 +40,9 @@
       </v-card-text>
       <v-divider />
       <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn @click="dialog = false" text color="primary"> Применить </v-btn>
+        <v-spacer />
+        <v-btn @click="handleDiscard" text> Отменить </v-btn>
+        <v-btn @click="handleSubmit" text color="primary"> Сохранить </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -67,46 +68,47 @@ export default Vue.extend({
   data() {
     return {
       dialog: false,
-      editMode: EditMode.None
+      editMode: EditMode.None,
+      key: "",
+      modKey: ""
     };
   },
   methods: {
     ...mapActions({
       updateFrames: ActionTypes.UPDATE_FRAMES
     }),
-    handleChangeKey() {
+    handleChangeModeKey() {
       this.editMode = EditMode.Key;
     },
-    handleChangeModKey() {
+    handleChangeModeModKey() {
       this.editMode = EditMode.ModKey;
     },
     handleKeyUp(event: KeyboardEvent) {
-      this.updateFrames({
-        frames: [
-          {
-            uid: this.frameUid,
-            actions: [
-              {
-                uid: this.action.uid,
-                [this.editMode]: event.code
-              }
-            ]
-          }
-        ]
-      });
+      switch (this.editMode) {
+        case EditMode.Key:
+          this.key = event.code;
+          break;
+        case EditMode.ModKey:
+          this.modKey = event.code;
+          break;
+        default:
+      }
       this.editMode = EditMode.None;
     },
     handleDeleteKey() {
-      this.handleDelete(EditMode.Key);
+      this.key = "";
     },
     handleDeleteModKey() {
-      this.handleDelete(EditMode.ModKey);
+      this.modKey = "";
     },
-    async handleDelete(editMode: EditMode) {
+    handleDiscard() {
+      this.key = this.action.key;
+      this.modKey = this.action.modKey;
+      this.dialog = false;
+    },
+    async handleSubmit() {
       await this.updateFrames({
-        actionIdsToDel: [this.action.uid]
-      });
-      this.updateFrames({
+        actionIdsToDel: [this.action.uid],
         frames: [
           {
             uid: this.frameUid,
@@ -114,17 +116,27 @@ export default Vue.extend({
               {
                 uid: this.action.uid,
                 ...this.action,
-                [editMode]: ""
+                key: this.key,
+                modKey: this.modKey
               }
             ]
           }
         ]
       });
+      this.dialog = false;
     }
   },
-
   computed: {
     ...mapState(["scriptsInfo"])
+  },
+  watch: {
+    action: {
+      immediate: true,
+      handler(value) {
+        this.key = value.key;
+        this.modKey = value.modKey;
+      }
+    }
   }
 });
 </script>

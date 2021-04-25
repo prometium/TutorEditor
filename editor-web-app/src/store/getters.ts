@@ -1,14 +1,15 @@
-import { GetterTree } from "vuex";
 import { State } from "./state";
-import { Frame, PathItem } from "@/common/types";
+import { Action, Frame, PathItem } from "@/common/types";
 import { ActionGroup, ActionType } from "@/common/constants";
 
 type Getters = {
   path(state: State): Array<PathItem>;
   frame(state: State): Frame;
+  selectedAction(state: State, getters: { [T in keyof Getters]: ReturnType<Getters[T]> }): Action | null;
+  selectedActionGroup(state: State, getters: { [T in keyof Getters]: ReturnType<Getters[T]> }): number;
 };
 
-export const getters: GetterTree<State, State> & Getters = {
+export const getters: Getters = {
   path(state) {
     if (state.script == null) return [];
     return state.script.path;
@@ -19,7 +20,7 @@ export const getters: GetterTree<State, State> & Getters = {
   selectedAction(state, getters) {
     return getters.frame.actions && getters.frame.actions[
       state.script.branchNumByUid[getters.frame.uid] || 0
-    ];
+    ] || null;
   },
   selectedActionGroup(_, getters) {
     switch (getters.selectedAction?.actionType) {

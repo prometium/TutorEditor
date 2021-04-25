@@ -1,6 +1,11 @@
 <template>
   <div class="toolbar">
-    <v-btn @click="toggleExpansion" elevation="1" icon :disabled="!showAction">
+    <v-btn
+      @click="handleToggleExpanded"
+      elevation="1"
+      icon
+      :disabled="!showAction"
+    >
       <v-icon>{{ expanded ? "mdi-chevron-up" : "mdi-chevron-down" }}</v-icon>
     </v-btn>
     <v-container fluid class="toolbar__container">
@@ -51,9 +56,9 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import Vue from "vue";
-import { mapState, mapGetters, mapActions } from "vuex";
+import { mapGetters, mapActions } from "vuex";
 import { ActionTypes } from "@/store/action-types";
 import { initialActionItems } from "./constants";
 import EditKeyboardActionDialog from "./EditKeyboardActionDialog.vue";
@@ -70,18 +75,9 @@ export default Vue.extend({
       actionItems: initialActionItems
     };
   },
-  methods: {
-    ...mapActions({
-      updateFrames: ActionTypes.UPDATE_FRAMES
-    }),
-    toggleExpansion() {
-      this.expanded = !this.expanded;
-    }
-  },
   computed: {
-    ...mapState(["script"]),
-    ...mapGetters(["frame", "path", "selectedAction", "selectedActionGroup"]),
-    showAction() {
+    ...mapGetters(["frame", "selectedAction", "selectedActionGroup"]),
+    showAction(): boolean {
       return !!this.frame.actions?.length;
     },
     actionDialogComponent() {
@@ -93,10 +89,10 @@ export default Vue.extend({
       }
     },
     selectedActionType: {
-      get() {
+      get(): number {
         return this.selectedAction?.actionType;
       },
-      set(newValue) {
+      set(newValue: number) {
         this.updateFrames({
           frames: [
             {
@@ -111,6 +107,14 @@ export default Vue.extend({
           ]
         });
       }
+    }
+  },
+  methods: {
+    ...mapActions({
+      updateFrames: ActionTypes.UPDATE_FRAMES
+    }),
+    handleToggleExpanded() {
+      this.expanded = !this.expanded;
     }
   }
 });

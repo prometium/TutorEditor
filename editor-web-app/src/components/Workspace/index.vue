@@ -18,7 +18,7 @@ import Vue from "vue";
 import { mapActions, mapState } from "vuex";
 import store from "@/store";
 import { ActionTypes } from "@/store/action-types";
-import Frame from "./Frame/index.vue";
+import Frame from "./Frame.vue";
 import FramePreviews from "./FramePreviews.vue";
 import FrameTools from "./FrameTools.vue";
 

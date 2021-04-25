@@ -54,6 +54,7 @@ export type Frame = {
 }
 
 export type Action = {
+  actionType: ActionType,
   uid: string;
   nextFrame: {
     uid: string;
