@@ -6,7 +6,7 @@ type RequestPayload = {
   endpoint: string;
   method?: "GET" | "PUT" | "POST";
   data?: string | FormData | null;
-  headers?: Headers
+  headers?: Headers;
 };
 
 function executeRequest<T>({
@@ -19,7 +19,7 @@ function executeRequest<T>({
     fetch(API_ROOT + endpoint, {
       method,
       body: data,
-      headers,
+      headers
     })
       .then(response => {
         if (!response.ok) {
@@ -42,7 +42,7 @@ type GetScriptsInfoResponse = {
 
 export function getScriptsInfo(): Promise<GetScriptsInfoResponse> {
   return executeRequest({
-    endpoint: "/scripts",
+    endpoint: "/scripts"
   });
 }
 
@@ -57,28 +57,31 @@ export function getScript(uid: string): Promise<GetScriptResponse> {
 }
 
 type CreateScriptResponse = {
-  uid: string
-}
+  uid: string;
+};
 
 export function createScript(script: FormData): Promise<CreateScriptResponse> {
   return executeRequest({
-    endpoint: '/raw',
-    method: 'POST',
-    data: script,
+    endpoint: "/archive",
+    method: "POST",
+    data: script
   });
 }
 
 type UpdateScriptResponse = {
-  uids: string[] | null
-}
+  uids: string[] | null;
+};
 
 export function updateScript(
   script: Script,
-  { frameIdsToDel, actionIdsToDel }: { frameIdsToDel?: string[], actionIdsToDel?: string[] } = {}
+  {
+    frameIdsToDel,
+    actionIdsToDel
+  }: { frameIdsToDel?: string[]; actionIdsToDel?: string[] } = {}
 ): Promise<UpdateScriptResponse> {
   return executeRequest({
-    endpoint: '/scripts',
-    method: 'PUT',
-    data: JSON.stringify({ script, frameIdsToDel, actionIdsToDel }),
+    endpoint: "/scripts",
+    method: "PUT",
+    data: JSON.stringify({ script, frameIdsToDel, actionIdsToDel })
   });
 }

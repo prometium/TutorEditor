@@ -57,7 +57,9 @@ export const actions: Actions = {
           const frameByUid: Record<string, Frame> = {};
           script.frames.forEach(frame => {
             frameByUid[frame.uid] = frame;
-            frameByUid[frame.uid].pictureLink = API_ROOT + frame.pictureLink;
+            frameByUid[
+              frame.uid
+            ].pictureLink = `${API_ROOT}/images/${frame.pictureLink}`;
           });
 
           const traversableScript: TraversableScript = {
