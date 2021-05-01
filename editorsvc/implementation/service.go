@@ -29,17 +29,17 @@ func (s *service) AddScriptArchive(ctx context.Context, name string, fileReader 
 
 	defer fileReader.Close()
 
-	var rs rawScript
-	if err := rs.init(fileReader); err != nil {
+	var controller rawScriptArchiveController
+	if err := controller.init(fileReader); err != nil {
 		return "", err
 	}
 
-	linksMap, err := rs.saveImages(ctx, "assets/images/")
+	linksMap, err := controller.saveImages(ctx, "assets/images/")
 	if err != nil {
 		return "", err
 	}
 
-	script, err := rs.createScript(name, linksMap)
+	script, err := controller.createScript(name, linksMap)
 	if err != nil {
 		return "", err
 	}
@@ -51,6 +51,22 @@ func (s *service) AddScriptArchive(ctx context.Context, name string, fileReader 
 		return id, err
 	}
 	return id, nil
+}
+
+func (s *service) GetScriptArchive(ctx context.Context, id string) ([]byte, error) {
+	script, err := s.repository.GetScript(ctx, id)
+	if err != nil {
+		return nil, err
+	} else if script == nil {
+		return nil, editorsvc.ErrScriptNotFound
+	}
+
+	var controller scriptArchiveController
+	if err := controller.init(script, "assets/images/"); err != nil {
+		return nil, err
+	}
+
+	return controller.getArchive()
 }
 
 func (s *service) GetScriptsList(ctx context.Context) ([]editorsvc.Script, error) {

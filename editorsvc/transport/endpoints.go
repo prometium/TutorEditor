@@ -11,6 +11,7 @@ import (
 // Endpoints are exposed
 type Endpoints struct {
 	AddScriptArchiveEndpoint endpoint.Endpoint
+	GetScriptArchiveEndpoint endpoint.Endpoint
 	GetScriptsListEndpoint   endpoint.Endpoint
 	GetScriptEndpoint        endpoint.Endpoint
 	DeleteScriptEndpoint     endpoint.Endpoint
@@ -23,6 +24,7 @@ type Endpoints struct {
 func MakeServerEndpoints(s editorsvc.Service) Endpoints {
 	return Endpoints{
 		AddScriptArchiveEndpoint: makeAddScriptArchiveEndpoint(s),
+		GetScriptArchiveEndpoint: makeGetScriptArchiveEndpoint(s),
 		GetScriptsListEndpoint:   makeGetScriptsListEndpoint(s),
 		GetScriptEndpoint:        makeGetScriptEndpoint(s),
 		DeleteScriptEndpoint:     makeDeleteScriptEndpoint(s),
@@ -36,6 +38,14 @@ func makeAddScriptArchiveEndpoint(s editorsvc.Service) endpoint.Endpoint {
 		req := request.(AddScriptArchiveRequest)
 		uid, err := s.AddScriptArchive(ctx, req.Name, req.FileReader)
 		return AddScriptArchiveResponse{UID: uid, Err: err}, nil
+	}
+}
+
+func makeGetScriptArchiveEndpoint(s editorsvc.Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(GetScriptArchiveRequest)
+		archiveBytes, err := s.GetScriptArchive(ctx, req.UID)
+		return archiveBytes, err
 	}
 }
 

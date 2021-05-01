@@ -38,6 +38,13 @@ func MakeHTTPHandler(e transport.Endpoints, logger log.Logger) http.Handler {
 		options...,
 	))
 
+	r.Methods("GET").Path("/archive/{uid}").Handler(httptransport.NewServer(
+		e.GetScriptArchiveEndpoint,
+		decodeGetScriptArchiveRequest,
+		encodeBytesResponse,
+		options...,
+	))
+
 	r.Methods("GET").Path("/scripts").Handler(httptransport.NewServer(
 		e.GetScriptsListEndpoint,
 		decodeGetScriptsListRequest,
@@ -95,6 +102,11 @@ func decodeAddScriptArchiveRequest(ctx context.Context, r *http.Request) (interf
 	}, nil
 }
 
+func decodeGetScriptArchiveRequest(ctx context.Context, r *http.Request) (interface{}, error) {
+	vars := mux.Vars(r)
+	return transport.GetScriptArchiveRequest{UID: vars["uid"]}, nil
+}
+
 func decodeGetScriptsListRequest(ctx context.Context, r *http.Request) (interface{}, error) {
 	var req transport.GetScriptsListRequest
 	return req, nil
@@ -128,11 +140,17 @@ func decodeCopyScriptRequest(ctx context.Context, r *http.Request) (interface{},
 
 func encodeResponse(ctx context.Context, w http.ResponseWriter, response interface{}) error {
 	w.Header().Set("Content-Type", "application/json")
-	if e, ok := response.(errorer); ok && e.Error() != nil {
-		encodeError(ctx, e.Error(), w)
+	if err, ok := response.(errorer); ok && err.Error() != nil {
+		encodeError(ctx, err.Error(), w)
 		return nil
 	}
 	return json.NewEncoder(w).Encode(response)
+}
+
+func encodeBytesResponse(ctx context.Context, w http.ResponseWriter, response interface{}) error {
+	w.Header().Set("Content-Type", "application/zip")
+	w.Write(response.([]byte))
+	return nil
 }
 
 type errorer interface {

@@ -20,6 +20,11 @@ type AddScriptArchiveResponse struct {
 
 func (r AddScriptArchiveResponse) Error() error { return r.Err }
 
+// AddScriptArchiveRequest holds the request parameters for the AddScriptArchive method
+type GetScriptArchiveRequest struct {
+	UID string `json:"uid"`
+}
+
 // GetScriptsListRequest holds the request parameters for the GetScriptsList method
 type GetScriptsListRequest struct{}
 

@@ -67,22 +67,22 @@ type rawFrame struct {
 	Hint         string    `json:"hint,omitempty"`
 }
 
-type rawScript struct {
+type rawScriptArchiveController struct {
 	Images []*zip.File
 	Frames []rawFrame `json:"frames,omitempty"`
 }
 
-func (rs *rawScript) init(r io.Reader) error {
+func (controller *rawScriptArchiveController) init(r io.Reader) error {
 	zipReader, err := utils.CreateZipReader(r)
 	if err != nil {
 		return err
 	}
 
-	rs.Images = make([]*zip.File, 0, len(zipReader.File))
+	controller.Images = make([]*zip.File, 0, len(zipReader.File))
 	var scriptFile *zip.File = nil
 	for _, file := range zipReader.File {
 		if filepath.Ext(strings.TrimSpace(file.Name)) == ".png" {
-			rs.Images = append(rs.Images, file)
+			controller.Images = append(controller.Images, file)
 		} else if file.Name == "Script.json" {
 			scriptFile = file
 		}
@@ -93,20 +93,20 @@ func (rs *rawScript) init(r io.Reader) error {
 		return err
 	}
 
-	if err := json.Unmarshal([]byte(scriptJSON), &rs); err != nil {
+	if err := json.Unmarshal([]byte(scriptJSON), &controller); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (rs *rawScript) saveImages(ctx context.Context, imagesDir string) (map[string]string, error) {
+func (controller *rawScriptArchiveController) saveImages(ctx context.Context, imagesDir string) (map[string]string, error) {
 	os.MkdirAll(imagesDir, os.ModePerm)
 
 	lock := sync.RWMutex{}
 	errs, _ := errgroup.WithContext(ctx)
 	var linksMap map[string]string = make(map[string]string)
-	for _, file := range rs.Images {
+	for _, file := range controller.Images {
 		currentFile := file
 		errs.Go(func() error {
 			hash, err := utils.HashZipFileMD5(currentFile)
@@ -124,7 +124,7 @@ func (rs *rawScript) saveImages(ctx context.Context, imagesDir string) (map[stri
 
 			lock.Lock()
 			defer lock.Unlock()
-			linksMap[currentFile.Name] = filepath.Join("/", hash+".png")
+			linksMap[currentFile.Name] = hash + ".png"
 
 			return nil
 		})
@@ -136,16 +136,16 @@ func (rs *rawScript) saveImages(ctx context.Context, imagesDir string) (map[stri
 	return linksMap, nil
 }
 
-func (rs *rawScript) createScript(name string, linksMap map[string]string) (*editorsvc.Script, error) {
-	frames := make([]editorsvc.Frame, len(rs.Frames))
+func (controller *rawScriptArchiveController) createScript(name string, linksMap map[string]string) (*editorsvc.Script, error) {
+	frames := make([]editorsvc.Frame, len(controller.Frames))
 
-	for i, frame := range rs.Frames {
+	for i, frame := range controller.Frames {
 		action := &frame.ActionSwitch
 
 		var nextFrame *editorsvc.NextFrame
-		if i+1 < len(rs.Frames) {
+		if i+1 < len(controller.Frames) {
 			nextFrame = &editorsvc.NextFrame{
-				UID: strconv.Itoa(rs.Frames[i+1].FrameNumber),
+				UID: strconv.Itoa(controller.Frames[i+1].FrameNumber),
 			}
 		}
 
