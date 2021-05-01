@@ -6,19 +6,19 @@ import (
 	"github.com/prometium/tutoreditor/editorsvc"
 )
 
-// AddRawScriptRequest holds the request parameters for the AddRawScript method
-type AddRawScriptRequest struct {
+// AddScriptArchiveRequest holds the request parameters for the AddScriptArchive method
+type AddScriptArchiveRequest struct {
 	Name       string `json:"name"`
 	FileReader io.ReadCloser
 }
 
-// AddRawScriptResponse holds the response parameters for the AddRawScript method
-type AddRawScriptResponse struct {
+// AddScriptArchiveResponse holds the response parameters for the AddScriptArchive method
+type AddScriptArchiveResponse struct {
 	UID string `json:"uid"`
 	Err error  `json:"error,omitempty"`
 }
 
-func (r AddRawScriptResponse) Error() error { return r.Err }
+func (r AddScriptArchiveResponse) Error() error { return r.Err }
 
 // GetScriptsListRequest holds the request parameters for the GetScriptsList method
 type GetScriptsListRequest struct{}

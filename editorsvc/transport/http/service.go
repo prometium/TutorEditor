@@ -31,9 +31,9 @@ func MakeHTTPHandler(e transport.Endpoints, logger log.Logger) http.Handler {
 		),
 	))
 
-	r.Methods("POST").Path("/raw").Handler(httptransport.NewServer(
-		e.AddRawScriptEndpoint,
-		decodeAddRawScriptRequest,
+	r.Methods("POST").Path("/archive").Handler(httptransport.NewServer(
+		e.AddScriptArchiveEndpoint,
+		decodeAddScriptArchiveRequest,
 		encodeResponse,
 		options...,
 	))
@@ -83,13 +83,13 @@ func cacheControlWrapper(h http.Handler) http.Handler {
 	})
 }
 
-func decodeAddRawScriptRequest(ctx context.Context, r *http.Request) (interface{}, error) {
+func decodeAddScriptArchiveRequest(ctx context.Context, r *http.Request) (interface{}, error) {
 	file, _, err := r.FormFile("script")
 	if err != nil && err != http.ErrMissingFile {
 		return nil, err
 	}
 	name := r.FormValue("name")
-	return transport.AddRawScriptRequest{
+	return transport.AddScriptArchiveRequest{
 		FileReader: file,
 		Name:       name,
 	}, nil

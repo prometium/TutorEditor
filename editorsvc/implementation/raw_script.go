@@ -124,7 +124,7 @@ func (rs *rawScript) saveImages(ctx context.Context, imagesDir string) (map[stri
 
 			lock.Lock()
 			defer lock.Unlock()
-			linksMap[currentFile.Name] = filepath.Join("/images", hash+".png")
+			linksMap[currentFile.Name] = filepath.Join("/", hash+".png")
 
 			return nil
 		})
@@ -141,7 +141,7 @@ func (rs *rawScript) createScript(name string, linksMap map[string]string) (*edi
 
 	for i, frame := range rs.Frames {
 		action := &frame.ActionSwitch
-		
+
 		var nextFrame *editorsvc.NextFrame
 		if i+1 < len(rs.Frames) {
 			nextFrame = &editorsvc.NextFrame{

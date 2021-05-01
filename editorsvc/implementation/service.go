@@ -22,7 +22,7 @@ func NewService(rep editorsvc.Repository) editorsvc.Service {
 	}
 }
 
-func (s *service) AddRawScript(ctx context.Context, name string, fileReader io.ReadCloser) (string, error) {
+func (s *service) AddScriptArchive(ctx context.Context, name string, fileReader io.ReadCloser) (string, error) {
 	if fileReader == nil {
 		return "", editorsvc.ErrFileNotAttached
 	}

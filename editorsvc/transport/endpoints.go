@@ -10,32 +10,32 @@ import (
 
 // Endpoints are exposed
 type Endpoints struct {
-	AddRawScriptEndpoint   endpoint.Endpoint
-	GetScriptsListEndpoint endpoint.Endpoint
-	GetScriptEndpoint      endpoint.Endpoint
-	DeleteScriptEndpoint   endpoint.Endpoint
-	UpdateScriptEndpoint   endpoint.Endpoint
-	CopyScriptEndpoint     endpoint.Endpoint
+	AddScriptArchiveEndpoint endpoint.Endpoint
+	GetScriptsListEndpoint   endpoint.Endpoint
+	GetScriptEndpoint        endpoint.Endpoint
+	DeleteScriptEndpoint     endpoint.Endpoint
+	UpdateScriptEndpoint     endpoint.Endpoint
+	CopyScriptEndpoint       endpoint.Endpoint
 }
 
 // MakeServerEndpoints returns an Endpoints struct where each endpoint invokes
 // the corresponding method on the provided service
 func MakeServerEndpoints(s editorsvc.Service) Endpoints {
 	return Endpoints{
-		AddRawScriptEndpoint:   makeAddRawScriptEndpoint(s),
-		GetScriptsListEndpoint: makeGetScriptsListEndpoint(s),
-		GetScriptEndpoint:      makeGetScriptEndpoint(s),
-		DeleteScriptEndpoint:   makeDeleteScriptEndpoint(s),
-		UpdateScriptEndpoint:   makeUpdateScriptEndpoint(s),
-		CopyScriptEndpoint:     makeCopyScriptEndpoint(s),
+		AddScriptArchiveEndpoint: makeAddScriptArchiveEndpoint(s),
+		GetScriptsListEndpoint:   makeGetScriptsListEndpoint(s),
+		GetScriptEndpoint:        makeGetScriptEndpoint(s),
+		DeleteScriptEndpoint:     makeDeleteScriptEndpoint(s),
+		UpdateScriptEndpoint:     makeUpdateScriptEndpoint(s),
+		CopyScriptEndpoint:       makeCopyScriptEndpoint(s),
 	}
 }
 
-func makeAddRawScriptEndpoint(s editorsvc.Service) endpoint.Endpoint {
+func makeAddScriptArchiveEndpoint(s editorsvc.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		req := request.(AddRawScriptRequest)
-		uid, err := s.AddRawScript(ctx, req.Name, req.FileReader)
-		return AddRawScriptResponse{UID: uid, Err: err}, nil
+		req := request.(AddScriptArchiveRequest)
+		uid, err := s.AddScriptArchive(ctx, req.Name, req.FileReader)
+		return AddScriptArchiveResponse{UID: uid, Err: err}, nil
 	}
 }
 
