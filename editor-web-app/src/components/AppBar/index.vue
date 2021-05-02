@@ -24,6 +24,9 @@
                 </v-list-item>
               </template>
             </OpenScriptDialog>
+            <v-list-item @click="handleDownloadScriptArchive">
+              <v-list-item-title>Скачать архив</v-list-item-title>
+            </v-list-item>
           </v-list>
         </v-menu>
         <v-btn small text elevation="0"> Редактирование </v-btn>
@@ -43,6 +46,7 @@ import { ActionTypes } from "@/store/action-types";
 import OpenScriptDialog from "./OpenScriptDialog.vue";
 import CreateScriptDialog from "./CreateScriptDialog.vue";
 import Toolbar from "./Toolbar/index.vue";
+import { downloadScriptArchive } from "@/common/requests";
 
 export default Vue.extend({
   name: "AppBar",
@@ -61,7 +65,17 @@ export default Vue.extend({
   methods: {
     ...mapActions({
       loadScriptsInfo: ActionTypes.LOAD_SCRIPTS_INFO
-    })
+    }),
+    handleDownloadScriptArchive() {
+      downloadScriptArchive(this.script.uid).then(result => {
+        const url = window.URL.createObjectURL(result);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "Script";
+        link.click();
+        window.URL.revokeObjectURL(url);
+      });
+    }
   }
 });
 </script>

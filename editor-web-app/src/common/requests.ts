@@ -25,7 +25,17 @@ function executeRequest<T>({
         if (!response.ok) {
           throw new Error(response.statusText);
         }
-        return response.json();
+
+        const contentType = response.headers.get("content-type");
+        if (!contentType) return response.text();
+
+        if (contentType.includes("application/json")) {
+          return response.json();
+        }
+        if (contentType.includes("application/zip")) {
+          return response.blob();
+        }
+        return response.text();
       })
       .then(data => {
         resolve(data);
@@ -68,6 +78,16 @@ export function createScript(script: FormData): Promise<CreateScriptResponse> {
   });
 }
 
+export function createScriptV2(
+  script: FormData
+): Promise<CreateScriptResponse> {
+  return executeRequest({
+    endpoint: "/archiveV2",
+    method: "POST",
+    data: script
+  });
+}
+
 type UpdateScriptResponse = {
   uids: string[] | null;
 };
@@ -83,5 +103,12 @@ export function updateScript(
     endpoint: "/scripts",
     method: "PUT",
     data: JSON.stringify({ script, frameIdsToDel, actionIdsToDel })
+  });
+}
+
+export function downloadScriptArchive(uid: string): Promise<Blob> {
+  return executeRequest({
+    endpoint: `/archiveV2/${uid}`,
+    method: "GET"
   });
 }

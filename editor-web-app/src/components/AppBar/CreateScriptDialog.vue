@@ -10,10 +10,11 @@
       <v-card-text style="max-height: 300px">
         <v-text-field v-model="name" label="Название обучающей программы" />
         <v-file-input
-          label="Выбрать заготовку"
+          :label="`Выбрать архив от ${isRaw ? 'перехватчика' : 'редактора'}`"
           truncate-length="15"
           v-model="file"
         />
+        <v-checkbox v-model="isRaw" label="От перехватчика" />
       </v-card-text>
       <v-divider />
       <v-card-actions>
@@ -28,7 +29,7 @@
 <script lang="ts">
 import Vue from "vue";
 import { mapActions, mapState } from "vuex";
-import { createScript } from "@/common/requests";
+import { createScript, createScriptV2 } from "@/common/requests";
 import { ActionTypes } from "@/store/action-types";
 
 export default Vue.extend({
@@ -38,7 +39,8 @@ export default Vue.extend({
       dialog: false,
       loading: false,
       name: "",
-      file: null as File | null
+      file: null as File | null,
+      isRaw: false
     };
   },
   computed: {
@@ -55,7 +57,9 @@ export default Vue.extend({
       formData.append("script", this.file);
       formData.append("name", this.name);
 
-      createScript(formData)
+      const action = this.isRaw ? createScript : createScriptV2;
+
+      action(formData)
         .then(data => {
           this.loadScript(data.uid);
           this.$router.push({ path: "/", query: { scriptUid: data.uid } });
