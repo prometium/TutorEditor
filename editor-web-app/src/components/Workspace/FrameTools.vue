@@ -1,6 +1,6 @@
 <template>
   <div class="frame-tools">
-    <v-btn elevation="1" icon>
+    <v-btn elevation="1" icon @click="handleUp">
       <v-icon>mdi-arrow-up</v-icon>
     </v-btn>
     <v-btn elevation="1" icon>
@@ -39,10 +39,42 @@ export default Vue.extend({
     ...mapMutations({
       selectFrame: MutationTypes.SELECT_FRAME
     }),
+    async handleUp() {
+      if (!this.prevFrame || !this.prevAction) return;
+
+      await this.updateFrames({
+        frames: [
+          {
+            ...this.currentFrame,
+            uid: this.prevFrame.uid,
+            actions: [
+              {
+                ...this.currentAction,
+                uid: this.prevAction.uid,
+                nextFrame: this.prevAction.nextFrame
+              }
+            ]
+          },
+          {
+            ...this.prevFrame,
+            uid: this.currentFrame.uid,
+            actions: [
+              {
+                ...this.prevAction,
+                uid: this.currentAction.uid,
+                nextFrame: this.currentAction.nextFrame
+              }
+            ]
+          }
+        ]
+      });
+
+      this.selectFrame(this.prevFrame.uid);
+    },
     async handleDelete() {
       if (this.path.length < 3) return;
 
-      const hasPrev = this.prevFrame && this.prevAction;
+      const hasPrev = !!this.prevFrame && !!this.prevAction;
       const prevFrameUid = this.prevFrame?.uid;
       const nextFrameUid = this.currentAction.nextFrame?.uid;
 
@@ -69,7 +101,7 @@ export default Vue.extend({
               }
             ]
           : [],
-        frameIdsToDel: [this.currentFrame?.uid]
+        frameIdsToDel: [this.currentFrame.uid]
       });
 
       this.selectFrame(

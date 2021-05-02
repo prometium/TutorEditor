@@ -7,7 +7,7 @@
       <v-card-title class="headline lighten-2">
         Обучающие программы
       </v-card-title>
-      <v-card-text style="max-height: 300px">
+      <v-card-text style="max-height: 300px; overflow-y: auto">
         <v-radio-group v-model="radioGroup" column>
           <v-radio
             v-for="scriptInfo in scriptsInfo"

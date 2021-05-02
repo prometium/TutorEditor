@@ -3,7 +3,9 @@
     <div v-show="currentFrame.uid" class="frame__img-wrapper">
       <img
         ref="img"
-        :src="`${currentFrame.pictureLink}#${new Date().getTime()}`"
+        :src="`${API_ROOT}/images/${
+          currentFrame.pictureLink
+        }#${new Date().getTime()}`"
         :alt="currentFrame.uid"
         class="frame__img"
       />
@@ -18,9 +20,15 @@ import { mapActions, mapGetters } from "vuex";
 import interact from "interactjs";
 import { ActionGroup } from "@/common/constants";
 import { ActionTypes } from "@/store/action-types";
+import { API_ROOT } from "@/common/requests";
 
 export default Vue.extend({
   name: "Frame",
+  data() {
+    return {
+      API_ROOT
+    };
+  },
   mounted() {
     const resizeDrag = this.$refs.resizeDrag as HTMLElement;
     if (resizeDrag) {

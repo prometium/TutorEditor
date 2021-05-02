@@ -6,7 +6,9 @@
       class="frame-previews__item"
     >
       <img
-        :src="script.frameByUid[pathItem.frameUid].pictureLink"
+        :src="`${API_ROOT}/images/${
+          script.frameByUid[pathItem.frameUid].pictureLink
+        }`"
         :alt="`Кадр
       ${index}`"
         :class="[
@@ -56,9 +58,15 @@
 import Vue from "vue";
 import { mapState, mapMutations, mapGetters } from "vuex";
 import { MutationTypes } from "@/store/mutation-types";
+import { API_ROOT } from "@/common/requests";
 
 export default Vue.extend({
   name: "FramePreviews",
+  data() {
+    return {
+      API_ROOT
+    };
+  },
   computed: {
     ...mapState(["script"]),
     ...mapGetters(["path", "currentFrame"])
