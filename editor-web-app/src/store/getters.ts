@@ -25,6 +25,14 @@ type Getters = {
     state: State,
     getters: { [T in keyof Getters]: ReturnType<Getters[T]> }
   ): Action | null;
+  nextFrame(
+    state: State,
+    getters: { [T in keyof Getters]: ReturnType<Getters[T]> }
+  ): Frame | null;
+  nextAction(
+    state: State,
+    getters: { [T in keyof Getters]: ReturnType<Getters[T]> }
+  ): Action | null;
 };
 
 export const getters: Getters = {
@@ -93,7 +101,21 @@ export const getters: Getters = {
     return state.script.frameByUid[getters.prevPathItem.frameUid];
   },
   prevAction(_, getters) {
-    if (!getters.prevPathItem || !getters.prevFrame?.actions) return null;
-    return getters.prevFrame.actions[getters.prevPathItem.branchNum] || null;
+    if (!getters.prevPathItem) return null;
+    return getters.prevFrame?.actions?.[getters.prevPathItem.branchNum] || null;
+  },
+  nextFrame(state, getters) {
+    if (!getters.currentAction?.nextFrame.uid) return null;
+    return (
+      state.script.frameByUid[getters.currentAction?.nextFrame.uid] || null
+    );
+  },
+  nextAction(_, getters) {
+    const pathItemIndex = getters.path.findIndex(
+      (pathItem: PathItem) => pathItem.frameUid === getters.currentFrame?.uid
+    );
+    const nextPathItem = getters.path[pathItemIndex + 1];
+    if (!nextPathItem) return null;
+    return getters.nextFrame?.actions?.[nextPathItem.branchNum] || null;
   }
 };

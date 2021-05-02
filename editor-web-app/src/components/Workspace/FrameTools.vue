@@ -3,7 +3,7 @@
     <v-btn elevation="1" icon @click="handleUp">
       <v-icon>mdi-arrow-up</v-icon>
     </v-btn>
-    <v-btn elevation="1" icon>
+    <v-btn elevation="1" icon @click="handleDown">
       <v-icon>mdi-arrow-down</v-icon>
     </v-btn>
     <v-btn elevation="1" icon>
@@ -29,7 +29,9 @@ export default Vue.extend({
       "currentFrame",
       "currentAction",
       "prevFrame",
-      "prevAction"
+      "prevAction",
+      "nextFrame",
+      "nextAction"
     ])
   },
   methods: {
@@ -70,6 +72,38 @@ export default Vue.extend({
       });
 
       this.selectFrame(this.prevFrame.uid);
+    },
+    async handleDown() {
+      if (!this.nextFrame || !this.nextAction) return;
+
+      await this.updateFrames({
+        frames: [
+          {
+            ...this.currentFrame,
+            uid: this.nextFrame.uid,
+            actions: [
+              {
+                ...this.currentAction,
+                uid: this.nextAction.uid,
+                nextFrame: this.nextAction.nextFrame
+              }
+            ]
+          },
+          {
+            ...this.nextFrame,
+            uid: this.currentFrame.uid,
+            actions: [
+              {
+                ...this.nextAction,
+                uid: this.currentAction.uid,
+                nextFrame: this.currentAction.nextFrame
+              }
+            ]
+          }
+        ]
+      });
+
+      this.selectFrame(this.nextFrame.uid);
     },
     async handleDelete() {
       if (this.path.length < 3) return;
