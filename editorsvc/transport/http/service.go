@@ -38,7 +38,14 @@ func MakeHTTPHandler(e transport.Endpoints, logger log.Logger) http.Handler {
 		options...,
 	))
 
-	r.Methods("GET").Path("/archive/{uid}").Handler(httptransport.NewServer(
+	r.Methods("POST").Path("/archiveV2").Handler(httptransport.NewServer(
+		e.AddScriptArchiveV2Endpoint,
+		decodeAddScriptArchiveRequest,
+		encodeResponse,
+		options...,
+	))
+
+	r.Methods("GET").Path("/archiveV2/{uid}").Handler(httptransport.NewServer(
 		e.GetScriptArchiveEndpoint,
 		decodeGetScriptArchiveRequest,
 		encodeBytesResponse,

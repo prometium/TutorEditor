@@ -67,12 +67,12 @@ type rawFrame struct {
 	Hint         string    `json:"hint,omitempty"`
 }
 
-type rawScriptArchiveController struct {
+type rawScriptArchiveSaver struct {
 	Images []*zip.File
 	Frames []rawFrame `json:"frames,omitempty"`
 }
 
-func (controller *rawScriptArchiveController) init(r io.Reader) error {
+func (controller *rawScriptArchiveSaver) init(r io.Reader) error {
 	zipReader, err := utils.CreateZipReader(r)
 	if err != nil {
 		return err
@@ -93,14 +93,14 @@ func (controller *rawScriptArchiveController) init(r io.Reader) error {
 		return err
 	}
 
-	if err := json.Unmarshal([]byte(scriptJSON), &controller); err != nil {
+	if err := json.Unmarshal(scriptJSON, &controller); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (controller *rawScriptArchiveController) saveImages(ctx context.Context, imagesDir string) (map[string]string, error) {
+func (controller *rawScriptArchiveSaver) saveImages(ctx context.Context, imagesDir string) (map[string]string, error) {
 	os.MkdirAll(imagesDir, os.ModePerm)
 
 	lock := sync.RWMutex{}
@@ -136,7 +136,7 @@ func (controller *rawScriptArchiveController) saveImages(ctx context.Context, im
 	return linksMap, nil
 }
 
-func (controller *rawScriptArchiveController) createScript(name string, linksMap map[string]string) (*editorsvc.Script, error) {
+func (controller *rawScriptArchiveSaver) createScript(name string, linksMap map[string]string) (*editorsvc.Script, error) {
 	frames := make([]editorsvc.Frame, len(controller.Frames))
 
 	for i, frame := range controller.Frames {

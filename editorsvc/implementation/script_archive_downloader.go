@@ -11,12 +11,12 @@ import (
 	"github.com/prometium/tutoreditor/editorsvc"
 )
 
-type scriptArchiveController struct {
+type scriptArchiveDownloader struct {
 	ScriptJsonBytes      []byte
-	imageFileBytesByName map[string][]byte
+	ImageFileBytesByName map[string][]byte
 }
 
-func (controller *scriptArchiveController) init(script *editorsvc.Script, imagesDir string) error {
+func (controller *scriptArchiveDownloader) init(script *editorsvc.Script, imagesDir string) error {
 	scriptJsonBytes, err := json.MarshalIndent(script, "", " ")
 	if err != nil {
 		return err
@@ -24,22 +24,37 @@ func (controller *scriptArchiveController) init(script *editorsvc.Script, images
 
 	controller.ScriptJsonBytes = scriptJsonBytes
 
-	controller.imageFileBytesByName = make(map[string][]byte)
+	controller.ImageFileBytesByName = make(map[string][]byte)
 	for _, frame := range script.Frames {
+		var imageFileBytes []byte
+
 		imageFileBytes, err := ioutil.ReadFile(filepath.Join(imagesDir, frame.PictureLink))
 		if err != nil {
 			return err
 		}
 
-		controller.imageFileBytesByName[frame.PictureLink] = imageFileBytes
+		controller.ImageFileBytesByName[frame.PictureLink] = imageFileBytes
 
-		// TODO: изображения switch pictures
+		for _, action := range frame.Actions {
+			if action.SwitchPictures == nil {
+				continue
+			}
+
+			for _, switchPicture := range action.SwitchPictures {
+				imageFileBytes, err := ioutil.ReadFile(filepath.Join(imagesDir, switchPicture.PictureLink))
+				if err != nil {
+					return err
+				}
+
+				controller.ImageFileBytesByName[frame.PictureLink] = imageFileBytes
+			}
+		}
 	}
 
 	return nil
 }
 
-func (controller *scriptArchiveController) getArchive() ([]byte, error) {
+func (controller *scriptArchiveDownloader) getArchive() ([]byte, error) {
 	var zipBuffer *bytes.Buffer = new(bytes.Buffer)
 	var zipWriter *zip.Writer = zip.NewWriter(zipBuffer)
 	var scriptJsonWriter io.Writer
@@ -54,7 +69,7 @@ func (controller *scriptArchiveController) getArchive() ([]byte, error) {
 		return nil, err
 	}
 
-	for name, file := range controller.imageFileBytesByName {
+	for name, file := range controller.ImageFileBytesByName {
 		imageFileWriter, err := zipWriter.Create(name)
 		if err != nil {
 			return nil, err

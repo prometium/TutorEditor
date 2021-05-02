@@ -18,7 +18,8 @@ var (
 // Service provides some "date capabilities" to application
 type Service interface {
 	AddScriptArchive(ctx context.Context, name string, archiveReader io.ReadCloser) (string, error)
-	GetScriptArchive(ctx context.Context, id string) ([]byte, error)
+	AddScriptArchiveV2(ctx context.Context, name string, archiveReader io.ReadCloser) (string, error)
+	GetScriptArchiveV2(ctx context.Context, id string) ([]byte, error)
 	GetScriptsList(ctx context.Context) ([]Script, error)
 	GetScript(ctx context.Context, id string) (*Script, error)
 	DeleteScript(ctx context.Context, id string) error

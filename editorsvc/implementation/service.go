@@ -26,10 +26,9 @@ func (s *service) AddScriptArchive(ctx context.Context, name string, fileReader 
 	if fileReader == nil {
 		return "", editorsvc.ErrFileNotAttached
 	}
-
 	defer fileReader.Close()
 
-	var controller rawScriptArchiveController
+	var controller rawScriptArchiveSaver
 	if err := controller.init(fileReader); err != nil {
 		return "", err
 	}
@@ -53,7 +52,34 @@ func (s *service) AddScriptArchive(ctx context.Context, name string, fileReader 
 	return id, nil
 }
 
-func (s *service) GetScriptArchive(ctx context.Context, id string) ([]byte, error) {
+func (s *service) AddScriptArchiveV2(ctx context.Context, name string, fileReader io.ReadCloser) (string, error) {
+	if fileReader == nil {
+		return "", editorsvc.ErrFileNotAttached
+	}
+	defer fileReader.Close()
+
+	var controller scriptArchiveSaver
+	if err := controller.init(fileReader); err != nil {
+		return "", err
+	}
+
+	err := controller.saveImages(ctx, "assets/images/")
+	if err != nil {
+		return "", err
+	}
+
+	script := controller.createScript(name)
+
+	script.Version = utils.RandSeq(versionLen)
+	script.ModificationDate = time.Now().Format("2006.01.02 15:04:05")
+	id, err := s.repository.AddScript(ctx, script)
+	if err != nil {
+		return id, err
+	}
+	return id, nil
+}
+
+func (s *service) GetScriptArchiveV2(ctx context.Context, id string) ([]byte, error) {
 	script, err := s.repository.GetScript(ctx, id)
 	if err != nil {
 		return nil, err
@@ -61,7 +87,7 @@ func (s *service) GetScriptArchive(ctx context.Context, id string) ([]byte, erro
 		return nil, editorsvc.ErrScriptNotFound
 	}
 
-	var controller scriptArchiveController
+	var controller scriptArchiveDownloader
 	if err := controller.init(script, "assets/images/"); err != nil {
 		return nil, err
 	}
