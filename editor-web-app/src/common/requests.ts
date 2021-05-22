@@ -89,7 +89,7 @@ export function createScriptV2(
 }
 
 type UpdateScriptResponse = {
-  uids: string[] | null;
+  uids?: Record<string, string> | null;
 };
 
 export function updateScript(

@@ -21,10 +21,7 @@
         loading="lazy"
       />
       <div
-        v-if="
-          script.frameByUid[pathItem.frameUid].actions &&
-          script.frameByUid[pathItem.frameUid].actions.length > 1
-        "
+        v-if="(script.frameByUid[pathItem.frameUid].actions || []).length > 1"
         class="frame-previews__branches"
       >
         <span

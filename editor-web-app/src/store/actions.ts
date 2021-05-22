@@ -5,7 +5,6 @@ import { Mutations } from "./mutations";
 import { MutationTypes } from "./mutation-types";
 import { Script, TraversableScript, Frame } from "@/common/types";
 import {
-  API_ROOT,
   getScriptsInfo,
   getScript,
   updateScript
@@ -88,8 +87,12 @@ export const actions: Actions = {
           actionIdsToDel
         }
       )
-        .then(() => {
-          commit(MutationTypes.UPDATE_SCRIPT, { script, frames });
+        .then(res => {
+          commit(MutationTypes.UPDATE_SCRIPT, {
+            script,
+            frames,
+            uids: res.uids
+          });
           resolve();
         })
         .catch(err => {

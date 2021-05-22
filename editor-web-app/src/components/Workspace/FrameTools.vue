@@ -6,7 +6,7 @@
     <v-btn elevation="1" icon @click="handleDown">
       <v-icon>mdi-arrow-down</v-icon>
     </v-btn>
-    <v-btn elevation="1" icon>
+    <v-btn elevation="1" icon @click="handleAdd">
       <v-icon>mdi-plus</v-icon>
     </v-btn>
     <v-btn @click="handleDelete" elevation="1" icon>
@@ -97,6 +97,34 @@ export default Vue.extend({
                 ...this.nextAction,
                 uid: this.currentAction.uid,
                 nextFrame: this.currentAction.nextFrame
+              }
+            ]
+          }
+        ]
+      });
+
+      this.selectFrame(this.nextFrame.uid);
+    },
+    async handleAdd() {
+      await this.updateFrames({
+        frames: [
+          {
+            uid: this.currentFrame.uid,
+            actions: [
+              {
+                uid: this.currentAction.uid,
+                nextFrame: { uid: "_:new1" }
+              }
+            ]
+          },
+          {
+            uid: "_:new1",
+            actions: [
+              {
+                uid: "_:new2",
+                nextFrame: this.currentAction.nextFrame && {
+                  uid: this.currentAction.nextFrame.uid
+                }
               }
             ]
           }

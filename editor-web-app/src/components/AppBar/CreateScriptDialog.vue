@@ -10,11 +10,16 @@
       <v-card-text style="max-height: 300px">
         <v-text-field v-model="name" label="Название обучающей программы" />
         <v-file-input
-          :label="`Выбрать архив от ${isRaw ? 'перехватчика' : 'редактора'}`"
+          :label="`Выбрать архив от ${
+            radioGroup === '1' ? 'перехватчика' : 'редактора'
+          }`"
           truncate-length="15"
           v-model="file"
         />
-        <v-checkbox v-model="isRaw" label="От перехватчика" />
+        <v-radio-group v-model="radioGroup">
+          <v-radio label="От перехватчика" value="1" />
+          <v-radio label="От редактора" value="2" />
+        </v-radio-group>
       </v-card-text>
       <v-divider />
       <v-card-actions>
@@ -40,7 +45,7 @@ export default Vue.extend({
       loading: false,
       name: "",
       file: null as File | null,
-      isRaw: false
+      radioGroup: "1"
     };
   },
   computed: {
@@ -57,7 +62,7 @@ export default Vue.extend({
       formData.append("script", this.file);
       formData.append("name", this.name);
 
-      const action = this.isRaw ? createScript : createScriptV2;
+      const action = this.radioGroup === "1" ? createScript : createScriptV2;
 
       action(formData)
         .then(data => {
