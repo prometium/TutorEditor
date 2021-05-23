@@ -25,4 +25,5 @@ type Service interface {
 	DeleteScript(ctx context.Context, id string) error
 	UpdateScript(ctx context.Context, script *Script, frameIdsToDel []string, actionIdsToDel []string) (map[string]string, error)
 	CopyScript(ctx context.Context, script *Script) (string, error)
+	AddImage(ctx context.Context, imageReader io.ReadCloser) (string, error)
 }

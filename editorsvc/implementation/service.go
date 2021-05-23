@@ -3,6 +3,8 @@ package implementation
 import (
 	"context"
 	"io"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/prometium/tutoreditor/editorsvc"
@@ -13,7 +15,8 @@ type service struct {
 	repository editorsvc.Repository
 }
 
-const versionLen = 10
+const VersionLen = 10
+const ImagesDir = "assets/images/"
 
 // NewService makes a new Service
 func NewService(rep editorsvc.Repository) editorsvc.Service {
@@ -33,7 +36,7 @@ func (s *service) AddScriptArchive(ctx context.Context, name string, fileReader 
 		return "", err
 	}
 
-	linksMap, err := controller.saveImages(ctx, "assets/images/")
+	linksMap, err := controller.saveImages(ctx, ImagesDir)
 	if err != nil {
 		return "", err
 	}
@@ -43,7 +46,7 @@ func (s *service) AddScriptArchive(ctx context.Context, name string, fileReader 
 		return "", err
 	}
 
-	script.Version = utils.RandSeq(versionLen)
+	script.Version = utils.RandSeq(VersionLen)
 	script.ModificationDate = time.Now().Format("2006.01.02 15:04:05")
 	id, err := s.repository.AddScript(ctx, script)
 	if err != nil {
@@ -63,14 +66,14 @@ func (s *service) AddScriptArchiveV2(ctx context.Context, name string, fileReade
 		return "", err
 	}
 
-	err := controller.saveImages(ctx, "assets/images/")
+	err := controller.saveImages(ctx, ImagesDir)
 	if err != nil {
 		return "", err
 	}
 
 	script := controller.createScript(name)
 
-	script.Version = utils.RandSeq(versionLen)
+	script.Version = utils.RandSeq(VersionLen)
 	script.ModificationDate = time.Now().Format("2006.01.02 15:04:05")
 	id, err := s.repository.AddScript(ctx, script)
 	if err != nil {
@@ -88,7 +91,7 @@ func (s *service) GetScriptArchiveV2(ctx context.Context, id string) ([]byte, er
 	}
 
 	var controller scriptArchiveDownloader
-	if err := controller.init(script, "assets/images/"); err != nil {
+	if err := controller.init(script, ImagesDir); err != nil {
 		return nil, err
 	}
 
@@ -116,7 +119,7 @@ func (s *service) DeleteScript(ctx context.Context, id string) error {
 func (s *service) UpdateScript(
 	ctx context.Context, script *editorsvc.Script, frameIdsToDel []string, actionIdsToDel []string,
 ) (map[string]string, error) {
-	script.Version = utils.RandSeq(versionLen)
+	script.Version = utils.RandSeq(VersionLen)
 	script.ModificationDate = time.Now().Format("2006.01.02 15:04:05")
 	uids, err := s.repository.UpdateScript(ctx, script, frameIdsToDel, actionIdsToDel)
 	if err != nil {
@@ -126,6 +129,25 @@ func (s *service) UpdateScript(
 }
 
 func (s *service) CopyScript(ctx context.Context, script *editorsvc.Script) (string, error) {
-	script.Version = utils.RandSeq(versionLen)
+	script.Version = utils.RandSeq(VersionLen)
 	return s.repository.AddScript(ctx, script)
+}
+
+func (s *service) AddImage(ctx context.Context, imageReader io.ReadCloser) (string, error) {
+	defer imageReader.Close()
+
+	hash, err := utils.HashFileMD5(imageReader)
+	if err != nil {
+		return "", err
+	}
+
+	path := filepath.Join(ImagesDir, hash+".png")
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		err = utils.CopyFile(imageReader, path)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	return hash, nil
 }

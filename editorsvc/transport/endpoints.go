@@ -18,6 +18,7 @@ type Endpoints struct {
 	DeleteScriptEndpoint       endpoint.Endpoint
 	UpdateScriptEndpoint       endpoint.Endpoint
 	CopyScriptEndpoint         endpoint.Endpoint
+	AddImageEndpoint           endpoint.Endpoint
 }
 
 // MakeServerEndpoints returns an Endpoints struct where each endpoint invokes
@@ -32,6 +33,7 @@ func MakeServerEndpoints(s editorsvc.Service) Endpoints {
 		DeleteScriptEndpoint:       makeDeleteScriptEndpoint(s),
 		UpdateScriptEndpoint:       makeUpdateScriptEndpoint(s),
 		CopyScriptEndpoint:         makeCopyScriptEndpoint(s),
+		AddImageEndpoint:           makeAddImageEndpoint(s),
 	}
 }
 
@@ -95,5 +97,13 @@ func makeCopyScriptEndpoint(s editorsvc.Service) endpoint.Endpoint {
 		req := request.(CopyScriptRequest)
 		uid, err := s.CopyScript(ctx, req.Script)
 		return CopyScriptResponse{UID: uid, Err: err}, nil
+	}
+}
+
+func makeAddImageEndpoint(s editorsvc.Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(AddImageRequest)
+		link, err := s.AddImage(ctx, req.FileReader)
+		return AddImageResponse{Link: link, Err: err}, nil
 	}
 }

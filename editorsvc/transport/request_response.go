@@ -89,3 +89,16 @@ type CopyScriptResponse struct {
 }
 
 func (r CopyScriptResponse) Error() error { return r.Err }
+
+// AddImageRequest holds the request parameters for the UpdateScript method
+type AddImageRequest struct {
+	FileReader io.ReadCloser
+}
+
+// AddImageResponse holds the response parameters for the CopyScript method
+type AddImageResponse struct {
+	Link string `json:"link,omitempty"`
+	Err  error  `json:"error,omitempty"`
+}
+
+func (r AddImageResponse) Error() error { return r.Err }

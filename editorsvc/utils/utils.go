@@ -24,18 +24,23 @@ func RandSeq(n int) string {
 
 // HashZipFileMD5 generates MD5 hash number of a zip file
 func HashZipFileMD5(f *zip.File) (string, error) {
-	var returnMD5String string
-	file, err := f.Open()
+	fReader, err := f.Open()
 	if err != nil {
-		return returnMD5String, err
+		return "", err
 	}
-	defer file.Close()
+	defer fReader.Close()
+
+	return HashFileMD5(fReader)
+}
+
+// HashFileMD5 generates MD5 hash number of a file
+func HashFileMD5(fReader io.ReadCloser) (string, error) {
 	hash := md5.New()
-	if _, err := io.Copy(hash, file); err != nil {
-		return returnMD5String, err
+	if _, err := io.Copy(hash, fReader); err != nil {
+		return "", err
 	}
 	hashInBytes := hash.Sum(nil)[:16]
-	returnMD5String = hex.EncodeToString(hashInBytes)
+	returnMD5String := hex.EncodeToString(hashInBytes)
 	return returnMD5String, nil
 }
 
@@ -71,21 +76,26 @@ func CreateZipReader(r io.Reader) (*zip.Reader, error) {
 
 // CopyZipFile copies the src zip file to dst
 func CopyZipFile(src *zip.File, dst string) error {
-	in, err := src.Open()
+	inReader, err := src.Open()
 	if err != nil {
 		return err
 	}
-	defer in.Close()
+	defer inReader.Close()
 
-	out, err := os.Create(dst)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
+	return CopyFile(inReader, dst)
+}
 
-	_, err = io.Copy(out, in)
+// CopyFile copies the inReader file to dst
+func CopyFile(inReader io.Reader, dst string) error {
+	outReader, err := os.Create(dst)
 	if err != nil {
 		return err
 	}
-	return out.Close()
+	defer outReader.Close()
+
+	_, err = io.Copy(outReader, inReader)
+	if err != nil {
+		return err
+	}
+	return outReader.Close()
 }

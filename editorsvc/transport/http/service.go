@@ -87,6 +87,13 @@ func MakeHTTPHandler(e transport.Endpoints, logger log.Logger) http.Handler {
 		options...,
 	))
 
+	r.Methods("POST").Path("/images").Handler(httptransport.NewServer(
+		e.AddImageEndpoint,
+		decodeAddImageRequest,
+		encodeResponse,
+		options...,
+	))
+
 	return r
 }
 
@@ -143,6 +150,16 @@ func decodeCopyScriptRequest(ctx context.Context, r *http.Request) (interface{},
 		return nil, err
 	}
 	return req, nil
+}
+
+func decodeAddImageRequest(ctx context.Context, r *http.Request) (interface{}, error) {
+	file, _, err := r.FormFile("image")
+	if err != nil && err != http.ErrMissingFile {
+		return nil, err
+	}
+	return transport.AddImageRequest{
+		FileReader: file,
+	}, nil
 }
 
 func encodeResponse(ctx context.Context, w http.ResponseWriter, response interface{}) error {
