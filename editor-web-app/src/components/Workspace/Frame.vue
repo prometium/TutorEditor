@@ -1,15 +1,18 @@
 <template>
   <div v-if="currentFrame" class="frame" tabindex="0" @blur="handleBlur">
     <div v-show="currentFrame.uid" class="frame__img-wrapper">
-      <img
-        ref="img"
-        :src="`${API_ROOT}/images/${
-          currentFrame.pictureLink
-        }#${new Date().getTime()}`"
-        :alt="currentFrame.uid"
-        class="frame__img"
-      />
-      <div v-show="showDragMoveArea" ref="resizeDrag" class="resize-drag" />
+      <template v-if="currentFrame.pictureLink">
+        <img
+          ref="img"
+          :src="`${API_ROOT}/images/${
+            currentFrame.pictureLink
+          }#${new Date().getTime()}`"
+          :alt="currentFrame.uid"
+          class="frame__img"
+        />
+        <div v-show="showDragMoveArea" ref="resizeDrag" class="resize-drag" />
+      </template>
+      <ImageUploader />
     </div>
   </div>
 </template>
@@ -19,11 +22,15 @@ import Vue from "vue";
 import { mapActions, mapGetters } from "vuex";
 import interact from "interactjs";
 import { ActionGroup } from "@/common/constants";
-import { ActionTypes } from "@/store/action-types";
 import { API_ROOT } from "@/common/requests";
+import { ActionTypes } from "@/store/action-types";
+import ImageUploader from "./ImageUploader.vue";
 
 export default Vue.extend({
   name: "Frame",
+  components: {
+    ImageUploader
+  },
   data() {
     return {
       API_ROOT
@@ -33,9 +40,8 @@ export default Vue.extend({
     const resizeDrag = this.$refs.resizeDrag as HTMLElement;
     if (resizeDrag) {
       this.initInteract(resizeDrag);
+      window.addEventListener("resize", this.onResize);
     }
-
-    window.addEventListener("resize", this.onResize);
   },
   beforeDestroy() {
     window.removeEventListener("resize", this.onResize);
@@ -73,6 +79,7 @@ export default Vue.extend({
     onResize() {
       const img = this.$refs.img as HTMLImageElement;
       const resizeDrag = this.$refs.resizeDrag as HTMLDivElement;
+
       const scale = img.clientWidth / img.naturalWidth || 1;
 
       resizeDrag.setAttribute("data-scale", String(scale));
@@ -182,6 +189,7 @@ export default Vue.extend({
     },
     handleBlur() {
       const resizeDrag = this.$refs.resizeDrag as HTMLDivElement;
+      if (!resizeDrag) return;
 
       const x = parseFloat(resizeDrag.getAttribute("data-fixed-x") || "") || 0;
       const y = parseFloat(resizeDrag.getAttribute("data-fixed-y") || "") || 0;
@@ -222,6 +230,7 @@ export default Vue.extend({
 
 .frame__img-wrapper {
   position: relative;
+  flex: 1;
 }
 
 .frame__img {

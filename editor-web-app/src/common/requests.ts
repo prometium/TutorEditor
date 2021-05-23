@@ -70,21 +70,23 @@ type CreateScriptResponse = {
   uid: string;
 };
 
-export function createScript(script: FormData): Promise<CreateScriptResponse> {
+export function createScript(
+  scriptData: FormData
+): Promise<CreateScriptResponse> {
   return executeRequest({
     endpoint: "/archive",
     method: "POST",
-    data: script
+    data: scriptData
   });
 }
 
 export function createScriptV2(
-  script: FormData
+  scriptData: FormData
 ): Promise<CreateScriptResponse> {
   return executeRequest({
     endpoint: "/archiveV2",
     method: "POST",
-    data: script
+    data: scriptData
   });
 }
 
@@ -110,5 +112,17 @@ export function downloadScriptArchive(uid: string): Promise<Blob> {
   return executeRequest({
     endpoint: `/archiveV2/${uid}`,
     method: "GET"
+  });
+}
+
+type AddImageResponse = {
+  link: string;
+};
+
+export function addImage(imageData: FormData): Promise<AddImageResponse> {
+  return executeRequest({
+    endpoint: "/images",
+    method: "POST",
+    data: imageData
   });
 }

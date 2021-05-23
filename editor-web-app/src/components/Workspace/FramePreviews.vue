@@ -5,48 +5,55 @@
       :key="pathItem.frameUid"
       class="frame-previews__item"
     >
-      <img
-        :src="`${API_ROOT}/images/${
-          script.frameByUid[pathItem.frameUid].pictureLink
-        }`"
-        :alt="`Кадр
+      <template v-if="script.frameByUid[pathItem.frameUid].pictureLink">
+        <img
+          :src="`${API_ROOT}/images/${
+            script.frameByUid[pathItem.frameUid].pictureLink
+          }`"
+          :alt="`Кадр
       ${index}`"
+          :class="[
+            'frame-previews__img',
+            pathItem.frameUid === currentFrame.uid && 'active'
+          ]"
+          @click="selectFrame(pathItem.frameUid)"
+          loading="lazy"
+        />
+        <div
+          v-if="(script.frameByUid[pathItem.frameUid].actions || []).length > 1"
+          class="frame-previews__branches"
+        >
+          <span
+            v-for="offsetBranchNum in script.frameByUid[pathItem.frameUid]
+              .actions.length"
+            :key="offsetBranchNum"
+            :style="{
+              width: `calc(100% / ${
+                script.frameByUid[pathItem.frameUid].actions.length
+              })`
+            }"
+            :class="[
+              'frame-previews__branch',
+              offsetBranchNum - 1 === pathItem.branchNum && 'active'
+            ]"
+            @click="
+              configurePath({
+                frameUid: pathItem.frameUid,
+                branchNum: offsetBranchNum - 1
+              })
+            "
+          />
+        </div>
+      </template>
+      <div
+        v-else
         :class="[
           'frame-previews__img',
-          {
-            active: pathItem.frameUid === currentFrame.uid
-          }
+          'empty',
+          pathItem.frameUid === currentFrame.uid && 'active'
         ]"
         @click="selectFrame(pathItem.frameUid)"
-        loading="lazy"
       />
-      <div
-        v-if="(script.frameByUid[pathItem.frameUid].actions || []).length > 1"
-        class="frame-previews__branches"
-      >
-        <span
-          v-for="offsetBranchNum in script.frameByUid[pathItem.frameUid].actions
-            .length"
-          :key="offsetBranchNum"
-          :style="{
-            width: `calc(100% / ${
-              script.frameByUid[pathItem.frameUid].actions.length
-            })`
-          }"
-          :class="[
-            'frame-previews__branch',
-            {
-              active: offsetBranchNum - 1 === pathItem.branchNum
-            }
-          ]"
-          @click="
-            configurePath({
-              frameUid: pathItem.frameUid,
-              branchNum: offsetBranchNum - 1
-            })
-          "
-        />
-      </div>
     </div>
   </div>
 </template>
@@ -97,6 +104,17 @@ export default Vue.extend({
 
     &.active {
       outline: 3px solid var(--v-accent-base);
+    }
+
+    &.empty {
+      height: 60px;
+      background: linear-gradient(
+          rgba(255, 255, 255, 0.6) 40%,
+          rgba(255, 255, 255, 0) 40%
+        ),
+        linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0));
+      background-size: 1em 1em, 100%;
+      background-color: var(--v-secondary-base);
     }
   }
 

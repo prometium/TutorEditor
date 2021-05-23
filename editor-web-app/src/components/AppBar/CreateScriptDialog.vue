@@ -10,11 +10,11 @@
       <v-card-text style="max-height: 300px">
         <v-text-field v-model="name" label="Название обучающей программы" />
         <v-file-input
+          v-model="file"
           :label="`Выбрать архив от ${
             radioGroup === '1' ? 'перехватчика' : 'редактора'
           }`"
-          truncate-length="15"
-          v-model="file"
+          accept=".zip"
         />
         <v-radio-group v-model="radioGroup">
           <v-radio label="От перехватчика" value="1" />
