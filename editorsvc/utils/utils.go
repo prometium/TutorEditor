@@ -34,7 +34,7 @@ func HashZipFileMD5(f *zip.File) (string, error) {
 }
 
 // HashFileMD5 generates MD5 hash number of a file
-func HashFileMD5(fReader io.ReadCloser) (string, error) {
+func HashFileMD5(fReader io.Reader) (string, error) {
 	hash := md5.New()
 	if _, err := io.Copy(hash, fReader); err != nil {
 		return "", err

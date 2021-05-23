@@ -1,6 +1,7 @@
 package implementation
 
 import (
+	"bytes"
 	"context"
 	"io"
 	"os"
@@ -136,18 +137,21 @@ func (s *service) CopyScript(ctx context.Context, script *editorsvc.Script) (str
 func (s *service) AddImage(ctx context.Context, imageReader io.ReadCloser) (string, error) {
 	defer imageReader.Close()
 
-	hash, err := utils.HashFileMD5(imageReader)
+	var buf bytes.Buffer
+	teeReader := io.TeeReader(imageReader, &buf)
+
+	hash, err := utils.HashFileMD5(teeReader)
 	if err != nil {
 		return "", err
 	}
 
 	path := filepath.Join(ImagesDir, hash+".png")
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		err = utils.CopyFile(imageReader, path)
+		err = utils.CopyFile(&buf, path)
 		if err != nil {
 			return "", err
 		}
 	}
 
-	return hash, nil
+	return hash + ".png", nil
 }
