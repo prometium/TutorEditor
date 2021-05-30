@@ -23,7 +23,19 @@
         </v-menu>
         <CreateScriptDialog v-model="createScriptDialog" />
         <OpenScriptDialog v-model="openScriptDialog" />
-        <v-btn small text elevation="0"> Редактирование </v-btn>
+        <v-menu>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn v-bind="attrs" v-on="on" small text elevation="0">
+              Редактирование
+            </v-btn>
+          </template>
+          <v-list>
+            <v-list-item @click="addBranchingDialog = true">
+              <v-list-item-title>Добавить ветвление</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+        <AddBranchingDialog v-model="addBranchingDialog" />
       </div>
       <v-btn icon large class="user-button">
         <v-icon>mdi-account-circle</v-icon>
@@ -38,6 +50,7 @@ import Vue from "vue";
 import { mapState, mapGetters } from "vuex";
 import OpenScriptDialog from "./OpenScriptDialog.vue";
 import CreateScriptDialog from "./CreateScriptDialog.vue";
+import AddBranchingDialog from "./AddBranchingDialog.vue";
 import Toolbar from "./Toolbar/index.vue";
 import { downloadScriptArchive } from "@/common/requests";
 
@@ -47,12 +60,14 @@ export default Vue.extend({
   data() {
     return {
       createScriptDialog: false,
-      openScriptDialog: false
+      openScriptDialog: false,
+      addBranchingDialog: false
     };
   },
   components: {
     OpenScriptDialog,
     CreateScriptDialog,
+    AddBranchingDialog,
     Toolbar
   },
   computed: {

@@ -4,11 +4,7 @@ import { ActionTypes } from "./action-types";
 import { Mutations } from "./mutations";
 import { MutationTypes } from "./mutation-types";
 import { Script, TraversableScript, Frame } from "@/common/types";
-import {
-  getScriptsInfo,
-  getScript,
-  updateScript
-} from "@/common/requests";
+import { getScriptsInfo, getScript, updateScript } from "@/common/requests";
 
 type AugmentedActionContext = {
   commit<K extends keyof Mutations>(

@@ -166,9 +166,7 @@ export default Vue.extend({
         frameIdsToDel: [this.currentFrame.uid]
       });
 
-      this.selectFrame(
-        nextFrameUid ? nextFrameUid : prevFrameUid ? prevFrameUid : null
-      );
+      this.selectFrame(prevFrameUid || null);
     }
   }
 });

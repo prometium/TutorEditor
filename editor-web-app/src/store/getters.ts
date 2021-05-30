@@ -46,7 +46,7 @@ export const getters: Getters = {
       };
       path.push(pathItem);
 
-      const actions = state.script.frameByUid[frameUid].actions;
+      const actions = state.script.frameByUid[frameUid]?.actions;
       if (actions == null || !actions.length) break;
 
       const nextFrame = actions[pathItem.branchNum].nextFrame;
