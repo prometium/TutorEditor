@@ -1,8 +1,5 @@
 <template>
   <v-dialog v-model="dialog" width="600">
-    <template v-slot:activator="activator">
-      <slot name="activator" v-bind="activator" />
-    </template>
     <v-card>
       <v-card-title class="headline lighten-2">
         Создание обучающей программы
@@ -39,17 +36,24 @@ import { ActionTypes } from "@/store/action-types";
 
 export default Vue.extend({
   name: "CreateScriptDialog",
+  props: ["value"],
   data() {
     return {
-      dialog: false,
-      loading: false,
       name: "",
       file: null as File | null,
       radioGroup: "1"
     };
   },
   computed: {
-    ...mapState(["scriptsInfo"])
+    ...mapState(["scriptsInfo"]),
+    dialog: {
+      get(): boolean {
+        return this.value;
+      },
+      set(value) {
+        this.$emit("input", value);
+      }
+    }
   },
   methods: {
     ...mapActions({
@@ -71,6 +75,15 @@ export default Vue.extend({
           this.dialog = false;
         })
         .catch(console.error); // TODO: error handling
+    }
+  },
+  watch: {
+    dialog(value) {
+      if (value) {
+        this.name = "";
+        this.file = null;
+        this.radioGroup = "1";
+      }
     }
   }
 });

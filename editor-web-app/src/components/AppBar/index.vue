@@ -10,25 +10,19 @@
             </v-btn>
           </template>
           <v-list>
-            <CreateScriptDialog>
-              <template v-slot:activator="{ on, attrs }">
-                <v-list-item v-bind="attrs" v-on="on">
-                  <v-list-item-title>Создать</v-list-item-title>
-                </v-list-item>
-              </template>
-            </CreateScriptDialog>
-            <OpenScriptDialog>
-              <template v-slot:activator="{ on, attrs }">
-                <v-list-item v-bind="attrs" v-on="on" @click="loadScriptsInfo">
-                  <v-list-item-title>Открыть</v-list-item-title>
-                </v-list-item>
-              </template>
-            </OpenScriptDialog>
+            <v-list-item @click="createScriptDialog = true">
+              <v-list-item-title>Создать</v-list-item-title>
+            </v-list-item>
+            <v-list-item @click="openScriptDialog = true">
+              <v-list-item-title>Открыть</v-list-item-title>
+            </v-list-item>
             <v-list-item @click="handleDownloadScriptArchive">
               <v-list-item-title>Скачать архив</v-list-item-title>
             </v-list-item>
           </v-list>
         </v-menu>
+        <CreateScriptDialog v-model="createScriptDialog" />
+        <OpenScriptDialog v-model="openScriptDialog" />
         <v-btn small text elevation="0"> Редактирование </v-btn>
       </div>
       <v-btn icon large class="user-button">
@@ -41,8 +35,7 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { mapState, mapActions, mapGetters } from "vuex";
-import { ActionTypes } from "@/store/action-types";
+import { mapState, mapGetters } from "vuex";
 import OpenScriptDialog from "./OpenScriptDialog.vue";
 import CreateScriptDialog from "./CreateScriptDialog.vue";
 import Toolbar from "./Toolbar/index.vue";
@@ -50,6 +43,13 @@ import { downloadScriptArchive } from "@/common/requests";
 
 export default Vue.extend({
   name: "AppBar",
+  props: ["value"],
+  data() {
+    return {
+      createScriptDialog: false,
+      openScriptDialog: false
+    };
+  },
   components: {
     OpenScriptDialog,
     CreateScriptDialog,
@@ -63,9 +63,6 @@ export default Vue.extend({
     }
   },
   methods: {
-    ...mapActions({
-      loadScriptsInfo: ActionTypes.LOAD_SCRIPTS_INFO
-    }),
     handleDownloadScriptArchive() {
       downloadScriptArchive(this.script.uid).then(result => {
         const url = window.URL.createObjectURL(result);

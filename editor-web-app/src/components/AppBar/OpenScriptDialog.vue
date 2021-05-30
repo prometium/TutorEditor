@@ -34,18 +34,27 @@ import { ActionTypes } from "@/store/action-types";
 
 export default Vue.extend({
   name: "OpenScriptDialog",
+  props: ["value"],
   data() {
     return {
-      dialog: false,
       radioGroup: ""
     };
   },
   computed: {
-    ...mapState(["scriptsInfo"])
+    ...mapState(["scriptsInfo"]),
+    dialog: {
+      get(): boolean {
+        return this.value;
+      },
+      set(value) {
+        this.$emit("input", value);
+      }
+    }
   },
   methods: {
     ...mapActions({
-      loadScript: ActionTypes.LOAD_SCRIPT
+      loadScript: ActionTypes.LOAD_SCRIPT,
+      loadScriptsInfo: ActionTypes.LOAD_SCRIPTS_INFO
     }),
     async handleOpen() {
       this.dialog = false;
@@ -55,6 +64,13 @@ export default Vue.extend({
         .catch(() => {
           /* ignore */
         });
+    }
+  },
+  watch: {
+    dialog(value) {
+      if (value) {
+        this.loadScriptsInfo();
+      }
     }
   }
 });
