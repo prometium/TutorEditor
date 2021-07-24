@@ -1,6 +1,7 @@
 import { State } from "./state";
 import { Action, Frame, PathItem } from "@/common/types";
 import { ActionGroup, ActionType } from "@/common/constants";
+import { configurePath } from "@/helpers/configurePath";
 
 type Getters = {
   path(state: State): PathItem[];
@@ -37,24 +38,12 @@ type Getters = {
 
 export const getters: Getters = {
   path(state) {
-    let frameUid = state.script.firstFrame.uid;
-    const path: PathItem[] = [];
-    while (path.length <= Object.keys(state.script.frameByUid).length) {
-      const pathItem: PathItem = {
-        frameUid,
-        branchNum: state.script.branchNumByUid[frameUid] || 0
-      };
-      path.push(pathItem);
-
-      const actions = state.script.frameByUid[frameUid]?.actions;
-      if (actions == null || !actions.length) break;
-
-      const nextFrame = actions[pathItem.branchNum].nextFrame;
-      if (!nextFrame || !state.script.frameByUid[nextFrame.uid]) break;
-
-      frameUid = nextFrame.uid;
-    }
-
+    const script = state.script;
+    const path = configurePath(
+      script.firstFrame,
+      script.frameByUid,
+      script.branchNumByUid
+    );
     return path;
   },
   currentFrame(state) {

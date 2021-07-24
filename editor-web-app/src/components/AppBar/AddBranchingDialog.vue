@@ -9,18 +9,20 @@
       </v-card-title>
       <v-card-text style="max-height: 300px; overflow-y: auto">
         <v-select
+          v-model="selectedScriptUid"
           :items="scriptsInfo"
-          :item-text="convertScriptInfoToName"
+          :item-text="convertScriptInfoToText"
+          :item-value="convertScriptInfoToValue"
           label="Присоединенный фрагмент"
         />
         <v-select :items="frameNames" label="Кадр начала ветвления" dense />
         <v-select
-          :items="frameNames"
+          :items="frameOfSelectedScriptNames"
           label="Первый присоединенный кадр"
           dense
         />
         <v-select
-          :items="frameNames"
+          :items="frameOfSelectedScriptNames"
           label="Последний присоединенный кадр"
           dense
         />
@@ -40,14 +42,17 @@
 import Vue from "vue";
 import { mapState, mapActions, mapGetters } from "vuex";
 import { ActionTypes } from "@/store/action-types";
-import { PathItem, ScriptInfo } from "@/common/types";
+import { PathItem, ScriptInfo, Script, Frame } from "@/common/types";
+import { getScript } from "@/common/requests";
+import { configurePath } from "@/helpers/configurePath";
 
 export default Vue.extend({
   name: "AddBranchingDialog",
   props: ["value"],
   data() {
     return {
-      radioGroup: ""
+      selectedScriptUid: "",
+      selectedScript: null as Script | null
     };
   },
   computed: {
@@ -65,12 +70,25 @@ export default Vue.extend({
       return this.scriptsInfo.map((scriptInfo: ScriptInfo) => scriptInfo.name);
     },
     frameNames(): string[] {
-      return this.path.map(
-        (pathItem: PathItem, index: number) =>
-          `${index}. ${
-            this.script.frameByUid[pathItem.frameUid]?.hintText || ""
-          }`
-      );
+      return this.path.map((pathItem: PathItem, index: number) => {
+        const text = this.script.frameByUid[pathItem.frameUid]?.hintText || "";
+        return `${index}. ${text}`;
+      });
+    },
+    frameOfSelectedScriptNames(): string[] {
+      if (!this.selectedScript) return [];
+
+      const frameByUid: Record<string, Frame> = {};
+      this.selectedScript.frames.forEach(frame => {
+        frameByUid[frame.uid] = frame;
+      });
+
+      const path = configurePath(this.selectedScript.firstFrame, frameByUid);
+
+      return path.map((pathItem: PathItem, index: number) => {
+        const text = frameByUid[pathItem.frameUid]?.hintText || "";
+        return `${index}. ${text}`;
+      });
     }
   },
   methods: {
@@ -78,8 +96,11 @@ export default Vue.extend({
       loadScript: ActionTypes.LOAD_SCRIPT,
       loadScriptsInfo: ActionTypes.LOAD_SCRIPTS_INFO
     }),
-    convertScriptInfoToName(scriptInfo: ScriptInfo) {
+    convertScriptInfoToText(scriptInfo: ScriptInfo) {
       return scriptInfo.name;
+    },
+    convertScriptInfoToValue(scriptInfo: ScriptInfo) {
+      return scriptInfo.uid;
     },
     handleAdd() {
       console.log("TODO");
@@ -90,6 +111,11 @@ export default Vue.extend({
       if (value) {
         this.loadScriptsInfo();
       }
+    },
+    selectedScriptUid(value) {
+      getScript(value).then(response => {
+        this.selectedScript = response.script;
+      });
     }
   }
 });
