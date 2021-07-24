@@ -73,7 +73,7 @@ export default Vue.extend({
   },
   methods: {
     ...mapActions({
-      updateFrames: ActionTypes.UPDATE_SCRIPT
+      updateScript: ActionTypes.UPDATE_SCRIPT
     }),
     onResize() {
       const img = this.$refs.img as HTMLImageElement;
@@ -197,7 +197,7 @@ export default Vue.extend({
 
       const rect = resizeDrag.getBoundingClientRect();
 
-      this.updateFrames({
+      this.updateScript({
         frames: [
           {
             uid: this.currentFrame.uid,

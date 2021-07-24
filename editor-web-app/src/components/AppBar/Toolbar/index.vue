@@ -93,7 +93,7 @@ export default Vue.extend({
         return this.currentAction?.actionType;
       },
       set(newValue: number) {
-        this.updateFrames({
+        this.updateScript({
           frames: [
             {
               uid: this.currentFrame.uid,
@@ -111,7 +111,7 @@ export default Vue.extend({
   },
   methods: {
     ...mapActions({
-      updateFrames: ActionTypes.UPDATE_SCRIPT
+      updateScript: ActionTypes.UPDATE_SCRIPT
     }),
     handleToggleExpanded() {
       this.expanded = !this.expanded;

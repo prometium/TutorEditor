@@ -75,7 +75,7 @@ export default Vue.extend({
   },
   methods: {
     ...mapActions({
-      updateFrames: ActionTypes.UPDATE_SCRIPT
+      updateScript: ActionTypes.UPDATE_SCRIPT
     }),
     handleChangeModeKey() {
       this.editMode = EditMode.Key;
@@ -107,7 +107,7 @@ export default Vue.extend({
       this.dialog = false;
     },
     async handleSubmit() {
-      await this.updateFrames({
+      await this.updateScript({
         actionIdsToDel: [this.action.uid],
         frames: [
           {

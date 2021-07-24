@@ -50,7 +50,7 @@ export const getters: Getters = {
       if (actions == null || !actions.length) break;
 
       const nextFrame = actions[pathItem.branchNum].nextFrame;
-      if (!nextFrame) break;
+      if (!nextFrame || !state.script.frameByUid[nextFrame.uid]) break;
 
       frameUid = nextFrame.uid;
     }

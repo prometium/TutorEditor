@@ -25,7 +25,7 @@ export default Vue.extend({
   },
   methods: {
     ...mapActions({
-      updateFrames: ActionTypes.UPDATE_SCRIPT
+      updateScript: ActionTypes.UPDATE_SCRIPT
     })
   },
   watch: {
@@ -37,7 +37,7 @@ export default Vue.extend({
 
       addImage(formData)
         .then(({ link }) => {
-          this.updateFrames({
+          this.updateScript({
             frames: [
               {
                 uid: this.currentFrame.uid,

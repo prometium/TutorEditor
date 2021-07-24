@@ -36,7 +36,7 @@ export default Vue.extend({
   },
   methods: {
     ...mapActions({
-      updateFrames: ActionTypes.UPDATE_SCRIPT
+      updateScript: ActionTypes.UPDATE_SCRIPT
     }),
     ...mapMutations({
       selectFrame: MutationTypes.SELECT_FRAME
@@ -44,7 +44,7 @@ export default Vue.extend({
     async handleUp() {
       if (!this.prevFrame || !this.prevAction) return;
 
-      await this.updateFrames({
+      await this.updateScript({
         frames: [
           {
             ...this.currentFrame,
@@ -76,7 +76,7 @@ export default Vue.extend({
     async handleDown() {
       if (!this.nextFrame || !this.nextAction) return;
 
-      await this.updateFrames({
+      await this.updateScript({
         frames: [
           {
             ...this.currentFrame,
@@ -106,7 +106,7 @@ export default Vue.extend({
       this.selectFrame(this.nextFrame.uid);
     },
     async handleAdd() {
-      await this.updateFrames({
+      await this.updateScript({
         frames: [
           {
             uid: this.currentFrame.uid,
@@ -140,11 +140,13 @@ export default Vue.extend({
       const prevFrameUid = this.prevFrame?.uid;
       const nextFrameUid = this.currentAction.nextFrame?.uid;
 
-      await this.updateFrames({
+      await this.updateScript({
         script: hasPrev
           ? {}
           : {
-              firstFrame: { uid: this.currentAction.nextFrame.uid }
+              firstFrame: {
+                uid: this.currentAction.nextFrame.uid
+              }
             },
         frames: hasPrev
           ? [
@@ -166,7 +168,7 @@ export default Vue.extend({
         frameIdsToDel: [this.currentFrame.uid]
       });
 
-      this.selectFrame(prevFrameUid || null);
+      this.selectFrame(prevFrameUid || nextFrameUid || null);
     }
   }
 });
