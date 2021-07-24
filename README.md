@@ -5,7 +5,7 @@
 ### База данных
 
 1. Необходимо установить Docker.
-2. Запуск Dgarph в Docker:
+2. Запуск Dgraph в Docker:
    `docker run -it -p 9080:9080 -v /mnt/dgraph:/dgraph dgraph/standalone:v20.03.0`.
    База данных будет доступна по адресу http://localhost:9080/.
 
@@ -23,4 +23,4 @@
    `npm install`.
 3. Запуск сервера для разработки:
    `npm run serve`.
-   Приложение будtт доступно по адресу http://localhost:3000/.
+   Приложение будет доступно по адресу http://localhost:3000/.
