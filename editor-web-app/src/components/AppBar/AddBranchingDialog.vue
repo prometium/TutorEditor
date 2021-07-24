@@ -13,8 +13,18 @@
           :item-text="convertScriptInfoToName"
           label="Присоединенный фрагмент"
         />
-        <v-select :items="frameNames" label="Кадр начала ветвления" />
-        <v-select :items="frameNames" label="Кадр окончания ветвления" />
+        <v-select :items="frameNames" label="Кадр начала ветвления" dense />
+        <v-select
+          :items="frameNames"
+          label="Первый присоединенный кадр"
+          dense
+        />
+        <v-select
+          :items="frameNames"
+          label="Последний присоединенный кадр"
+          dense
+        />
+        <v-select :items="frameNames" label="Кадр окончания ветвления" dense />
       </v-card-text>
       <v-divider />
       <v-card-actions>

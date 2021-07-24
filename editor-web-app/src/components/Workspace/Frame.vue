@@ -238,11 +238,38 @@ export default Vue.extend({
 }
 
 @keyframes shine {
-  from {
-    background-color: rgba(33, 33, 33, 70%);
+  0% {
+    background-color: rgba(244, 67, 54, 70%);
   }
-  to {
-    background-color: rgba(207, 216, 220, 70%);
+  10% {
+    background-color: rgba(233, 30, 99, 70%);
+  }
+  20% {
+    background-color: rgba(156, 39, 176, 70%);
+  }
+  30% {
+    background-color: rgba(103, 58, 183, 70%);
+  }
+  40% {
+    background-color: rgba(63, 81, 181, 70%);
+  }
+  50% {
+    background-color: rgba(33, 150, 243, 70%);
+  }
+  60% {
+    background-color: rgba(0, 150, 136, 70%);
+  }
+  70% {
+    background-color: rgba(76, 175, 80, 70%);
+  }
+  80% {
+    background-color: rgba(255, 235, 59, 70%);
+  }
+  90% {
+    background-color: rgba(255, 152, 0, 70%);
+  }
+  100% {
+    background-color: rgba(255, 87, 34, 70%);
   }
 }
 
@@ -252,6 +279,6 @@ export default Vue.extend({
   left: 0;
   padding: 5px;
   touch-action: none;
-  animation: 4s ease-in-out infinite alternate shine;
+  animation: 10s ease-in-out infinite alternate shine;
 }
 </style>
