@@ -1,17 +1,16 @@
 <template>
-  <div v-if="currentFrame" class="frame" tabindex="0" @blur="handleBlur">
-    <div v-show="currentFrame.uid" class="frame__img-wrapper">
-      <template v-if="currentFrame.pictureLink">
-        <img
-          ref="img"
-          :src="`${API_ROOT}/images/${
-            currentFrame.pictureLink
-          }#${new Date().getTime()}`"
-          :alt="currentFrame.uid"
-          class="frame__img"
-        />
-        <div v-show="showDragMoveArea" ref="resizeDrag" class="resize-drag" />
-      </template>
+  <div class="frame" tabindex="0" @blur="handleBlur">
+    <div class="frame__img-wrapper">
+      <img
+        v-if="currentFrame && currentFrame.pictureLink"
+        ref="img"
+        :src="`${API_ROOT}/images/${
+          currentFrame.pictureLink
+        }#${new Date().getTime()}`"
+        :alt="currentFrame.uid"
+        class="frame__img"
+      />
+      <div v-show="showDragMoveArea" ref="resizeDrag" class="resize-drag" />
       <ImageUploader />
     </div>
   </div>
