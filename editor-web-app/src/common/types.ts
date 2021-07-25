@@ -49,8 +49,8 @@ export type Frame = {
     | WheelClick
     | Pause
   >;
-  taskText: string;
-  hintText: string;
+  taskText?: string;
+  hintText?: string;
 }
 
 export type Action = {

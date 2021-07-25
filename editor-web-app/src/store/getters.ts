@@ -38,11 +38,10 @@ type Getters = {
 
 export const getters: Getters = {
   path(state) {
-    const script = state.script;
     const path = configurePath(
-      script.firstFrame,
-      script.frameByUid,
-      script.branchNumByUid
+      state.script.firstFrame,
+      state.script.frameByUid,
+      state.script.branchNumByUid
     );
     return path;
   },

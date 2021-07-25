@@ -46,7 +46,7 @@ export default Vue.extend({
       get(): boolean {
         return this.value;
       },
-      set(value) {
+      set(value: boolean) {
         this.$emit("input", value);
       }
     }

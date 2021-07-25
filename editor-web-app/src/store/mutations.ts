@@ -1,6 +1,7 @@
+import Vue from "vue";
+import { ScriptInfo, TraversableScript, Frame, Script } from "@/common/types";
 import { MutationTypes } from "./mutation-types";
 import { State } from "./state";
-import { ScriptInfo, TraversableScript, Frame, Script } from "@/common/types";
 
 export type Mutations<S = State> = {
   [MutationTypes.SET_SCRIPTS_INFO](state: S, scriptsInfo: ScriptInfo[]): void;
@@ -90,6 +91,6 @@ export const mutations: Mutations = {
     state.frameUid = uid;
   },
   [MutationTypes.CONFIGURE_PATH](state, fork) {
-    state.script.branchNumByUid[fork.frameUid] = fork.branchNum;
+    Vue.set(state.script.branchNumByUid, fork.frameUid, fork.branchNum);
   }
 };
