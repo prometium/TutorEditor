@@ -53,8 +53,8 @@ export default Vue.extend({
   },
   watch: {
     currentAction(action) {
-      const img = this.$refs.img as HTMLImageElement;
-      const resizeDrag = this.$refs.resizeDrag as HTMLDivElement;
+      const img = this.$refs.img as HTMLImageElement | undefined;
+      const resizeDrag = this.$refs.resizeDrag as HTMLDivElement | undefined;
 
       if (!img || !resizeDrag || !this.showDragMoveArea) return;
 
@@ -76,8 +76,9 @@ export default Vue.extend({
       updateScript: ActionTypes.UPDATE_SCRIPT
     }),
     onResize() {
-      const img = this.$refs.img as HTMLImageElement;
-      const resizeDrag = this.$refs.resizeDrag as HTMLDivElement;
+      const img = this.$refs.img as HTMLImageElement | undefined;
+      const resizeDrag = this.$refs.resizeDrag as HTMLDivElement | undefined;
+      if (!img || !resizeDrag) return;
 
       const scale = img.clientWidth / img.naturalWidth || 1;
 
@@ -187,7 +188,7 @@ export default Vue.extend({
       target.setAttribute("data-y", String(y));
     },
     handleBlur() {
-      const resizeDrag = this.$refs.resizeDrag as HTMLDivElement;
+      const resizeDrag = this.$refs.resizeDrag as HTMLDivElement | undefined;
       if (!resizeDrag) return;
 
       const x = parseFloat(resizeDrag.getAttribute("data-fixed-x") || "") || 0;
