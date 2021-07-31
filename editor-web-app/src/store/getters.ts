@@ -93,7 +93,7 @@ export const getters: Getters = {
     return getters.prevFrame?.actions?.[getters.prevPathItem.branchNum] || null;
   },
   nextFrame(state, getters) {
-    if (!getters.currentAction?.nextFrame.uid) return null;
+    if (!getters.currentAction?.nextFrame?.uid) return null;
     return (
       state.script.frameByUid[getters.currentAction?.nextFrame.uid] || null
     );

@@ -153,7 +153,6 @@ export default Vue.extend({
 
       // TODO: валидация порядка кадров
 
-      // eslint-disable-next-line prettier/prettier
       const preparedLastFrame =
         this.script.frameByUid[this.path[this.lastFrameIndex].frameUid];
 
@@ -176,7 +175,7 @@ export default Vue.extend({
                   {
                     ...action,
                     uid: `_:${action.uid}`,
-                    nextFrame: { uid: `_:${action.nextFrame.uid}` }
+                    nextFrame: { uid: `_:${action.nextFrame?.uid}` }
                   },
                   ...frame.actions.slice(1)
                 ]
@@ -184,10 +183,12 @@ export default Vue.extend({
           };
         });
 
-      framesToConnect[framesToConnect.length - 1].actions[0].nextFrame.uid =
-        preparedLastFrame.uid;
+      const nextFrame =
+        framesToConnect[framesToConnect.length - 1].actions[0].nextFrame;
+      if (nextFrame) {
+        nextFrame.uid = preparedLastFrame.uid;
+      }
 
-      // eslint-disable-next-line prettier/prettier
       const firstFrame =
         this.script.frameByUid[this.path[this.firstFrameIndex].frameUid];
 
@@ -197,7 +198,7 @@ export default Vue.extend({
           ...firstFrame.actions,
           {
             uid: "_:firstFrameAction",
-            nextFrame: { uid: framesToConnect[1].uid }
+            nextFrame: { uid: framesToConnect[0].uid }
           }
         ]
       };
