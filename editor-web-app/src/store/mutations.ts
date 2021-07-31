@@ -2,6 +2,7 @@ import Vue from "vue";
 import { ScriptInfo, TraversableScript, Frame, Script } from "@/common/types";
 import { MutationTypes } from "./mutation-types";
 import { State } from "./state";
+import { actions } from "./actions";
 
 export type Mutations<S = State> = {
   [MutationTypes.SET_SCRIPTS_INFO](state: S, scriptsInfo: ScriptInfo[]): void;
@@ -72,15 +73,26 @@ export const mutations: Mutations = {
     framesWithCorrectUids.forEach(frame => {
       const currentFrame = state.script?.frameByUid[frame.uid];
       if (currentFrame) {
-        state.script.frameByUid[frame.uid] = {
-          ...currentFrame,
-          ...frame,
-          actions: currentFrame.actions?.map(currentAction => {
+        const currentActions =
+          currentFrame.actions?.map(currentAction => {
             const newAppropriateAction = frame.actions?.find(
               action => action.uid === currentAction.uid
             );
             return { ...currentAction, ...newAppropriateAction };
-          })
+          }) || [];
+
+        const newActions =
+          frame.actions?.filter(
+            action =>
+              !currentActions.find(
+                currentAction => currentAction.uid === action.uid
+              )
+          ) || [];
+
+        state.script.frameByUid[frame.uid] = {
+          ...currentFrame,
+          ...frame,
+          actions: [...currentActions, ...newActions]
         };
       } else {
         state.script.frameByUid[frame.uid] = frame;
