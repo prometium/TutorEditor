@@ -17,7 +17,7 @@ type Getters = {
   currentPathItemIndex(
     state: State,
     getters: { [T in keyof Getters]: ReturnType<Getters[T]> }
-  ): number | null;
+  ): number;
   currentPathItem(
     state: State,
     getters: { [T in keyof Getters]: ReturnType<Getters[T]> }
@@ -89,17 +89,13 @@ export const getters: Getters = {
     const pathItemIndex = getters.path.findIndex(
       (pathItem: PathItem) => pathItem.frameUid === getters.currentFrame?.uid
     );
-    return pathItemIndex || null;
+    return pathItemIndex || 0;
   },
   currentPathItem(_, getters) {
-    if (!getters.currentPathItemIndex) return null;
-
     const currentPathItem = getters.path[getters.currentPathItemIndex];
     return currentPathItem || null;
   },
   prevPathItem(_, getters) {
-    if (!getters.currentPathItemIndex) return null;
-
     const prevPathItem = getters.path[getters.currentPathItemIndex - 1];
     return prevPathItem || null;
   },

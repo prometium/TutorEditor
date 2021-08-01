@@ -4,6 +4,7 @@
       v-for="(pathItem, index) in path"
       :key="pathItem.frameUid"
       class="frame-previews__item"
+      @click="selectFrame(pathItem.frameUid)"
     >
       <template v-if="script.frameByUid[pathItem.frameUid].pictureLink">
         <img
@@ -14,9 +15,8 @@
       ${index}`"
           :class="[
             'frame-previews__img',
-            pathItem.frameUid === currentFrame.uid && 'active'
+            currentFrame && pathItem.frameUid === currentFrame.uid && 'active'
           ]"
-          @click="selectFrame(pathItem.frameUid)"
           loading="lazy"
         />
         <div
@@ -50,9 +50,8 @@
         :class="[
           'frame-previews__img',
           'empty',
-          pathItem.frameUid === currentFrame.uid && 'active'
+          currentFrame && pathItem.frameUid === currentFrame.uid && 'active'
         ]"
-        @click="selectFrame(pathItem.frameUid)"
       />
     </div>
   </div>

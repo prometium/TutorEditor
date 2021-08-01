@@ -33,7 +33,10 @@
             <v-list-item @click="addBranchingDialog = true">
               <v-list-item-title>Добавить ветвление</v-list-item-title>
             </v-list-item>
-            <v-list-item @click="handleRemoveBranch">
+            <v-list-item
+              @click="handleRemoveBranch"
+              :disabled="isBranchRemovingDisabled"
+            >
               <v-list-item-title>Удалить ветку</v-list-item-title>
             </v-list-item>
           </v-list>
@@ -87,6 +90,9 @@ export default Vue.extend({
     ]),
     showToolbar(): boolean {
       return !!this.currentFrame;
+    },
+    isBranchRemovingDisabled(): boolean {
+      return (this.currentFrame?.actions?.length || 0) <= 1;
     }
   },
   methods: {
@@ -107,8 +113,6 @@ export default Vue.extend({
       });
     },
     async handleRemoveBranch() {
-      if ((this.currentFrame?.actions?.length || 0) <= 1) return;
-
       const countByNextFrameUid = {} as Record<string, number>;
       Object.values(this.script.frameByUid as Record<string, Frame>).forEach(
         frame => {

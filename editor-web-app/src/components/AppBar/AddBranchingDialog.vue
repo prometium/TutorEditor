@@ -17,7 +17,7 @@
         />
         <v-select
           v-model="firstFrameIndex"
-          :items="indexedFrames"
+          :items="indexedFirstFrames"
           :item-text="convertIndexedFrameToText"
           :item-value="convertIndexedFrameToValue"
           label="Кадр начала ветвления"
@@ -29,6 +29,7 @@
           :item-text="convertIndexedFrameToText"
           :item-value="convertIndexedFrameToValue"
           label="Первый присоединенный кадр"
+          :disabled="!this.selectedScriptUid"
           dense
         />
         <v-select
@@ -37,14 +38,18 @@
           :item-text="convertIndexedFrameToText"
           :item-value="convertIndexedFrameToValue"
           label="Последний присоединенный кадр"
+          :disabled="
+            !this.selectedScriptUid || firstConnectedFrameIndex == null
+          "
           dense
         />
         <v-select
           v-model="lastFrameIndex"
-          :items="indexedFrames"
+          :items="indexedLastFrames"
           :item-text="convertIndexedFrameToText"
           :item-value="convertIndexedFrameToValue"
           label="Кадр окончания ветвления"
+          :disabled="firstFrameIndex == null"
           dense
         />
       </v-card-text>
@@ -83,7 +88,7 @@ export default Vue.extend({
   },
   computed: {
     ...mapState(["script", "scriptsInfo"]),
-    ...mapGetters(["path"]),
+    ...mapGetters(["path", "currentPathItemIndex"]),
     dialog: {
       get(): boolean {
         return this.value;
@@ -92,11 +97,15 @@ export default Vue.extend({
         this.$emit("input", value);
       }
     },
-    indexedFrames(): IndexedFrame[] {
+    indexedFirstFrames(): IndexedFrame[] {
       return this.path.map((pathItem: PathItem, index: number) => ({
         index,
         ...this.script.frameByUid[pathItem.frameUid]
       }));
+    },
+    indexedLastFrames(): IndexedFrame[] {
+      if (this.firstFrameIndex == null) return this.indexedFirstFrames;
+      return this.indexedFirstFrames.slice(this.firstFrameIndex + 1);
     },
     frameOfSelectedScriptByUid(): Record<string, Frame> {
       const frameByUid: Record<string, Frame> = {};
@@ -141,7 +150,7 @@ export default Vue.extend({
     convertIndexedFrameToValue(frame: IndexedFrame) {
       return frame.index;
     },
-    handleAdd() {
+    async handleAdd() {
       if (
         !this.firstFrameIndex ||
         !this.firstConnectedFrameIndex ||
@@ -151,8 +160,6 @@ export default Vue.extend({
       )
         return;
 
-      // TODO: валидация порядка кадров
-
       const preparedLastFrame =
         this.script.frameByUid[this.path[this.lastFrameIndex].frameUid];
 
@@ -161,7 +168,6 @@ export default Vue.extend({
         .map((pathItem: PathItem, index) => {
           const frame = this.frameOfSelectedScriptByUid[pathItem.frameUid];
 
-          // TODO: если нет экшена
           const action = frame.actions?.[0] || {
             uid: `_:framesToConnectAction${index}`,
             nextFrame: { uid: "" }
@@ -203,17 +209,25 @@ export default Vue.extend({
         ]
       };
 
-      this.updateScript({
+      await this.updateScript({
         frames: [preparedFirstFrame, ...framesToConnect, preparedLastFrame]
       }).then(() => {
         this.dialog = false;
       });
+
+      this.selectedScriptUid = null;
+      this.selectedScript = null;
+      this.firstFrameIndex = null;
+      this.firstConnectedFrameIndex = null;
+      this.lastConnectedFrameIndex = null;
+      this.lastFrameIndex = null;
     }
   },
   watch: {
     dialog(value) {
       if (value) {
         this.loadScriptsInfo();
+        this.firstFrameIndex = this.currentPathItemIndex;
       }
     },
     selectedScriptUid(value) {
