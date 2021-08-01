@@ -50,9 +50,11 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { mapState, mapGetters } from "vuex";
+import { mapState, mapGetters, mapActions, mapMutations } from "vuex";
 import { downloadScriptArchive } from "@/common/requests";
-import { Frame, PathItem } from "@/common/types";
+import { Frame } from "@/common/types";
+import { ActionTypes } from "@/store/action-types";
+import { MutationTypes } from "@/store/mutation-types";
 import OpenScriptDialog from "./OpenScriptDialog.vue";
 import CreateScriptDialog from "./CreateScriptDialog.vue";
 import AddBranchingDialog from "./AddBranchingDialog.vue";
@@ -76,12 +78,24 @@ export default Vue.extend({
   },
   computed: {
     ...mapState(["script"]),
-    ...mapGetters(["currentFrame", "path"]),
+    ...mapGetters([
+      "currentFrame",
+      "path",
+      "currentAction",
+      "currentPathItem",
+      "currentPathItemIndex"
+    ]),
     showToolbar(): boolean {
       return !!this.currentFrame;
     }
   },
   methods: {
+    ...mapActions({
+      updateScript: ActionTypes.UPDATE_SCRIPT
+    }),
+    ...mapMutations({
+      configurePath: MutationTypes.CONFIGURE_PATH
+    }),
     handleDownloadScriptArchive() {
       downloadScriptArchive(this.script.uid).then(result => {
         const url = window.URL.createObjectURL(result);
@@ -92,7 +106,7 @@ export default Vue.extend({
         window.URL.revokeObjectURL(url);
       });
     },
-    handleRemoveBranch() {
+    async handleRemoveBranch() {
       if ((this.currentFrame?.actions?.length || 0) <= 1) return;
 
       const countByNextFrameUid = {} as Record<string, number>;
@@ -107,24 +121,30 @@ export default Vue.extend({
         }
       );
 
-      const currentFramePathIndex = this.path.findIndex(
-        (pathItem: PathItem) => pathItem.frameUid === this.currentFrame.uid
-      );
-      const lastFramePathIndex = this.path.length - 1;
+      const lastFramePathItemIndex = this.path.length - 1;
 
-      const frameUidsToRemove = [];
-      let currentPathIndex = currentFramePathIndex + 1;
-      console.log(countByNextFrameUid);
+      const frameIdsToDel = [];
+      let pathItemIndex = this.currentPathItemIndex + 1;
       for (
         ;
-        currentPathIndex < lastFramePathIndex &&
-        countByNextFrameUid[this.path[currentPathIndex].frameUid] <= 1;
-        currentPathIndex++
+        pathItemIndex < lastFramePathItemIndex &&
+        countByNextFrameUid[this.path[pathItemIndex].frameUid] <= 1;
+        pathItemIndex++
       ) {
-        frameUidsToRemove.push(this.path[currentPathIndex].frameUid);
+        frameIdsToDel.push(this.path[pathItemIndex].frameUid);
       }
 
-      console.log(frameUidsToRemove);
+      const actionIdsToDel = [this.currentAction.uid];
+
+      this.configurePath({
+        frameUid: this.currentPathItem.frameUid,
+        branchNum: Math.max(this.currentPathItem.branchNum - 1, 0)
+      });
+
+      this.updateScript({
+        actionIdsToDel,
+        frameIdsToDel
+      });
     }
   }
 });

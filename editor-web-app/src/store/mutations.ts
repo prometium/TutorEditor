@@ -12,6 +12,8 @@ export type Mutations<S = State> = {
       script?: Script;
       frames?: Frame[];
       uids?: Record<string, string> | null;
+      frameIdsToDel?: string[];
+      actionIdsToDel?: string[];
     }
   ): void;
   [MutationTypes.SELECT_FRAME](state: S, uid?: string): void;
@@ -33,7 +35,13 @@ export const mutations: Mutations = {
   },
   [MutationTypes.UPDATE_SCRIPT](
     state,
-    { script = {}, frames = [], uids = {} }
+    {
+      script = {},
+      frames = [],
+      uids = {},
+      frameIdsToDel = [],
+      actionIdsToDel = []
+    }
   ) {
     state.script = {
       ...state.script,
@@ -97,6 +105,20 @@ export const mutations: Mutations = {
         };
       } else {
         state.script.frameByUid[frame.uid] = frame;
+      }
+    });
+
+    frameIdsToDel.forEach(frameId => {
+      Vue.delete(state.script.frameByUid, frameId);
+    });
+
+    Object.values(state.script.frameByUid).forEach(frame => {
+      if (frame.actions) {
+        Vue.set(
+          frame,
+          "actions",
+          frame.actions?.filter(action => !actionIdsToDel.includes(action.uid))
+        );
       }
     });
   },

@@ -87,7 +87,9 @@ export const actions: Actions = {
           commit(MutationTypes.UPDATE_SCRIPT, {
             script,
             frames,
-            uids: res.uids
+            uids: res.uids,
+            frameIdsToDel,
+            actionIdsToDel
           });
           resolve();
         })

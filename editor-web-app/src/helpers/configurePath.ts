@@ -1,7 +1,7 @@
 import { Frame, PathItem } from "@/common/types";
 
 export function configurePath(
-  firstFrame: Pick<Frame, 'uid'>,
+  firstFrame: Pick<Frame, "uid">,
   frameByUid: Record<string, Frame>,
   branchNumByUid?: Record<string, number>
 ) {

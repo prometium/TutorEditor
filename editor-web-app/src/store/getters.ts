@@ -14,6 +14,14 @@ type Getters = {
     state: State,
     getters: { [T in keyof Getters]: ReturnType<Getters[T]> }
   ): number;
+  currentPathItemIndex(
+    state: State,
+    getters: { [T in keyof Getters]: ReturnType<Getters[T]> }
+  ): number | null;
+  currentPathItem(
+    state: State,
+    getters: { [T in keyof Getters]: ReturnType<Getters[T]> }
+  ): PathItem | null;
   prevPathItem(
     state: State,
     getters: { [T in keyof Getters]: ReturnType<Getters[T]> }
@@ -77,11 +85,22 @@ export const getters: Getters = {
         return ActionGroup.Other;
     }
   },
-  prevPathItem(_, getters) {
+  currentPathItemIndex(_, getters) {
     const pathItemIndex = getters.path.findIndex(
       (pathItem: PathItem) => pathItem.frameUid === getters.currentFrame?.uid
     );
-    const prevPathItem = getters.path[pathItemIndex - 1];
+    return pathItemIndex || null;
+  },
+  currentPathItem(_, getters) {
+    if (!getters.currentPathItemIndex) return null;
+
+    const currentPathItem = getters.path[getters.currentPathItemIndex];
+    return currentPathItem || null;
+  },
+  prevPathItem(_, getters) {
+    if (!getters.currentPathItemIndex) return null;
+
+    const prevPathItem = getters.path[getters.currentPathItemIndex - 1];
     return prevPathItem || null;
   },
   prevFrame(state, getters) {
