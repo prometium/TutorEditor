@@ -1,9 +1,19 @@
 <template>
   <div class="frame-tools">
-    <v-btn elevation="1" icon @click="handleUp">
+    <v-btn
+      elevation="1"
+      icon
+      @click="handleUp"
+      :disabled="!prevFrame || !prevAction"
+    >
       <v-icon>mdi-arrow-up</v-icon>
     </v-btn>
-    <v-btn elevation="1" icon @click="handleDown">
+    <v-btn
+      elevation="1"
+      icon
+      @click="handleDown"
+      :disabled="!nextFrame || !nextAction"
+    >
       <v-icon>mdi-arrow-down</v-icon>
     </v-btn>
     <v-btn elevation="1" icon @click="handleAdd">
@@ -50,8 +60,6 @@ export default Vue.extend({
       selectFrame: MutationTypes.SELECT_FRAME
     }),
     async handleUp() {
-      if (!this.prevFrame || !this.prevAction) return;
-
       await this.updateScript({
         frames: [
           {
@@ -82,8 +90,6 @@ export default Vue.extend({
       this.selectFrame(this.prevFrame.uid);
     },
     async handleDown() {
-      if (!this.nextFrame || !this.nextAction) return;
-
       await this.updateScript({
         frames: [
           {
@@ -127,6 +133,9 @@ export default Vue.extend({
           },
           {
             uid: "_:new1",
+            pictureLink: "",
+            taskText: "",
+            hintText: "",
             actions: [
               {
                 uid: "_:new2",
