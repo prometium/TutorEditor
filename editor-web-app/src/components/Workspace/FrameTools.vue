@@ -9,7 +9,12 @@
     <v-btn elevation="1" icon @click="handleAdd">
       <v-icon>mdi-plus</v-icon>
     </v-btn>
-    <v-btn @click="handleDelete" elevation="1" icon>
+    <v-btn
+      @click="handleDelete"
+      elevation="1"
+      icon
+      :disabled="isDeleteDisabled"
+    >
       <v-icon>mdi-delete</v-icon>
     </v-btn>
   </div>
@@ -32,7 +37,10 @@ export default Vue.extend({
       "prevAction",
       "nextFrame",
       "nextAction"
-    ])
+    ]),
+    isDeleteDisabled(): boolean {
+      return this.currentFrame?.actions?.length > 1 || this.path.length <= 2;
+    }
   },
   methods: {
     ...mapActions({
