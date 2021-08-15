@@ -57,7 +57,14 @@
       <v-card-actions>
         <v-spacer />
         <v-btn @click="dialog = false" text> Отменить </v-btn>
-        <v-btn @click="handleAdd" text color="primary"> Добавить </v-btn>
+        <v-btn
+          @click="handleAdd"
+          text
+          color="primary"
+          :disabled="isAddDisabled"
+        >
+          Добавить
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -130,6 +137,15 @@ export default Vue.extend({
           ...this.frameOfSelectedScriptByUid[pathItem.frameUid]
         })
       );
+    },
+    isAddDisabled(): boolean {
+      return (
+        this.firstFrameIndex == null ||
+        this.firstConnectedFrameIndex == null ||
+        this.lastConnectedFrameIndex == null ||
+        this.lastFrameIndex == null ||
+        !this.selectedScript
+      );
     }
   },
   methods: {
@@ -152,10 +168,10 @@ export default Vue.extend({
     },
     async handleAdd() {
       if (
-        !this.firstFrameIndex ||
-        !this.firstConnectedFrameIndex ||
-        !this.lastConnectedFrameIndex ||
-        !this.lastFrameIndex ||
+        this.firstFrameIndex == null ||
+        this.firstConnectedFrameIndex == null ||
+        this.lastConnectedFrameIndex == null ||
+        this.lastFrameIndex == null ||
         !this.selectedScript
       )
         return;
