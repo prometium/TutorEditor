@@ -12,18 +12,20 @@
       <v-row align="center" de>
         <v-col class="d-flex" cols="12" md="6">
           <v-text-field
-            v-model="currentFrame.taskText"
+            :value="currentFrame.taskText"
             label="Текст задания"
             dense
             hide-details
+            @change="handleTextChange($event, 'taskText')"
           />
         </v-col>
         <v-col class="d-flex" cols="12" md="6">
           <v-text-field
-            v-model="currentFrame.hintText"
+            :value="currentFrame.hintText"
             label="Текст подсказки"
             dense
             hide-details
+            @change="handleTextChange($event, 'hintText')"
           />
         </v-col>
       </v-row>
@@ -62,12 +64,14 @@ import { mapGetters, mapActions } from "vuex";
 import { ActionTypes } from "@/store/action-types";
 import { initialActionItems } from "./constants";
 import EditKeyboardActionDialog from "./EditKeyboardActionDialog.vue";
+import EditPauseActionDialog from "./EditPauseActionDialog.vue";
 import { ActionGroup } from "@/common/constants";
 
 export default Vue.extend({
   name: "Toolbar",
   components: {
-    EditKeyboardActionDialog
+    EditKeyboardActionDialog,
+    EditPauseActionDialog
   },
   data() {
     return {
@@ -84,6 +88,8 @@ export default Vue.extend({
       switch (this.currentActionGroup) {
         case ActionGroup.Keyboard:
           return "EditKeyboardActionDialog";
+        case ActionGroup.Pause:
+          return "EditPauseActionDialog";
         default:
           return null;
       }
@@ -115,6 +121,16 @@ export default Vue.extend({
     }),
     handleToggleExpanded() {
       this.expanded = !this.expanded;
+    },
+    handleTextChange(newValue: string, field: string) {
+      this.updateScript({
+        frames: [
+          {
+            uid: this.currentFrame.uid,
+            [field]: newValue
+          }
+        ]
+      });
     }
   }
 });
