@@ -23,7 +23,7 @@
       @click="handleDelete"
       elevation="1"
       icon
-      :disabled="isDeleteDisabled"
+      :disabled="isDeletingDisabled"
     >
       <v-icon>mdi-delete</v-icon>
     </v-btn>
@@ -48,7 +48,7 @@ export default Vue.extend({
       "nextFrame",
       "nextAction"
     ]),
-    isDeleteDisabled(): boolean {
+    isDeletingDisabled(): boolean {
       return this.currentFrame?.actions?.length > 1 || this.path.length <= 2;
     }
   },
