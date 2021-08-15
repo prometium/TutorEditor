@@ -61,7 +61,11 @@
           @click="handleAdd"
           text
           color="primary"
+<<<<<<< HEAD
           :disabled="isAddingDisabled"
+=======
+          :disabled="isAddDisabled"
+>>>>>>> e55ae3d4f58c3b5491d14b640b3ab0378e599efc
         >
           Добавить
         </v-btn>
