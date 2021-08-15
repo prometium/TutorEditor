@@ -19,6 +19,7 @@ type Action {
 	ticksCount
 	key
 	modKey
+	duration
 	switchPicturesJSON
 }
 
@@ -56,6 +57,7 @@ finishYRight: float .
 ticksCount: int .
 key: string .
 modKey: string .
+duration: float .
 switchPicturesJSON: string .
 pictureLink: string .
 dragXCoords: [float] .

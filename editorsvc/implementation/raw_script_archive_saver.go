@@ -50,12 +50,17 @@ type rawKeyboardAction struct {
 	ModKey string `json:"modKey,omitempty"`
 }
 
+type rawPauseAction struct {
+	Duration float32 `json:"duration,omitempty"`
+}
+
 type rawAction struct {
 	ActionType int `json:"actionId,omitempty"`
 	rawMouseAction
 	rawDragAction
 	rawWheelAction
 	rawKeyboardAction
+	rawPauseAction
 	SwitchPictures []switchPicture `json:"switchPictures,omitempty"`
 }
 
@@ -173,6 +178,7 @@ func (controller *rawScriptArchiveSaver) createScript(name string, linksMap map[
 					TicksCount:   action.TicksCount,
 					Key:          action.Key,
 					ModKey:       action.ModKey,
+					Duration:	  action.Duration,
 				},
 			},
 		}

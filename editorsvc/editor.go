@@ -48,6 +48,9 @@ type Action struct {
 	Key    string `json:"key,omitempty"`
 	ModKey string `json:"modKey,omitempty"`
 
+	// pause
+	Duration float32 `json:"duration,omitempty"`
+
 	SwitchPictures     []SwitchPicture `json:"switchPictures,omitempty"`
 	SwitchPicturesJSON string          `json:"switchPicturesJSON,omitempty"`
 
