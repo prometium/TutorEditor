@@ -115,7 +115,8 @@ export default Vue.extend({
             actions: [
               {
                 uid: this.action.uid,
-                ...this.action,
+                actionType: this.action.actionType,
+                nextFrame: this.action.nextFrame,
                 key: this.key,
                 modKey: this.modKey
               }
@@ -133,6 +134,7 @@ export default Vue.extend({
     action: {
       immediate: true,
       handler(value) {
+        console.log(value);
         this.key = value.key;
         this.modKey = value.modKey;
       }

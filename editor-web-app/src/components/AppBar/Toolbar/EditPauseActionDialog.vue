@@ -8,7 +8,14 @@
         Редактирование действия
       </v-card-title>
       <v-card-text style="max-height: 300px">
-        <v-text-field v-model="currentDuration" label="Длительность (мс)" />
+        <v-text-field
+          type="number"
+          min="10"
+          step="10"
+          max="10000"
+          v-model.number="currentDuration"
+          label="Длительность (мс)"
+        />
       </v-card-text>
       <v-divider />
       <v-card-actions>
@@ -22,7 +29,7 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { mapState, mapActions } from "vuex";
+import { mapGetters, mapActions } from "vuex";
 import { ActionTypes } from "@/store/action-types";
 
 export default Vue.extend({
@@ -33,7 +40,8 @@ export default Vue.extend({
   },
   data() {
     return {
-      dialog: false
+      dialog: false,
+      currentDuration: null
     };
   },
   methods: {
@@ -43,18 +51,34 @@ export default Vue.extend({
     handleDiscard() {
       this.dialog = false;
     },
-    handleSubmit() {
+    async handleSubmit() {
+      await this.updateScript({
+        actionIdsToDel: [this.action.uid],
+        frames: [
+          {
+            uid: this.frameUid,
+            actions: [
+              {
+                uid: this.action.uid,
+                actionType: this.action.actionType,
+                nextFrame: this.action.nextFrame,
+                duration: this.currentDuration
+              }
+            ]
+          }
+        ]
+      });
       this.dialog = false;
     }
   },
   computed: {
-    ...mapState(["currentAction"]),
-    currentDuration: {
-      get(): number {
-        return this.currentAction?.actionType;
-      },
-      set(newValue: number) {
-        //
+    ...mapGetters(["currentAction"])
+  },
+  watch: {
+    action: {
+      immediate: true,
+      handler(value) {
+        this.currentDuration = value.duration;
       }
     }
   }

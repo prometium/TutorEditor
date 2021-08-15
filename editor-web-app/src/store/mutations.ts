@@ -79,6 +79,20 @@ export const mutations: Mutations = {
             : { ...frame, actions: actionsWithCorrectUids };
         });
 
+    frameIdsToDel.forEach(frameId => {
+      Vue.delete(state.script.frameByUid, frameId);
+    });
+
+    Object.values(state.script.frameByUid).forEach(frame => {
+      if (frame.actions) {
+        Vue.set(
+          frame,
+          "actions",
+          frame.actions?.filter(action => !actionIdsToDel.includes(action.uid))
+        );
+      }
+    });    
+
     framesWithCorrectUids.forEach(frame => {
       const currentFrame = state.script?.frameByUid[frame.uid];
       if (currentFrame) {
@@ -105,20 +119,6 @@ export const mutations: Mutations = {
         };
       } else {
         state.script.frameByUid[frame.uid] = frame;
-      }
-    });
-
-    frameIdsToDel.forEach(frameId => {
-      Vue.delete(state.script.frameByUid, frameId);
-    });
-
-    Object.values(state.script.frameByUid).forEach(frame => {
-      if (frame.actions) {
-        Vue.set(
-          frame,
-          "actions",
-          frame.actions?.filter(action => !actionIdsToDel.includes(action.uid))
-        );
       }
     });
   },
