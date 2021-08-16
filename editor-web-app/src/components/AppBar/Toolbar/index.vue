@@ -40,6 +40,9 @@
             dense
             hide-details
           />
+          <span v-if="isTicksCountShown" class="action-immutable-value">
+            {{ currentAction.ticksCount || 0 }} щелчков
+          </span>
           <component
             v-if="actionDialogComponent"
             :is="actionDialogComponent"
@@ -94,6 +97,9 @@ export default Vue.extend({
           return null;
       }
     },
+    isTicksCountShown(): boolean {
+      return this.currentActionGroup === ActionGroup.Tick;
+    },
     currentActionType: {
       get(): number {
         return this.currentAction?.actionType;
@@ -146,5 +152,13 @@ export default Vue.extend({
   padding-left: 16px;
   padding-top: 0;
   padding-bottom: 0;
+}
+
+.action-immutable-value {
+  margin-left: 8px;
+  display: flex;
+  align-items: center;
+  cursor: default;
+  color: rgba(0, 0, 0, 0.6);
 }
 </style>

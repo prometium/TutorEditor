@@ -22,5 +22,6 @@ export enum ActionGroup {
     Mouse,
     Keyboard,
     Pause,
+    Tick,
     Other
 }
