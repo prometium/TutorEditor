@@ -4,7 +4,7 @@ import { ActionTypes } from "./action-types";
 import { Mutations } from "./mutations";
 import { MutationTypes } from "./mutation-types";
 import { Script, TraversableScript, Frame } from "@/common/types";
-import { getScriptsInfo, getScript, updateScript } from "@/common/requests";
+import { getScriptsInfo, getScript, updateScript, deleteScript } from "@/common/requests";
 
 type AugmentedActionContext = {
   commit<K extends keyof Mutations>(
@@ -14,21 +14,23 @@ type AugmentedActionContext = {
 } & Omit<ActionContext<State, State>, "commit">;
 
 type Actions = {
-  [ActionTypes.LOAD_SCRIPTS_INFO]({
-    commit
-  }: AugmentedActionContext): Promise<void>;
+  [ActionTypes.LOAD_SCRIPTS_INFO](context: AugmentedActionContext): Promise<void>;
   [ActionTypes.LOAD_SCRIPT](
-    { commit }: AugmentedActionContext,
+    context: AugmentedActionContext,
     uid: string
   ): Promise<void>;
   [ActionTypes.UPDATE_SCRIPT](
-    { state }: AugmentedActionContext,
+    context: AugmentedActionContext,
     data: {
       script?: Script;
       frames?: Frame[];
       frameIdsToDel?: string[];
       actionIdsToDel?: string[];
     }
+  ): Promise<void>;
+  [ActionTypes.DELETE_SCRIPT](
+    context: AugmentedActionContext,
+    uid: string
   ): Promise<void>;
 };
 
@@ -91,6 +93,23 @@ export const actions: Actions = {
             frameIdsToDel,
             actionIdsToDel
           });
+          resolve();
+        })
+        .catch(err => {
+          reject(err);
+        });
+    });
+  },
+  [ActionTypes.DELETE_SCRIPT](
+    { commit },
+    uid
+  ) {
+    return new Promise((resolve, reject) => {
+      return deleteScript(
+        uid
+      )
+        .then(() => {
+          // TODO: Добавить обновление стора
           resolve();
         })
         .catch(err => {

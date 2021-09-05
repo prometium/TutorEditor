@@ -16,6 +16,7 @@ export type Mutations<S = State> = {
       actionIdsToDel?: string[];
     }
   ): void;
+  [MutationTypes.DELETE_SCRIPT](state: S, uid: string): void;
   [MutationTypes.SELECT_FRAME](state: S, uid?: string): void;
   [MutationTypes.CONFIGURE_PATH](
     state: S,
@@ -121,6 +122,9 @@ export const mutations: Mutations = {
         state.script.frameByUid[frame.uid] = frame;
       }
     });
+  },
+  [MutationTypes.DELETE_SCRIPT](state, uid) {
+    state.scriptsInfo = state.scriptsInfo.filter(script => script.uid !== uid);
   },
   [MutationTypes.SELECT_FRAME](state, uid) {
     state.frameUid = uid;

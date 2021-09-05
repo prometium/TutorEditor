@@ -16,6 +16,9 @@
             <v-list-item @click="openScriptDialog = true">
               <v-list-item-title>Открыть</v-list-item-title>
             </v-list-item>
+            <v-list-item @click="deleteScriptDialog = true">
+              <v-list-item-title>Удалить</v-list-item-title>
+            </v-list-item>
             <v-list-item @click="handleDownloadScriptArchive">
               <v-list-item-title>Скачать архив</v-list-item-title>
             </v-list-item>
@@ -23,6 +26,7 @@
         </v-menu>
         <CreateScriptDialog v-model="createScriptDialog" />
         <OpenScriptDialog v-model="openScriptDialog" />
+        <DeleteScriptDialog v-model="deleteScriptDialog" />
         <v-menu>
           <template v-slot:activator="{ on, attrs }">
             <v-btn v-bind="attrs" v-on="on" small text elevation="0">
@@ -60,6 +64,7 @@ import { ActionTypes } from "@/store/action-types";
 import { MutationTypes } from "@/store/mutation-types";
 import OpenScriptDialog from "./OpenScriptDialog.vue";
 import CreateScriptDialog from "./CreateScriptDialog.vue";
+import DeleteScriptDialog from "./DeleteScriptDialog.vue";
 import AddBranchingDialog from "./AddBranchingDialog.vue";
 import Toolbar from "./Toolbar/index.vue";
 
@@ -70,12 +75,14 @@ export default Vue.extend({
     return {
       createScriptDialog: false,
       openScriptDialog: false,
+      deleteScriptDialog: false,
       addBranchingDialog: false
     };
   },
   components: {
     OpenScriptDialog,
     CreateScriptDialog,
+    DeleteScriptDialog,
     AddBranchingDialog,
     Toolbar
   },

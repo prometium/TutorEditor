@@ -8,20 +8,30 @@
         Обучающие программы
       </v-card-title>
       <v-card-text style="max-height: 300px; overflow-y: auto">
-        <v-radio-group v-model="selectedScriptId" column>
-          <v-radio
+        <v-list-item-group v-model="selectedScriptIds" multiple>
+          <v-list-item
             v-for="scriptInfo in scriptsInfo"
             :key="scriptInfo.uid"
-            :label="scriptInfo.name"
             :value="scriptInfo.uid"
-          />
-        </v-radio-group>
+            dense
+            :disabled="script && scriptInfo.uid === script.uid"
+          >
+            <template v-slot:default="{ active }">
+              <v-list-item-action>
+                <v-checkbox :input-value="active" />
+              </v-list-item-action>
+              <v-list-item-content>
+                <v-list-item-title>{{ scriptInfo.name }}</v-list-item-title>
+              </v-list-item-content>
+            </template>
+          </v-list-item>
+        </v-list-item-group>
       </v-card-text>
       <v-divider />
       <v-card-actions>
         <v-spacer />
         <v-btn @click="dialog = false" text> Отменить </v-btn>
-        <v-btn @click="handleOpen" text color="primary"> Открыть </v-btn>
+        <v-btn @click="handleDelete" text color="primary"> Удалить </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -33,15 +43,15 @@ import { mapState, mapActions } from "vuex";
 import { ActionTypes } from "@/store/action-types";
 
 export default Vue.extend({
-  name: "OpenScriptDialog",
+  name: "DeleteScriptDialog",
   props: ["value"],
   data() {
     return {
-      selectedScriptId: ""
+      selectedScriptIds: []
     };
   },
   computed: {
-    ...mapState(["scriptsInfo"]),
+    ...mapState(["scriptsInfo", "script"]),
     dialog: {
       get(): boolean {
         return this.value;
@@ -53,17 +63,14 @@ export default Vue.extend({
   },
   methods: {
     ...mapActions({
-      loadScript: ActionTypes.LOAD_SCRIPT,
+      deleteScript: ActionTypes.DELETE_SCRIPT,
       loadScriptsInfo: ActionTypes.LOAD_SCRIPTS_INFO
     }),
-    async handleOpen() {
+    async handleDelete() {
+      await Promise.all(
+        this.selectedScriptIds.map(id => this.deleteScript(id))
+      );
       this.dialog = false;
-      await this.loadScript(this.selectedScriptId);
-      this.$router
-        .push({ path: "/", query: { scriptUid: this.selectedScriptId } })
-        .catch(() => {
-          /* ignore */
-        });
     }
   },
   watch: {

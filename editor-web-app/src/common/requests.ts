@@ -4,7 +4,7 @@ export const API_ROOT = "http://localhost:9000";
 
 type RequestPayload = {
   endpoint: string;
-  method?: "GET" | "PUT" | "POST";
+  method?: "GET" | "PUT" | "POST" | "DELETE";
   data?: string | FormData | null;
   headers?: Headers;
 };
@@ -105,6 +105,18 @@ export function updateScript(
     endpoint: "/scripts",
     method: "PUT",
     data: JSON.stringify({ script, frameIdsToDel, actionIdsToDel })
+  });
+}
+
+type DeleteScriptResponse = {
+};
+
+export function deleteScript(
+  uid: string
+): Promise<DeleteScriptResponse> {
+  return executeRequest({
+    endpoint:  `/scripts/${uid}`,
+    method: "DELETE"
   });
 }
 

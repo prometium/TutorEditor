@@ -134,7 +134,6 @@ export default Vue.extend({
     action: {
       immediate: true,
       handler(value) {
-        console.log(value);
         this.key = value.key;
         this.modKey = value.modKey;
       }
