@@ -108,14 +108,11 @@ export function updateScript(
   });
 }
 
-type DeleteScriptResponse = {
-};
+type DeleteScriptResponse = Record<string, unknown>;
 
-export function deleteScript(
-  uid: string
-): Promise<DeleteScriptResponse> {
+export function deleteScript(uid: string): Promise<DeleteScriptResponse> {
   return executeRequest({
-    endpoint:  `/scripts/${uid}`,
+    endpoint: `/scripts/${uid}`,
     method: "DELETE"
   });
 }

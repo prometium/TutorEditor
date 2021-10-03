@@ -4,7 +4,12 @@ import { ActionTypes } from "./action-types";
 import { Mutations } from "./mutations";
 import { MutationTypes } from "./mutation-types";
 import { Script, TraversableScript, Frame } from "@/common/types";
-import { getScriptsInfo, getScript, updateScript, deleteScript } from "@/common/requests";
+import {
+  getScriptsInfo,
+  getScript,
+  updateScript,
+  deleteScript
+} from "@/common/requests";
 
 type AugmentedActionContext = {
   commit<K extends keyof Mutations>(
@@ -14,7 +19,9 @@ type AugmentedActionContext = {
 } & Omit<ActionContext<State, State>, "commit">;
 
 type Actions = {
-  [ActionTypes.LOAD_SCRIPTS_INFO](context: AugmentedActionContext): Promise<void>;
+  [ActionTypes.LOAD_SCRIPTS_INFO](
+    context: AugmentedActionContext
+  ): Promise<void>;
   [ActionTypes.LOAD_SCRIPT](
     context: AugmentedActionContext,
     uid: string
@@ -100,14 +107,9 @@ export const actions: Actions = {
         });
     });
   },
-  [ActionTypes.DELETE_SCRIPT](
-    { commit },
-    uid
-  ) {
+  [ActionTypes.DELETE_SCRIPT](_, uid) {
     return new Promise((resolve, reject) => {
-      return deleteScript(
-        uid
-      )
+      return deleteScript(uid)
         .then(() => {
           // TODO: Добавить обновление стора
           resolve();

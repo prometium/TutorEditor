@@ -92,7 +92,7 @@ export const mutations: Mutations = {
           frame.actions?.filter(action => !actionIdsToDel.includes(action.uid))
         );
       }
-    });    
+    });
 
     framesWithCorrectUids.forEach(frame => {
       const currentFrame = state.script?.frameByUid[frame.uid];

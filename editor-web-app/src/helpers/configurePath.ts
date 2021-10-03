@@ -4,7 +4,7 @@ export function configurePath(
   firstFrame: Pick<Frame, "uid">,
   frameByUid: Record<string, Frame>,
   branchNumByUid?: Record<string, number>
-) {
+): PathItem[] {
   let frameUid = firstFrame.uid;
   const path: PathItem[] = [];
   while (path.length <= Object.keys(frameByUid).length) {

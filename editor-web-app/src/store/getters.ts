@@ -83,7 +83,7 @@ export const getters: Getters = {
         return ActionGroup.Keyboard;
       case ActionType.WheelDown:
       case ActionType.WheelUp:
-        return ActionGroup.Tick
+        return ActionGroup.Tick;
       case ActionType.Pause:
         return ActionGroup.Pause;
       default:
