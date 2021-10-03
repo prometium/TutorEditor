@@ -1,7 +1,7 @@
 <template>
   <main class="workspace">
     <v-sheet
-      v-if="showSidePanel"
+      v-if="hasScript"
       elevation="2"
       tag="aside"
       class="workspace__aside"
@@ -9,7 +9,7 @@
       <FramePreviews class="workspace__aside-previews" />
       <FrameTools />
     </v-sheet>
-    <Frame class="workspace__frame" />
+    <Frame v-if="hasScript" class="workspace__frame" />
   </main>
 </template>
 
@@ -40,7 +40,7 @@ export default Vue.extend({
   },
   computed: {
     ...mapState(["script"]),
-    showSidePanel(): boolean {
+    hasScript(): boolean {
       return !!this.script.uid;
     }
   },

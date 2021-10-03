@@ -1,7 +1,9 @@
 <template>
   <v-sheet tag="header" class="header" elevation="4">
     <div class="menubar-container">
-      <div class="script-title text-h6">{{ script.name || "..." }}</div>
+      <div v-if="script.name" class="script-title text-h6">
+        {{ script.name }}
+      </div>
       <div class="menubar">
         <v-menu>
           <template v-slot:activator="{ on, attrs }">
@@ -9,7 +11,7 @@
               Файл
             </v-btn>
           </template>
-          <v-list>
+          <v-list dense>
             <v-list-item @click="createScriptDialog = true">
               <v-list-item-title>Создать</v-list-item-title>
             </v-list-item>
@@ -19,7 +21,10 @@
             <v-list-item @click="deleteScriptDialog = true">
               <v-list-item-title>Удалить</v-list-item-title>
             </v-list-item>
-            <v-list-item @click="handleDownloadScriptArchive">
+            <v-list-item
+              :disabled="!hasScript"
+              @click="handleDownloadScriptArchive"
+            >
               <v-list-item-title>Скачать архив</v-list-item-title>
             </v-list-item>
           </v-list>
@@ -27,13 +32,13 @@
         <CreateScriptDialog v-model="createScriptDialog" />
         <OpenScriptDialog v-model="openScriptDialog" />
         <DeleteScriptDialog v-model="deleteScriptDialog" />
-        <v-menu>
+        <v-menu v-if="hasScript">
           <template v-slot:activator="{ on, attrs }">
             <v-btn v-bind="attrs" v-on="on" small text elevation="0">
               Редактирование
             </v-btn>
           </template>
-          <v-list>
+          <v-list dense>
             <v-list-item @click="addBranchingDialog = true">
               <v-list-item-title>Добавить ветвление</v-list-item-title>
             </v-list-item>
@@ -95,6 +100,9 @@ export default Vue.extend({
       "currentPathItem",
       "currentPathItemIndex"
     ]),
+    hasScript(): boolean {
+      return !!this.script.uid;
+    },
     showToolbar(): boolean {
       return !!this.currentFrame;
     },
