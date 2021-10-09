@@ -6,8 +6,8 @@
 
 1. Необходимо установить Docker.
 2. Запуск Dgraph в Docker:
-   `docker run -it -p 9080:9080 -v /mnt/dgraph:/dgraph dgraph/standalone:v20.03.0`.
-   База данных будет доступна по адресу http://localhost:9080/.
+   `docker run -it -p 8080:8080 -p 9080:9080 -p 8000:8000 -v /mnt/dgraph:/dgraph dgraph/standalone:v20.03.0`.
+   База данных будет доступна по адресу http://localhost:9080/. Для отладки БД можно открыть в браузере адрес http://localhost:8000/
 
 ### Сервер
 
