@@ -25,7 +25,7 @@ import (
 )
 
 func main() {
-	var httpAddr = flag.String("http.addr", fmt.Sprintf("0.0.0.0:%s", utils.Getenv("APP_PORT", "9000")), "HTTP listen address")
+	var httpAddr = flag.String("http.addr", fmt.Sprintf(":%s", utils.Getenv("APP_PORT", "9000")), "HTTP listen address")
 	flag.Parse()
 
 	var ctx = context.Background()
@@ -39,7 +39,7 @@ func main() {
 
 	var dgraphClient *dgo.Dgraph
 	{
-		conn, err := grpc.Dial(fmt.Sprintf("0.0.0.0:%s", utils.Getenv("DB_PORT", "9080")), grpc.WithInsecure())
+		conn, err := grpc.Dial(fmt.Sprintf(":%s", utils.Getenv("DB_PORT", "9080")), grpc.WithInsecure())
 		defer conn.Close()
 		if err != nil {
 			level.Error(logger).Log("exit", err)

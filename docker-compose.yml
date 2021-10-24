@@ -4,10 +4,6 @@ services:
   db:
     image: dgraph/standalone:v21.03.2
     container_name: editor-db
-    ports:
-      - "8080:8080"
-      - "9080:9080"
-      - "8000:8000"
     volumes:
       - ~/dgraph:/dgraph
     network_mode: host
@@ -15,15 +11,11 @@ services:
   svc:
     build: ./editorsvc
     container_name: editor-svc
-    ports:
-      - "9000:9000"
+    network_mode: host
     depends_on:
       - "db"
-    network_mode: host
   # Веб-клиент
   web:
     build: ./editor-web-app
     container_name: editor-web-app
-    ports:
-      - "3000:80"
     network_mode: host
