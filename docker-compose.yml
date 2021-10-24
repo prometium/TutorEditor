@@ -6,16 +6,29 @@ services:
     container_name: editor-db
     volumes:
       - ~/dgraph:/dgraph
-    network_mode: host
+    ports:
+      - "8080:8080"
+      - "9080:9080"
+      - "8000:8000"
+    networks:
+      - app-network
   # Сервер
   svc:
     build: ./editorsvc
     container_name: editor-svc
-    network_mode: host
-    depends_on:
-      - "db"
+    ports:
+      - "9000:9000"
+    networks:
+      - app-network
   # Веб-клиент
   web:
     build: ./editor-web-app
     container_name: editor-web-app
-    network_mode: host
+    ports:
+      - "3000:80"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
