@@ -36,7 +36,9 @@ export default Vue.extend({
     };
   },
   mounted() {
-    this.loadScript(this.$route.query.scriptUid);
+    if (this.$route.query.scriptUid) {
+      this.loadScript(this.$route.query.scriptUid);
+    }
   },
   computed: {
     ...mapState(["script"]),

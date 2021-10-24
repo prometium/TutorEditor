@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"math/rand"
 	"net/http"
 	"os"
@@ -20,10 +21,11 @@ import (
 	"github.com/prometium/tutoreditor/editorsvc/implementation"
 	"github.com/prometium/tutoreditor/editorsvc/transport"
 	httptransport "github.com/prometium/tutoreditor/editorsvc/transport/http"
+	"github.com/prometium/tutoreditor/editorsvc/utils"
 )
 
 func main() {
-	var httpAddr = flag.String("http.addr", ":8080", "HTTP listen address")
+	var httpAddr = flag.String("http.addr", fmt.Sprintf("0.0.0.0:%s", utils.Getenv("APP_PORT", "9000")), "HTTP listen address")
 	flag.Parse()
 
 	var ctx = context.Background()
@@ -37,7 +39,7 @@ func main() {
 
 	var dgraphClient *dgo.Dgraph
 	{
-		conn, err := grpc.Dial("localhost:9080", grpc.WithInsecure())
+		conn, err := grpc.Dial(fmt.Sprintf("0.0.0.0:%s", utils.Getenv("DB_PORT", "9080")), grpc.WithInsecure())
 		defer conn.Close()
 		if err != nil {
 			level.Error(logger).Log("exit", err)
