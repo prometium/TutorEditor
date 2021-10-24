@@ -1,7 +1,7 @@
 import { Script, ScriptInfo } from "./types";
 
-export const API_ROOT = `${
-  process.env.VUE_APP_SVC_HOST || "http://localhost"
+export const API_ROOT = `http://${
+  process.env.VUE_APP_SVC_HOST || "localhost"
 }:${process.env.VUE_APP_SVC_PORT || 9000}`;
 
 type RequestPayload = {
