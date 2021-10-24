@@ -16,6 +16,7 @@ import (
 	"github.com/rs/cors"
 	"google.golang.org/grpc"
 
+	"github.com/joho/godotenv"
 	"github.com/prometium/tutoreditor/editorsvc"
 	dgraphdb "github.com/prometium/tutoreditor/editorsvc/database"
 	"github.com/prometium/tutoreditor/editorsvc/implementation"
@@ -25,11 +26,6 @@ import (
 )
 
 func main() {
-	var httpAddr = flag.String("http.addr", fmt.Sprintf(":%s", utils.Getenv("APP_PORT", "9000")), "HTTP listen address")
-	flag.Parse()
-
-	var ctx = context.Background()
-
 	var logger log.Logger
 	{
 		logger = log.NewLogfmtLogger(os.Stderr)
@@ -37,9 +33,19 @@ func main() {
 		logger = log.With(logger, "caller", log.DefaultCaller)
 	}
 
+	err := godotenv.Load()
+	if err != nil {
+		level.Info(logger).Log("Error loading .env file")
+	}
+
+	var httpAddr = flag.String("http.addr", fmt.Sprintf("%s:%s", utils.Getenv("APP_HOST", ""), utils.Getenv("APP_PORT", "9000")), "HTTP listen address")
+	flag.Parse()
+
+	var ctx = context.Background()
+
 	var dgraphClient *dgo.Dgraph
 	{
-		conn, err := grpc.Dial(fmt.Sprintf(":%s", utils.Getenv("DB_PORT", "9080")), grpc.WithInsecure())
+		conn, err := grpc.Dial(fmt.Sprintf("%s:%s", utils.Getenv("DB_HOST", "db"), utils.Getenv("DB_PORT", "9080")), grpc.WithInsecure())
 		defer conn.Close()
 		if err != nil {
 			level.Error(logger).Log("exit", err)

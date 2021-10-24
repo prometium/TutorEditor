@@ -102,9 +102,9 @@ func CopyFile(inReader io.Reader, dst string) error {
 
 // Getenv return env value by key or default value
 func Getenv(key, fallback string) string {
-    value := os.Getenv(key)
-    if len(value) == 0 {
-        return fallback
-    }
-    return value
+	value := os.Getenv(key)
+	if len(value) == 0 {
+		return fallback
+	}
+	return value
 }
