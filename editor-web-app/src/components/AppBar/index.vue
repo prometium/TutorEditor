@@ -122,7 +122,7 @@ export default Vue.extend({
         const url = window.URL.createObjectURL(result);
         const link = document.createElement("a");
         link.href = url;
-        link.download = "Script";
+        link.download = this.script.name;
         link.click();
         window.URL.revokeObjectURL(url);
       });
