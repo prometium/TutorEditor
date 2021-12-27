@@ -73,8 +73,10 @@ type rawFrame struct {
 }
 
 type rawScriptArchiveSaver struct {
-	Images []*zip.File
-	Frames []rawFrame `json:"frames,omitempty"`
+	Images        []*zip.File
+	PictureWidth  int        `json:"pictureWidth,omitempty"`
+	PictureHeight int        `json:"pictureHeight,omitempty"`
+	Frames        []rawFrame `json:"frames,omitempty"`
 }
 
 func (controller *rawScriptArchiveSaver) init(r io.Reader) error {
@@ -178,7 +180,7 @@ func (controller *rawScriptArchiveSaver) createScript(name string, linksMap map[
 					TicksCount:   action.TicksCount,
 					Key:          action.Key,
 					ModKey:       action.ModKey,
-					Duration:	  action.Duration,
+					Duration:     action.Duration,
 				},
 			},
 		}
@@ -198,8 +200,10 @@ func (controller *rawScriptArchiveSaver) createScript(name string, linksMap map[
 	}
 
 	script := editorsvc.Script{
-		Name:   name,
-		Frames: frames,
+		Name:          name,
+		PictureWidth:  controller.PictureWidth,
+		PictureHeight: controller.PictureHeight,
+		Frames:        frames,
 	}
 
 	if len(frames) > 0 {

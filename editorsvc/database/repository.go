@@ -98,6 +98,8 @@ func (repo *repository) GetScript(ctx context.Context, id string) (*editorsvc.Sc
 			uid
 			name
 			version
+			pictureWidth
+			pictureHeight
 			firstFrame {
 			  uid
 			}

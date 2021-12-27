@@ -34,6 +34,8 @@ type Script {
 	name
 	version
 	modificationDate
+	pictureWidth
+	pictureHeight
 	firstFrame
 	frames
 }
@@ -66,8 +68,10 @@ actions: [uid] @reverse .
 hintText: string .
 taskText: string .
 name: string @index(exact) .
-modificationDate: string .
 version: string .
+modificationDate: string .
+pictureWidth: int .
+pictureHeight: int .
 firstFrame: uid .
 frames: [uid] .
 `
