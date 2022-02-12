@@ -13,28 +13,22 @@
             @keyup="handleKeyUp"
             @keydown.prevent
             solo
-            label="Новая клавиша"
+            label="Новая клавиша (с модификатором или без)"
           />
           <v-btn @click="editMode = ''" text small> Отмена </v-btn>
         </p>
         <template v-else>
           <p class="body-1">
             Клавиша: <b>{{ key || "[нет]" }}</b>
-            <v-btn @click="handleChangeModeKey" icon>
+            <v-btn @click="handleChange" icon>
               <v-icon> mdi-pencil </v-icon>
             </v-btn>
-            <v-btn @click="handleDeleteKey" icon>
+            <v-btn @click="handleDelete" icon>
               <v-icon> mdi-delete </v-icon>
             </v-btn>
           </p>
           <p class="body-1">
             Модификатор: <b>{{ modKey || "[нет]" }}</b>
-            <v-btn @click="handleChangeModeModKey" icon>
-              <v-icon> mdi-pencil </v-icon>
-            </v-btn>
-            <v-btn @click="handleDeleteModKey" icon>
-              <v-icon> mdi-delete </v-icon>
-            </v-btn>
           </p>
         </template>
       </v-card-text>
@@ -55,9 +49,11 @@ import { ActionTypes } from "@/store/action-types";
 
 enum EditMode {
   Key = "key",
-  ModKey = "modKey",
   None = ""
 }
+
+// TODO: other mod keys
+const modKeyArgs = ["Alt", "Control", "Shift"];
 
 export default Vue.extend({
   name: "EditKeyboardActionDialog",
@@ -77,28 +73,22 @@ export default Vue.extend({
     ...mapActions({
       updateScript: ActionTypes.UPDATE_SCRIPT
     }),
-    handleChangeModeKey() {
+    handleChange() {
       this.editMode = EditMode.Key;
     },
-    handleChangeModeModKey() {
-      this.editMode = EditMode.ModKey;
-    },
     handleKeyUp(event: KeyboardEvent) {
-      switch (this.editMode) {
-        case EditMode.Key:
-          this.key = event.code;
+      this.key = event.code;
+      this.modKey = "";
+      for (let modKeyArg of modKeyArgs) {
+        if (event.getModifierState(modKeyArg)) {
+          this.modKey = modKeyArg;
           break;
-        case EditMode.ModKey:
-          this.modKey = event.code;
-          break;
-        default:
+        }
       }
       this.editMode = EditMode.None;
     },
-    handleDeleteKey() {
+    handleDelete() {
       this.key = "";
-    },
-    handleDeleteModKey() {
       this.modKey = "";
     },
     handleDiscard() {
