@@ -15,7 +15,7 @@ services:
     build: ./editorsvc
     container_name: editor-svc
     ports:
-      - "9000:9000"
+      - "9001:9000"
     networks:
       - app-network
   # Веб-клиент
