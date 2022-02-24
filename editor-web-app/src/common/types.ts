@@ -93,7 +93,7 @@ type RightMouseDobleClick = MouseAction & {
   actionType: ActionType.RightMouseDobleClick;
 };
 
-export type KeyboardAction = Action & {
+type KeyboardAction = Action & {
   key: string;
 };
 type KeyClick = KeyboardAction & {

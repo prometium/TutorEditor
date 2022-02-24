@@ -3,19 +3,14 @@ import { State } from "./state";
 import { ActionTypes } from "./action-types";
 import { Mutations } from "./mutations";
 import { MutationTypes } from "./mutation-types";
-import {
-  Script,
-  TraversableScript,
-  Frame,
-  KeyboardAction
-} from "@/common/types";
+import { Script, TraversableScript, Frame } from "@/common/types";
 import {
   getScriptsInfo,
   getScript,
   updateScript,
   deleteScript
 } from "@/common/requests";
-import { ActionType } from "@/common/constants";
+import { ActionType, CODE_BY_WINDOWS_KEY } from "@/common/constants";
 
 type AugmentedActionContext = {
   commit<K extends keyof Mutations>(
@@ -67,20 +62,14 @@ export const actions: Actions = {
           script.frames.forEach(frame => {
             frame.actions?.forEach(action => {
               if (
-                [
-                  ActionType.KeyClick,
-                  ActionType.KeyDown,
-                  ActionType.KeyUp,
-                  ActionType.KeyWithMod
-                ].includes(action.actionType)
+                (action.actionType === ActionType.KeyClick ||
+                  action.actionType === ActionType.KeyDown ||
+                  action.actionType === ActionType.KeyUp ||
+                  action.actionType === ActionType.KeyWithMod) &&
+                action.key &&
+                CODE_BY_WINDOWS_KEY[action.key]
               ) {
-                // Приводим клавиши к формату event.code
-                (action as KeyboardAction).key = (
-                  action as KeyboardAction
-                ).key.replace(
-                  /^([A-Z])$/,
-                  (match, p) => "Key" + p.toUpperCase()
-                );
+                action.key = CODE_BY_WINDOWS_KEY[action.key];
               }
             });
           });
