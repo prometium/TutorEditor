@@ -77,7 +77,7 @@ export default Vue.extend({
       this.editMode = EditMode.Key;
     },
     handleKeyUp(event: KeyboardEvent) {
-      this.key = event.key;
+      this.key = event.code;
       this.modKey = "";
       for (let modKeyArg of modKeyArgs) {
         if (event.getModifierState(modKeyArg)) {
