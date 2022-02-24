@@ -171,7 +171,7 @@ export default Vue.extend({
                 uid: prevFrameUid,
                 actions: [
                   {
-                    uid: this.prevAction.uid,
+                    ...this.prevAction,
                     nextFrame: nextFrameUid
                       ? {
                           uid: nextFrameUid
@@ -182,7 +182,8 @@ export default Vue.extend({
               }
             ]
           : [],
-        frameIdsToDel: [this.currentFrame.uid]
+        frameIdsToDel: [this.currentFrame.uid],
+        actionIdsToDel: this.prevAction ? [this.prevAction.uid] : undefined
       });
 
       this.selectFrame(prevFrameUid || nextFrameUid || null);
