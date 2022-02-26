@@ -10,7 +10,6 @@ import {
   updateScript,
   deleteScript
 } from "@/common/requests";
-import { ActionType, CODE_BY_WINDOWS_KEY } from "@/common/constants";
 
 type AugmentedActionContext = {
   commit<K extends keyof Mutations>(
@@ -58,21 +57,6 @@ export const actions: Actions = {
       getScript(uid)
         .then(data => {
           const script: Script = data.script;
-
-          script.frames.forEach(frame => {
-            frame.actions?.forEach(action => {
-              if (
-                (action.actionType === ActionType.KeyClick ||
-                  action.actionType === ActionType.KeyDown ||
-                  action.actionType === ActionType.KeyUp ||
-                  action.actionType === ActionType.KeyWithMod) &&
-                action.key &&
-                CODE_BY_WINDOWS_KEY[action.key]
-              ) {
-                action.key = CODE_BY_WINDOWS_KEY[action.key];
-              }
-            });
-          });
 
           const frameByUid: Record<string, Frame> = {};
           script.frames.forEach(frame => {
