@@ -15,19 +15,19 @@
         class="resize-drag-area"
       />
       <div
-        v-for="(draggingPathItem, index) in draggingPath"
-        :key="'dragging-path-line' + index"
-        :style="draggingPathItem.style"
-        class="dragging-path-line"
-        @mouseover="activeSwitchPicture = draggingPathItem"
-        @mouseleave="activeSwitchPicture = null"
-      />
-      <div
         v-for="(draggingPathLimit, index) in draggingPathLimits"
         :key="'dragging-path-limit' + index"
         :style="draggingPathLimit.style"
         class="dragging-path-limit"
         @mouseover="activeSwitchPicture = null"
+        @mouseleave="activeSwitchPicture = null"
+      />
+      <div
+        v-for="(draggingPathItem, index) in draggingPath"
+        :key="'dragging-path-line' + index"
+        :style="draggingPathItem.style"
+        class="dragging-path-line"
+        @mouseover="activeSwitchPicture = draggingPathItem"
         @mouseleave="activeSwitchPicture = null"
       />
       <ImageUploader />
