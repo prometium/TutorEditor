@@ -120,6 +120,13 @@ type Drag = Action & {
   finishYLeft: number;
   finishXRight: number;
   finishYRight: number;
+  switchPictures: SwitchPicture;
+};
+
+export type SwitchPicture = {
+  pictureLink: string;
+  x: number;
+  y: number;
 };
 
 type WheelMotionAction = Action & {

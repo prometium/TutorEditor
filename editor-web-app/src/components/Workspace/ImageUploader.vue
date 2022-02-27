@@ -1,7 +1,7 @@
 <template>
   <v-file-input
     v-model="file"
-    label="Выбрать изображение"
+    label="Выбрать новое изображение"
     accept=".png"
     class="file-input"
   />

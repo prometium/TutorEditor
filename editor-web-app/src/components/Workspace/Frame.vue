@@ -4,13 +4,32 @@
       <img
         v-if="currentFrame && currentFrame.pictureLink"
         ref="img"
-        :src="`${API_ROOT}/images/${
-          currentFrame.pictureLink
-        }#${new Date().getTime()}`"
+        :src="pictureLink"
         :alt="currentFrame.uid"
         class="frame__img"
+        @load="handleImgLoad"
       />
-      <div v-show="showDragMoveArea" ref="resizeDrag" class="resize-drag" />
+      <div
+        v-show="showDragMoveArea"
+        ref="resizeDrag"
+        class="resize-drag-area"
+      />
+      <div
+        v-for="(draggingPathItem, index) in draggingPath"
+        :key="'dragging-path-line' + index"
+        :style="draggingPathItem.style"
+        class="dragging-path-line"
+        @mouseover="activeSwitchPicture = draggingPathItem"
+        @mouseleave="activeSwitchPicture = null"
+      />
+      <div
+        v-for="(draggingPathLimit, index) in draggingPathLimits"
+        :key="'dragging-path-limit' + index"
+        :style="draggingPathLimit.style"
+        class="dragging-path-limit"
+        @mouseover="activeSwitchPicture = null"
+        @mouseleave="activeSwitchPicture = null"
+      />
       <ImageUploader />
     </div>
   </div>
@@ -20,10 +39,11 @@
 import Vue from "vue";
 import { mapActions, mapGetters } from "vuex";
 import interact from "interactjs";
-import { ActionGroup } from "@/common/constants";
+import { ActionGroup, ActionType } from "@/common/constants";
 import { API_ROOT } from "@/common/requests";
 import { ActionTypes } from "@/store/action-types";
 import ImageUploader from "./ImageUploader.vue";
+import { SwitchPicture } from "@/common/types";
 
 export default Vue.extend({
   name: "Frame",
@@ -32,7 +52,8 @@ export default Vue.extend({
   },
   data() {
     return {
-      API_ROOT
+      scale: 1,
+      activeSwitchPicture: null as SwitchPicture | null
     };
   },
   mounted() {
@@ -49,6 +70,85 @@ export default Vue.extend({
     ...mapGetters(["currentFrame", "currentAction", "currentActionGroup"]),
     showDragMoveArea(): boolean {
       return this.currentActionGroup === ActionGroup.Mouse;
+    },
+    showDraggingPath(): boolean {
+      return this.currentAction.actionType === ActionType.Drag;
+    },
+    pictureLink(): string {
+      return `${API_ROOT}/images/${
+        this.activeSwitchPicture
+          ? this.activeSwitchPicture.pictureLink
+          : this.currentFrame.pictureLink
+      }#${new Date().getTime()}`;
+    },
+    draggingPathLimits(): Record<string, unknown>[] | null {
+      if (this.currentAction.actionType === ActionType.Drag) {
+        return [
+          {
+            style: {
+              left: this.currentAction.startXLeft * this.scale + "px",
+              top: this.currentAction.startYLeft * this.scale + "px",
+              width:
+                (this.currentAction.startXRight -
+                  this.currentAction.startXLeft) *
+                  this.scale +
+                "px",
+              height:
+                (this.currentAction.startYRight -
+                  this.currentAction.startYLeft) *
+                  this.scale +
+                "px"
+            }
+          },
+          {
+            style: {
+              left: this.currentAction.finishXLeft * this.scale + "px",
+              top: this.currentAction.finishYLeft * this.scale + "px",
+              width:
+                (this.currentAction.finishXRight -
+                  this.currentAction.finishXLeft) *
+                  this.scale +
+                "px",
+              height:
+                (this.currentAction.finishYRight -
+                  this.currentAction.startYLeft) *
+                  this.scale +
+                "px"
+            }
+          }
+        ];
+      }
+      return null;
+    },
+    draggingPath(): Record<string, unknown>[] | null {
+      if (this.currentAction.actionType === ActionType.Drag) {
+        return this.currentAction.switchPictures.map(
+          (item: SwitchPicture, index: number, array: SwitchPicture[]) => {
+            const nextItem = array[index + 1];
+            return {
+              style: {
+                left: item.x * this.scale + "px",
+                top: item.y * this.scale + "px",
+                width: nextItem
+                  ? Math.abs(nextItem.x - item.x) + "px"
+                  : undefined,
+                height: nextItem
+                  ? Math.abs(nextItem.y - item.y) + "px"
+                  : undefined,
+                transform: nextItem
+                  ? "rotate(" +
+                    (Math.atan2(nextItem.y - item.y, nextItem.x - item.x) *
+                      180) /
+                      Math.PI +
+                    "deg)"
+                  : undefined
+              },
+              pictureLink: item.pictureLink
+            };
+          }
+        );
+      }
+      return null;
     }
   },
   watch: {
@@ -69,6 +169,8 @@ export default Vue.extend({
       setTimeout(() => {
         this.onResize();
       }, 100);
+
+      this.activeSwitchPicture = null;
     }
   },
   methods: {
@@ -80,9 +182,9 @@ export default Vue.extend({
       const resizeDrag = this.$refs.resizeDrag as HTMLDivElement | undefined;
       if (!img || !resizeDrag) return;
 
-      const scale = img.clientWidth / img.naturalWidth || 1;
+      this.scale = img.clientWidth / img.naturalWidth || 1;
 
-      resizeDrag.setAttribute("data-scale", String(scale));
+      resizeDrag.setAttribute("data-scale", String(this.scale));
       const x = parseFloat(resizeDrag.getAttribute("data-fixed-x") || "") || 0;
       const y = parseFloat(resizeDrag.getAttribute("data-fixed-y") || "") || 0;
       const width =
@@ -90,12 +192,12 @@ export default Vue.extend({
       const height =
         parseInt(resizeDrag.getAttribute("data-fixed-height") || "") || 0;
 
-      const scaledX = x * scale;
-      const scaledY = y * scale;
+      const scaledX = x * this.scale;
+      const scaledY = y * this.scale;
 
       resizeDrag.style.transform = `translate(${scaledX}px, ${scaledY}px)`;
-      resizeDrag.style.width = `${width * scale}px`;
-      resizeDrag.style.height = `${height * scale}px`;
+      resizeDrag.style.width = `${width * this.scale}px`;
+      resizeDrag.style.height = `${height * this.scale}px`;
 
       resizeDrag.setAttribute("data-x", String(scaledX));
       resizeDrag.setAttribute("data-y", String(scaledY));
@@ -214,6 +316,10 @@ export default Vue.extend({
           }
         ]
       });
+    },
+    handleImgLoad() {
+      const img = this.$refs.img as HTMLImageElement;
+      this.scale = img.clientWidth / img.naturalWidth || 1;
     }
   }
 });
@@ -236,6 +342,7 @@ export default Vue.extend({
 .frame__img {
   max-height: 100%;
   max-width: 100%;
+  user-select: none;
 }
 
 @keyframes shine {
@@ -274,12 +381,35 @@ export default Vue.extend({
   }
 }
 
-.resize-drag {
+.resize-drag-area {
   position: absolute;
   top: 0;
   left: 0;
   padding: 5px;
   touch-action: none;
   animation: 10s ease-in-out infinite alternate shine;
+}
+
+.dragging-path-line {
+  position: absolute;
+  padding: 1px;
+  background-color: rgba(158, 158, 158, 50%);
+  cursor: pointer;
+
+  &:hover {
+    animation: 10s ease-in-out infinite alternate shine;
+  }
+}
+
+.dragging-path-limit {
+  position: absolute;
+  padding: 1px;
+  background-color: rgba(158, 158, 158, 50%);
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+
+  &:hover {
+    background-color: rgba(158, 158, 158, 70%);
+  }
 }
 </style>
