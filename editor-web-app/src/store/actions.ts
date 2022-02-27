@@ -104,11 +104,11 @@ export const actions: Actions = {
         });
     });
   },
-  [ActionTypes.DELETE_SCRIPT](_, uid) {
+  [ActionTypes.DELETE_SCRIPT]({ commit }, uid) {
     return new Promise((resolve, reject) => {
       return deleteScript(uid)
         .then(() => {
-          // TODO: Добавить обновление стора
+          commit(MutationTypes.DELETE_SCRIPT, uid);
           resolve();
         })
         .catch(err => {

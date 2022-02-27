@@ -137,3 +137,15 @@ export function addImage(imageData: FormData): Promise<AddImageResponse> {
     data: imageData
   });
 }
+
+type CopyScriptResponse = {
+  uid: string;
+};
+
+export function copyScript(script: Script): Promise<CopyScriptResponse> {
+  return executeRequest({
+    endpoint: "/scripts",
+    method: "POST",
+    data: JSON.stringify({ script })
+  });
+}

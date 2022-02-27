@@ -50,7 +50,13 @@
             :action="currentAction"
           >
             <template v-slot:activator="{ on, attrs }">
-              <v-btn v-bind="attrs" v-on="on" elevation="1" icon>
+              <v-btn
+                v-bind="attrs"
+                v-on="on"
+                elevation="1"
+                icon
+                class="action-settings-btn"
+              >
                 <v-icon> mdi-cog </v-icon>
               </v-btn>
             </template>
@@ -160,5 +166,9 @@ export default Vue.extend({
   align-items: center;
   cursor: default;
   color: rgba(0, 0, 0, 0.6);
+}
+
+.action-settings-btn {
+  margin-left: 8px;
 }
 </style>

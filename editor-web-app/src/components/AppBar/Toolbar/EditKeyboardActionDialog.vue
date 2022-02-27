@@ -52,8 +52,15 @@ enum EditMode {
   None = ""
 }
 
-// TODO: other mod keys
-const modKeyArgs = ["Alt", "Control", "Shift"];
+const modKeyArgs = [
+  "Alt",
+  "AltGraph",
+  "Control",
+  "Shift",
+  "CapsLock",
+  "NumLock",
+  "ScrollLock"
+];
 
 export default Vue.extend({
   name: "EditKeyboardActionDialog",
