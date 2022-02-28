@@ -23,14 +23,6 @@ func MakeHTTPHandler(e transport.Endpoints, logger log.Logger) http.Handler {
 		httptransport.ServerErrorEncoder(encodeError),
 	}
 
-	r.PathPrefix("/images/").Handler(http.StripPrefix("/images/",
-		cacheControlWrapper(
-			http.FileServer(
-				http.Dir("assets/images"),
-			),
-		),
-	))
-
 	r.Methods("POST").Path("/archive").Handler(httptransport.NewServer(
 		e.AddScriptArchiveEndpoint,
 		decodeAddScriptArchiveRequest,

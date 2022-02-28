@@ -74,32 +74,6 @@ func CreateZipReader(r io.Reader) (*zip.Reader, error) {
 	return zipReader, nil
 }
 
-// CopyZipFile copies the src zip file to dst
-func CopyZipFile(src *zip.File, dst string) error {
-	inReader, err := src.Open()
-	if err != nil {
-		return err
-	}
-	defer inReader.Close()
-
-	return CopyFile(inReader, dst)
-}
-
-// CopyFile copies the inReader file to dst
-func CopyFile(inReader io.Reader, dst string) error {
-	outReader, err := os.Create(dst)
-	if err != nil {
-		return err
-	}
-	defer outReader.Close()
-
-	_, err = io.Copy(outReader, inReader)
-	if err != nil {
-		return err
-	}
-	return outReader.Close()
-}
-
 // Getenv return env value by key or default value
 func Getenv(key, fallback string) string {
 	value := os.Getenv(key)
