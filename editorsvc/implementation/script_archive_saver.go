@@ -2,16 +2,17 @@ package implementation
 
 import (
 	"archive/zip"
+	"bytes"
 	"context"
 	"encoding/json"
 	"io"
-	"os"
 	"path/filepath"
 	"strings"
 	"sync"
 
 	"golang.org/x/sync/errgroup"
 
+	"github.com/minio/minio-go/v7"
 	"github.com/prometium/tutoreditor/editorsvc"
 	"github.com/prometium/tutoreditor/editorsvc/utils"
 )
@@ -50,20 +51,21 @@ func (controller *scriptArchiveSaver) init(r io.Reader) error {
 	return nil
 }
 
-func (controller *scriptArchiveSaver) saveImages(ctx context.Context, imagesDir string) error {
-	os.MkdirAll(imagesDir, os.ModePerm)
-
+func (controller *scriptArchiveSaver) saveImages(ctx context.Context, minioClient *minio.Client, bucketName string) error {
 	lock := sync.RWMutex{}
 	errs, _ := errgroup.WithContext(ctx)
 	for _, file := range controller.Images {
 		currentFile := file
 		errs.Go(func() error {
-			path := filepath.Join(imagesDir, currentFile.Name)
-			if _, err := os.Stat(path); os.IsNotExist(err) {
-				err = utils.CopyZipFile(currentFile, path)
-				if err != nil {
-					return err
-				}
+			bytesArray, err := utils.ReadAllFromZip(currentFile)
+			buf := bytes.NewBuffer(bytesArray)
+
+			objectName := currentFile.Name + ".png"
+			objectSize := int64(buf.Len())
+
+			_, err = minioClient.PutObject(ctx, bucketName, objectName, buf, objectSize, minio.PutObjectOptions{ContentType: "application/octet-stream"})
+			if err != nil {
+				return err
 			}
 
 			lock.Lock()

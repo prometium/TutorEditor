@@ -37,6 +37,23 @@ services:
     networks:
       - app-network
 
+  s3:
+    image: minio/minio:latest
+    ports:
+        - "127.0.0.1:9099:9099"
+        - "9000:9000"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - storage-minio:/data
+    command: server --address "0.0.0.0:9099" --console-address ":9000" /data
+    restart: always
+
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  storage-minio:
+    external: true

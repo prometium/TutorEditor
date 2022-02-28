@@ -3,11 +3,11 @@ package implementation
 import (
 	"archive/zip"
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
-	"io/ioutil"
-	"path/filepath"
 
+	"github.com/minio/minio-go/v7"
 	"github.com/prometium/tutoreditor/editorsvc"
 )
 
@@ -16,7 +16,7 @@ type scriptArchiveDownloader struct {
 	ImageFileBytesByName map[string][]byte
 }
 
-func (controller *scriptArchiveDownloader) init(script *editorsvc.Script, imagesDir string) error {
+func (controller *scriptArchiveDownloader) init(ctx context.Context, script *editorsvc.Script, minioClient *minio.Client, bucketName string) error {
 	scriptJsonBytes, err := json.MarshalIndent(script, "", " ")
 	if err != nil {
 		return err
@@ -28,10 +28,17 @@ func (controller *scriptArchiveDownloader) init(script *editorsvc.Script, images
 	for _, frame := range script.Frames {
 		var imageFileBytes []byte
 
-		imageFileBytes, err := ioutil.ReadFile(filepath.Join(imagesDir, frame.PictureLink))
+		imageFileReader, err := minioClient.GetObject(ctx, bucketName, frame.PictureLink, minio.GetObjectOptions{})
 		if err != nil {
 			return err
 		}
+		buf := new(bytes.Buffer)
+		_, err = buf.ReadFrom(imageFileReader)
+		if err != nil {
+			return err
+		}
+
+		imageFileBytes = buf.Bytes()
 
 		controller.ImageFileBytesByName[frame.PictureLink] = imageFileBytes
 
@@ -41,10 +48,17 @@ func (controller *scriptArchiveDownloader) init(script *editorsvc.Script, images
 			}
 
 			for _, switchPicture := range action.SwitchPictures {
-				imageFileBytes, err := ioutil.ReadFile(filepath.Join(imagesDir, switchPicture.PictureLink))
+				imageFileReader, err := minioClient.GetObject(ctx, bucketName, switchPicture.PictureLink, minio.GetObjectOptions{})
 				if err != nil {
 					return err
 				}
+				buf := new(bytes.Buffer)
+				_, err = buf.ReadFrom(imageFileReader)
+				if err != nil {
+					return err
+				}
+
+				imageFileBytes = buf.Bytes()
 
 				controller.ImageFileBytesByName[frame.PictureLink] = imageFileBytes
 			}

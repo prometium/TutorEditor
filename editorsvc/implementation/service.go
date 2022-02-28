@@ -4,25 +4,27 @@ import (
 	"bytes"
 	"context"
 	"io"
-	"os"
-	"path/filepath"
 	"time"
 
+	"github.com/minio/minio-go/v7"
 	"github.com/prometium/tutoreditor/editorsvc"
 	"github.com/prometium/tutoreditor/editorsvc/utils"
 )
 
 type service struct {
-	repository editorsvc.Repository
+	repository  editorsvc.Repository
+	minioClient *minio.Client
 }
 
 const VersionLen = 10
-const ImagesDir = "assets/images/"
+
+var bucketName = utils.Getenv("S3_BUCKET_NAME", "editor")
 
 // NewService makes a new Service
-func NewService(rep editorsvc.Repository) editorsvc.Service {
+func NewService(rep editorsvc.Repository, minioClient *minio.Client) editorsvc.Service {
 	return &service{
-		repository: rep,
+		repository:  rep,
+		minioClient: minioClient,
 	}
 }
 
@@ -37,7 +39,7 @@ func (s *service) AddScriptArchive(ctx context.Context, name string, fileReader 
 		return "", err
 	}
 
-	linksMap, err := controller.saveImages(ctx, ImagesDir)
+	linksMap, err := controller.saveImages(ctx, s.minioClient, bucketName)
 	if err != nil {
 		return "", err
 	}
@@ -67,7 +69,7 @@ func (s *service) AddScriptArchiveV2(ctx context.Context, name string, fileReade
 		return "", err
 	}
 
-	err := controller.saveImages(ctx, ImagesDir)
+	err := controller.saveImages(ctx, s.minioClient, bucketName)
 	if err != nil {
 		return "", err
 	}
@@ -92,7 +94,7 @@ func (s *service) GetScriptArchiveV2(ctx context.Context, id string) ([]byte, er
 	}
 
 	var controller scriptArchiveDownloader
-	if err := controller.init(script, ImagesDir); err != nil {
+	if err := controller.init(ctx, script, s.minioClient, bucketName); err != nil {
 		return nil, err
 	}
 
@@ -145,12 +147,12 @@ func (s *service) AddImage(ctx context.Context, imageReader io.ReadCloser) (stri
 		return "", err
 	}
 
-	path := filepath.Join(ImagesDir, hash+".png")
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		err = utils.CopyFile(&buf, path)
-		if err != nil {
-			return "", err
-		}
+	objectName := hash + ".png"
+	objectSize := int64(buf.Len())
+
+	_, err = s.minioClient.PutObject(ctx, bucketName, objectName, &buf, objectSize, minio.PutObjectOptions{ContentType: "application/octet-stream"})
+	if err != nil {
+		return "", err
 	}
 
 	return hash + ".png", nil

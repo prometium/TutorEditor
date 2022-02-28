@@ -8,11 +8,8 @@
     >
       <template v-if="script.frameByUid[pathItem.frameUid].pictureLink">
         <img
-          :src="`${API_ROOT}/images/${
-            script.frameByUid[pathItem.frameUid].pictureLink
-          }`"
-          :alt="`Кадр
-      ${index}`"
+          :src="getPictureLink(pathItem)"
+          :alt="`Превью кадра №${index}`"
           :class="[
             'frame-previews__img',
             currentFrame && pathItem.frameUid === currentFrame.uid && 'active'
@@ -62,6 +59,7 @@ import Vue from "vue";
 import { mapState, mapMutations, mapGetters } from "vuex";
 import { MutationTypes } from "@/store/mutation-types";
 import { API_ROOT } from "@/common/requests";
+import { PathItem } from "@/common/types";
 
 export default Vue.extend({
   name: "FramePreviews",
@@ -78,7 +76,14 @@ export default Vue.extend({
     ...mapMutations({
       selectFrame: MutationTypes.SELECT_FRAME,
       configurePath: MutationTypes.CONFIGURE_PATH
-    })
+    }),
+    getPictureLink(pathItem: PathItem): string {
+      return `http://${process.env.VUE_APP_S3_HOST || "localhost"}:${
+        process.env.VUE_APP_S3_PORT || 9099
+      }/${process.env.VUE_APP_S3_BUCKET_NAME || "editor"}/${
+        this.script.frameByUid[pathItem.frameUid].pictureLink
+      }`;
+    }
   }
 });
 </script>

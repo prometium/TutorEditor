@@ -17,6 +17,8 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/joho/godotenv"
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/prometium/tutoreditor/editorsvc"
 	dgraphdb "github.com/prometium/tutoreditor/editorsvc/database"
 	"github.com/prometium/tutoreditor/editorsvc/implementation"
@@ -55,6 +57,36 @@ func main() {
 		dgraphClient = dgo.NewDgraphClient(api.NewDgraphClient(conn))
 	}
 
+	var minioClient *minio.Client
+	{
+		accessKeyID := utils.Getenv("S3_ACCESS_KEY_ID", "minioadmin")
+		secretAccessKey := utils.Getenv("S3_SECRET_ACCESS_KEY", "minioadmin")
+		useSSL := false
+		minioClient, err = minio.New(fmt.Sprintf("%s:%s", utils.Getenv("S3_HOST", "s3"), utils.Getenv("S3_PORT", "9099")), &minio.Options{
+			Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
+			Secure: useSSL,
+		})
+		if err != nil {
+			level.Error(logger).Log("exit", err)
+			os.Exit(-1)
+		}
+
+		bucketName := utils.Getenv("S3_BUCKET_NAME", "editor")
+		location := utils.Getenv("S3_LOCATION", "us-east-1")
+		err = minioClient.MakeBucket(ctx, bucketName, minio.MakeBucketOptions{Region: location})
+		if err != nil {
+			exists, errBucketExists := minioClient.BucketExists(ctx, bucketName)
+			if errBucketExists == nil && exists {
+				level.Info(logger).Log(fmt.Sprintf("Backet with name %s already exists\n", bucketName))
+			} else {
+				level.Error(logger).Log("exit", err)
+				os.Exit(-1)
+			}
+		} else {
+			level.Info(logger).Log(fmt.Sprintf("Backet with name %s successfully created \n", bucketName))
+		}
+	}
+
 	var service editorsvc.Service
 	{
 		repository := dgraphdb.New(dgraphClient)
@@ -64,7 +96,7 @@ func main() {
 			os.Exit(-1)
 		}
 
-		service = implementation.NewService(repository)
+		service = implementation.NewService(repository, minioClient)
 	}
 
 	var endpoints transport.Endpoints

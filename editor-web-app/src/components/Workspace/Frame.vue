@@ -5,7 +5,7 @@
         v-if="currentFrame && currentFrame.pictureLink"
         ref="img"
         :src="pictureLink"
-        :alt="currentFrame.uid"
+        :alt="`Кадр ${currentFrame.uid}`"
         class="frame__img"
         @load="handleImgLoad"
       />
@@ -75,11 +75,13 @@ export default Vue.extend({
       return this.currentAction.actionType === ActionType.Drag;
     },
     pictureLink(): string {
-      return `${API_ROOT}/images/${
+      return `http://${process.env.VUE_APP_S3_HOST || "localhost"}:${
+        process.env.VUE_APP_S3_PORT || 9099
+      }/${process.env.VUE_APP_S3_BUCKET_NAME || "editor"}/${
         this.activeSwitchPicture
           ? this.activeSwitchPicture.pictureLink
           : this.currentFrame.pictureLink
-      }#${new Date().getTime()}`;
+      }`;
     },
     draggingPathLimits(): Record<string, unknown>[] | null {
       if (this.currentAction.actionType === ActionType.Drag) {
