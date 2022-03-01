@@ -40,7 +40,7 @@ func main() {
 		level.Info(logger).Log("Error loading .env file")
 	}
 
-	var httpAddr = flag.String("http.addr", fmt.Sprintf("%s:%s", utils.Getenv("APP_HOST", ""), utils.Getenv("APP_PORT", "9000")), "HTTP listen address")
+	var httpAddr = flag.String("http.addr", fmt.Sprintf("%s:%s", utils.Getenv("APP_HOST", ""), utils.Getenv("APP_PORT", "9001")), "HTTP listen address")
 	flag.Parse()
 
 	var ctx = context.Background()
