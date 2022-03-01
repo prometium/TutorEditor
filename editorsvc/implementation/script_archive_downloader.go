@@ -26,8 +26,6 @@ func (controller *scriptArchiveDownloader) init(ctx context.Context, script *edi
 
 	controller.ImageFileBytesByName = make(map[string][]byte)
 	for _, frame := range script.Frames {
-		var imageFileBytes []byte
-
 		imageFileReader, err := minioClient.GetObject(ctx, bucketName, frame.PictureLink, minio.GetObjectOptions{})
 		if err != nil {
 			return err
@@ -38,7 +36,7 @@ func (controller *scriptArchiveDownloader) init(ctx context.Context, script *edi
 			return err
 		}
 
-		imageFileBytes = buf.Bytes()
+		imageFileBytes := buf.Bytes()
 
 		controller.ImageFileBytesByName[frame.PictureLink] = imageFileBytes
 
@@ -58,9 +56,9 @@ func (controller *scriptArchiveDownloader) init(ctx context.Context, script *edi
 					return err
 				}
 
-				imageFileBytes = buf.Bytes()
+				imageFileBytes := buf.Bytes()
 
-				controller.ImageFileBytesByName[frame.PictureLink] = imageFileBytes
+				controller.ImageFileBytesByName[switchPicture.PictureLink] = imageFileBytes
 			}
 		}
 	}
