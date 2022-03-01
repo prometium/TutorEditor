@@ -19,9 +19,10 @@ import (
 )
 
 type switchPicture struct {
-	PictureLink string  `json:"pictureLink,omitempty"`
-	X           float32 `json:"x,omitempty"`
-	Y           float32 `json:"y,omitempty"`
+	PictureLink   string  `json:"pictureLink,omitempty"`
+	X             float32 `json:"x,omitempty"`
+	Y             float32 `json:"y,omitempty"`
+	PictureNumber int     `json:"pictureNumber,omitempty"`
 }
 
 type rawMouseAction struct {
@@ -284,9 +285,10 @@ func (controller *rawScriptArchiveSaver) createScript(name string, linksMap map[
 		frames[i].Actions[0].SwitchPictures = make([]editorsvc.SwitchPicture, len(action.SwitchPictures))
 		for j, switchPicture := range action.SwitchPictures {
 			frames[i].Actions[0].SwitchPictures[j] = editorsvc.SwitchPicture{
-				PictureLink: linksMap[switchPicture.PictureLink],
-				X:           switchPicture.X,
-				Y:           switchPicture.Y,
+				PictureLink:   linksMap[switchPicture.PictureLink],
+				X:             switchPicture.X,
+				Y:             switchPicture.Y,
+				PictureNumber: switchPicture.PictureNumber,
 			}
 		}
 	}
