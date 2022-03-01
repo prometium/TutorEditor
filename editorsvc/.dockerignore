@@ -1,4 +1,5 @@
 # assets files
 /assets
 
+.env
 .env.example
