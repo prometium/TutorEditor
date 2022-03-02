@@ -40,7 +40,6 @@ import Vue from "vue";
 import { mapActions, mapGetters } from "vuex";
 import interact from "interactjs";
 import { ActionGroup, ActionType } from "@/common/constants";
-import { API_ROOT } from "@/common/requests";
 import { ActionTypes } from "@/store/action-types";
 import ImageUploader from "./ImageUploader.vue";
 import { SwitchPicture } from "@/common/types";
@@ -330,13 +329,13 @@ export default Vue.extend({
 <style scoped lang="scss">
 .frame {
   display: flex;
-  align-items: center;
   justify-content: center;
   overflow-y: auto;
   outline: none;
 }
 
 .frame__img-wrapper {
+  margin: auto;
   position: relative;
   flex: 1;
 }
