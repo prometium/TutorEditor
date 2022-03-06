@@ -25,6 +25,18 @@ type GetScriptArchiveRequest struct {
 	UID string `json:"uid"`
 }
 
+// ReleaseScriptArchiveRequest holds the request parameters for the ReleaseScript method
+type ReleaseScriptArchiveRequest struct {
+	UID string `json:"uid"`
+}
+
+// ReleaseScriptArchiveResponse holds the response parameters for the ReleaseScript method
+type ReleaseScriptArchiveResponse struct {
+	Err error `json:"error,omitempty"`
+}
+
+func (r ReleaseScriptArchiveResponse) Error() error { return r.Err }
+
 // GetScriptsListRequest holds the request parameters for the GetScriptsList method
 type GetScriptsListRequest struct{}
 
@@ -77,7 +89,7 @@ type UpdateScriptResponse struct {
 
 func (r UpdateScriptResponse) Error() error { return r.Err }
 
-// CopyScriptRequest holds the request parameters for the UpdateScript method
+// CopyScriptRequest holds the request parameters for the CopyScript method
 type CopyScriptRequest struct {
 	Script *editorsvc.Script `json:"script"`
 }
@@ -90,12 +102,12 @@ type CopyScriptResponse struct {
 
 func (r CopyScriptResponse) Error() error { return r.Err }
 
-// AddImageRequest holds the request parameters for the UpdateScript method
+// AddImageRequest holds the request parameters for the AddImage method
 type AddImageRequest struct {
 	FileReader io.ReadCloser
 }
 
-// AddImageResponse holds the response parameters for the CopyScript method
+// AddImageResponse holds the response parameters for the AddImage method
 type AddImageResponse struct {
 	Link string `json:"link,omitempty"`
 	Err  error  `json:"error,omitempty"`

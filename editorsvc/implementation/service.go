@@ -3,6 +3,7 @@ package implementation
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"time"
 
@@ -19,6 +20,7 @@ type service struct {
 const VersionLen = 10
 
 var bucketName = utils.Getenv("S3_BUCKET_NAME", "editor")
+var sharedBucketName = utils.Getenv("S3_SHARED_BUCKET_NAME", "archive")
 
 // NewService makes a new Service
 func NewService(rep editorsvc.Repository, minioClient *minio.Client) editorsvc.Service {
@@ -99,6 +101,39 @@ func (s *service) GetScriptArchiveV2(ctx context.Context, id string) ([]byte, er
 	}
 
 	return controller.getArchive()
+}
+
+func (s *service) ReleaseScriptArchive(ctx context.Context, id string) error {
+	script, err := s.repository.GetScript(ctx, id)
+	if err != nil {
+		return err
+	} else if script == nil {
+		return editorsvc.ErrScriptNotFound
+	}
+
+	objectName := fmt.Sprintf("[%s] %s.zip", script.UID, script.Name)
+
+	script.ReleaseLink = fmt.Sprintf("%s/%s", sharedBucketName, objectName)
+
+	var controller scriptArchiveDownloader
+	if err := controller.init(ctx, script, s.minioClient, bucketName); err != nil {
+		return err
+	}
+
+	archiveBytesArray, err := controller.getArchive()
+	if err != nil {
+		return err
+	}
+
+	buf := bytes.NewBuffer(archiveBytesArray)
+	objectSize := int64(buf.Len())
+
+	_, err = s.minioClient.PutObject(ctx, sharedBucketName, objectName, buf, objectSize, minio.PutObjectOptions{ContentType: "application/octet-stream"})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *service) GetScriptsList(ctx context.Context) ([]editorsvc.Script, error) {

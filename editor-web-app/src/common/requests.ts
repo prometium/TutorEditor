@@ -126,6 +126,18 @@ export function downloadScriptArchive(uid: string): Promise<Blob> {
   });
 }
 
+type ReleaseScriptArchiveResponse = void;
+
+export function releaseScriptArchive(
+  uid: string
+): Promise<ReleaseScriptArchiveResponse> {
+  return executeRequest({
+    endpoint: `/archiveV2`,
+    method: "PUT",
+    data: JSON.stringify({ uid })
+  });
+}
+
 type AddImageResponse = {
   link: string;
 };

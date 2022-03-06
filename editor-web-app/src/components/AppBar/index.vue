@@ -33,6 +33,9 @@
             >
               <v-list-item-title>Скачать архив</v-list-item-title>
             </v-list-item>
+            <v-list-item :disabled="!hasScript" @click="handleReleaseArchive">
+              <v-list-item-title>Выпустить</v-list-item-title>
+            </v-list-item>
           </v-list>
         </v-menu>
         <CreateScriptDialog v-model="createScriptDialog" />
@@ -70,7 +73,7 @@
 <script lang="ts">
 import Vue from "vue";
 import { mapState, mapGetters, mapActions, mapMutations } from "vuex";
-import { downloadScriptArchive } from "@/common/requests";
+import { downloadScriptArchive, releaseScriptArchive } from "@/common/requests";
 import { Frame } from "@/common/types";
 import { ActionTypes } from "@/store/action-types";
 import { MutationTypes } from "@/store/mutation-types";
@@ -136,6 +139,9 @@ export default Vue.extend({
         link.click();
         window.URL.revokeObjectURL(url);
       });
+    },
+    async handleReleaseArchive() {
+      await releaseScriptArchive(this.script.uid);
     },
     async handleRemoveBranch() {
       const countByNextFrameUid = {} as Record<string, number>;

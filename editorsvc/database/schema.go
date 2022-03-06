@@ -34,6 +34,7 @@ type Script {
 	name
 	version
 	modificationDate
+	releaseLink
 	pictureWidth
 	pictureHeight
 	firstFrame
@@ -70,6 +71,7 @@ taskText: string .
 name: string @index(exact) .
 version: string .
 modificationDate: string .
+releaseLink: string .
 pictureWidth: int .
 pictureHeight: int .
 firstFrame: uid .

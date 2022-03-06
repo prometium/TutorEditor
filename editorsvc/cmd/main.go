@@ -71,8 +71,9 @@ func main() {
 			os.Exit(-1)
 		}
 
-		bucketName := utils.Getenv("S3_BUCKET_NAME", "editor")
 		location := utils.Getenv("S3_LOCATION", "us-east-1")
+
+		bucketName := utils.Getenv("S3_BUCKET_NAME", "editor")
 		err = minioClient.MakeBucket(ctx, bucketName, minio.MakeBucketOptions{Region: location})
 		if err != nil {
 			exists, errBucketExists := minioClient.BucketExists(ctx, bucketName)
@@ -85,7 +86,6 @@ func main() {
 		} else {
 			level.Info(logger).Log(fmt.Sprintf("Backet with name %s successfully created \n", bucketName))
 		}
-
 		policy := fmt.Sprintf(`{
 			"Version": "2012-10-17",
 			"Statement": [
@@ -98,14 +98,42 @@ func main() {
 			  	}
 			]
 		}`, bucketName)
-
 		err = minioClient.SetBucketPolicy(ctx, bucketName, policy)
 		if err != nil {
 			level.Error(logger).Log("exit", err)
 			os.Exit(-1)
 		}
 
-		//fmt.Println(minioClient.GetBucketPolicy(ctx, bucketName))
+		sharedBucketName := utils.Getenv("S3_SHARED_BUCKET_NAME", "archive")
+		err = minioClient.MakeBucket(ctx, sharedBucketName, minio.MakeBucketOptions{Region: location})
+		if err != nil {
+			exists, errBucketExists := minioClient.BucketExists(ctx, sharedBucketName)
+			if errBucketExists == nil && exists {
+				level.Info(logger).Log(fmt.Sprintf("Backet with name %s already exists\n", sharedBucketName))
+			} else {
+				level.Error(logger).Log("exit", err)
+				os.Exit(-1)
+			}
+		} else {
+			level.Info(logger).Log(fmt.Sprintf("Backet with name %s successfully created \n", sharedBucketName))
+		}
+		policy = fmt.Sprintf(`{
+			"Version": "2012-10-17",
+			"Statement": [
+			  	{
+					"Effect": "Allow",
+					"Principal": { "AWS": ["*"] },
+					"Action": ["s3:GetObject"],
+					"Resource": ["arn:aws:s3:::%s/*"],
+					"Sid": ""
+			  	}
+			]
+		}`, sharedBucketName)
+		err = minioClient.SetBucketPolicy(ctx, sharedBucketName, policy)
+		if err != nil {
+			level.Error(logger).Log("exit", err)
+			os.Exit(-1)
+		}
 	}
 
 	var service editorsvc.Service

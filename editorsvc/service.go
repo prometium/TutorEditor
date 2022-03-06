@@ -20,6 +20,7 @@ type Service interface {
 	AddScriptArchive(ctx context.Context, name string, archiveReader io.ReadCloser) (string, error)
 	AddScriptArchiveV2(ctx context.Context, name string, archiveReader io.ReadCloser) (string, error)
 	GetScriptArchiveV2(ctx context.Context, id string) ([]byte, error)
+	ReleaseScriptArchive(ctx context.Context, id string) error
 	GetScriptsList(ctx context.Context) ([]Script, error)
 	GetScript(ctx context.Context, id string) (*Script, error)
 	DeleteScript(ctx context.Context, id string) error

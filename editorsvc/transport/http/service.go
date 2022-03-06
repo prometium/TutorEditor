@@ -44,6 +44,13 @@ func MakeHTTPHandler(e transport.Endpoints, logger log.Logger) http.Handler {
 		options...,
 	))
 
+	r.Methods("PUT").Path("/archiveV2").Handler(httptransport.NewServer(
+		e.ReleaseScriptArchiveEndpoint,
+		decodeReleaseScriptArchiveRequest,
+		encodeResponse,
+		options...,
+	))
+
 	r.Methods("GET").Path("/scripts").Handler(httptransport.NewServer(
 		e.GetScriptsListEndpoint,
 		decodeGetScriptsListRequest,
@@ -111,6 +118,14 @@ func decodeAddScriptArchiveRequest(ctx context.Context, r *http.Request) (interf
 func decodeGetScriptArchiveRequest(ctx context.Context, r *http.Request) (interface{}, error) {
 	vars := mux.Vars(r)
 	return transport.GetScriptArchiveRequest{UID: vars["uid"]}, nil
+}
+
+func decodeReleaseScriptArchiveRequest(ctx context.Context, r *http.Request) (interface{}, error) {
+	var req transport.ReleaseScriptArchiveRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		return nil, err
+	}
+	return req, nil
 }
 
 func decodeGetScriptsListRequest(ctx context.Context, r *http.Request) (interface{}, error) {

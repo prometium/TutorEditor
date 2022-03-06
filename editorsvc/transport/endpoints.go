@@ -10,30 +10,32 @@ import (
 
 // Endpoints are exposed
 type Endpoints struct {
-	AddScriptArchiveEndpoint   endpoint.Endpoint
-	AddScriptArchiveV2Endpoint endpoint.Endpoint
-	GetScriptArchiveEndpoint   endpoint.Endpoint
-	GetScriptsListEndpoint     endpoint.Endpoint
-	GetScriptEndpoint          endpoint.Endpoint
-	DeleteScriptEndpoint       endpoint.Endpoint
-	UpdateScriptEndpoint       endpoint.Endpoint
-	CopyScriptEndpoint         endpoint.Endpoint
-	AddImageEndpoint           endpoint.Endpoint
+	AddScriptArchiveEndpoint     endpoint.Endpoint
+	AddScriptArchiveV2Endpoint   endpoint.Endpoint
+	GetScriptArchiveEndpoint     endpoint.Endpoint
+	ReleaseScriptArchiveEndpoint endpoint.Endpoint
+	GetScriptsListEndpoint       endpoint.Endpoint
+	GetScriptEndpoint            endpoint.Endpoint
+	DeleteScriptEndpoint         endpoint.Endpoint
+	UpdateScriptEndpoint         endpoint.Endpoint
+	CopyScriptEndpoint           endpoint.Endpoint
+	AddImageEndpoint             endpoint.Endpoint
 }
 
 // MakeServerEndpoints returns an Endpoints struct where each endpoint invokes
 // the corresponding method on the provided service
 func MakeServerEndpoints(s editorsvc.Service) Endpoints {
 	return Endpoints{
-		AddScriptArchiveEndpoint:   makeAddScriptArchiveEndpoint(s),
-		AddScriptArchiveV2Endpoint: makeAddScriptArchiveV2Endpoint(s),
-		GetScriptArchiveEndpoint:   makeGetScriptArchiveEndpoint(s),
-		GetScriptsListEndpoint:     makeGetScriptsListEndpoint(s),
-		GetScriptEndpoint:          makeGetScriptEndpoint(s),
-		DeleteScriptEndpoint:       makeDeleteScriptEndpoint(s),
-		UpdateScriptEndpoint:       makeUpdateScriptEndpoint(s),
-		CopyScriptEndpoint:         makeCopyScriptEndpoint(s),
-		AddImageEndpoint:           makeAddImageEndpoint(s),
+		AddScriptArchiveEndpoint:     makeAddScriptArchiveEndpoint(s),
+		AddScriptArchiveV2Endpoint:   makeAddScriptArchiveV2Endpoint(s),
+		GetScriptArchiveEndpoint:     makeGetScriptArchiveEndpoint(s),
+		ReleaseScriptArchiveEndpoint: makeReleaseScriptArchiveEndpoint(s),
+		GetScriptsListEndpoint:       makeGetScriptsListEndpoint(s),
+		GetScriptEndpoint:            makeGetScriptEndpoint(s),
+		DeleteScriptEndpoint:         makeDeleteScriptEndpoint(s),
+		UpdateScriptEndpoint:         makeUpdateScriptEndpoint(s),
+		CopyScriptEndpoint:           makeCopyScriptEndpoint(s),
+		AddImageEndpoint:             makeAddImageEndpoint(s),
 	}
 }
 
@@ -58,6 +60,14 @@ func makeGetScriptArchiveEndpoint(s editorsvc.Service) endpoint.Endpoint {
 		req := request.(GetScriptArchiveRequest)
 		archiveBytes, err := s.GetScriptArchiveV2(ctx, req.UID)
 		return archiveBytes, err
+	}
+}
+
+func makeReleaseScriptArchiveEndpoint(s editorsvc.Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(ReleaseScriptArchiveRequest)
+		err := s.ReleaseScriptArchive(ctx, req.UID)
+		return ReleaseScriptArchiveResponse{Err: err}, nil
 	}
 }
 

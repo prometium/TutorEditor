@@ -75,6 +75,7 @@ func (repo *repository) GetScriptsList(ctx context.Context) ([]editorsvc.Script,
 			uid
 			name
 			version
+			releaseLink
 		}
 	}`
 
