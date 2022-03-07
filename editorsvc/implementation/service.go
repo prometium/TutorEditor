@@ -111,7 +111,7 @@ func (s *service) ReleaseScriptArchive(ctx context.Context, id string) error {
 		return editorsvc.ErrScriptNotFound
 	}
 
-	objectName := fmt.Sprintf("[%s] %s.zip", script.UID, script.Name)
+	objectName := fmt.Sprintf("%s.zip", script.UID)
 
 	script.ReleaseLink = fmt.Sprintf("%s/%s", sharedBucketName, objectName)
 
