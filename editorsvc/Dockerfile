@@ -9,4 +9,4 @@ COPY --from=builder /app/server /app/server
 COPY ./wait-for-it.sh /app/wait-for-it.sh
 RUN chmod +x /app/wait-for-it.sh
 EXPOSE 9000
-ENTRYPOINT ["/app/wait-for-it.sh", "http://db_alpha:9080", "--", "/app/server"]
+ENTRYPOINT ["/app/wait-for-it.sh", "http://db-alpha:9080", "--", "/app/server"]

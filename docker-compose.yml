@@ -1,23 +1,23 @@
 version: "3"
 services:
   # База данных zero (https://dgraph.io/docs/deploy/dgraph-zero/)
-  db_zero:
+  db-zero:
     image: dgraph/dgraph:v21.03.2
     volumes:
       - /tmp/data:/dgraph
     restart: on-failure
-    command: dgraph zero --my=db_zero:5080
+    command: dgraph zero --my=db-zero:5080
     networks:
       - app-network
   # База данных alpha (https://dgraph.io/docs/deploy/dgraph-alpha/)
-  db_alpha:
+  db-alpha:
     image: dgraph/dgraph:v21.03.2
     volumes:
       - /tmp/data:/dgraph
     ports:
       - 9080:9080
     restart: on-failure
-    command: dgraph alpha --my=db_alpha:7080 --zero=db_zero:5080 --security whitelist=172.0.0.0/8
+    command: dgraph alpha --my=db-alpha:7080 --zero=db-zero:5080 --security whitelist=172.0.0.0/8
     networks:
       - app-network
   # Сервер

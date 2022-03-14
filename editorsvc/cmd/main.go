@@ -47,7 +47,7 @@ func main() {
 
 	var dgraphClient *dgo.Dgraph
 	{
-		conn, err := grpc.Dial(fmt.Sprintf("%s:%s", utils.Getenv("DB_HOST", "db_alpha"), utils.Getenv("DB_PORT", "9080")), grpc.WithInsecure())
+		conn, err := grpc.Dial(fmt.Sprintf("%s:%s", utils.Getenv("DB_HOST", "db-alpha"), utils.Getenv("DB_PORT", "9080")), grpc.WithInsecure())
 		defer conn.Close()
 		if err != nil {
 			level.Error(logger).Log("exit", err)
