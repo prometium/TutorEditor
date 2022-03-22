@@ -5,6 +5,8 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"mime/multipart"
+	"net/http"
 	"time"
 
 	"github.com/minio/minio-go/v7"
@@ -111,10 +113,6 @@ func (s *service) ReleaseScriptArchive(ctx context.Context, id string) error {
 		return editorsvc.ErrScriptNotFound
 	}
 
-	objectName := fmt.Sprintf("%s.zip", script.UID)
-
-	script.ReleaseLink = fmt.Sprintf("%s/%s", sharedBucketName, objectName)
-
 	var controller scriptArchiveDownloader
 	if err := controller.init(ctx, script, s.minioClient, bucketName); err != nil {
 		return err
@@ -125,10 +123,20 @@ func (s *service) ReleaseScriptArchive(ctx context.Context, id string) error {
 		return err
 	}
 
-	buf := bytes.NewBuffer(archiveBytesArray)
-	objectSize := int64(buf.Len())
+	fileName := fmt.Sprintf("%s.zip", script.UID)
 
-	_, err = s.minioClient.PutObject(ctx, sharedBucketName, objectName, buf, objectSize, minio.PutObjectOptions{ContentType: "application/octet-stream"})
+	requestUrl := fmt.Sprintf("%s/programs/uploadFile", utils.Getenv("SUPPORT_URL", "http://tutor-support:10080"))
+	bodyBuf := &bytes.Buffer{}
+	bodyWriter := multipart.NewWriter(bodyBuf)
+	fileWriter, err := bodyWriter.CreateFormFile("file", fileName)
+	if err != nil {
+		return err
+	}
+	fileWriter.Write(archiveBytesArray)
+	contentType := bodyWriter.FormDataContentType()
+	bodyWriter.Close()
+
+	_, err = http.Post(requestUrl, contentType, bodyBuf)
 	if err != nil {
 		return err
 	}

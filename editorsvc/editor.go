@@ -73,7 +73,6 @@ type Script struct {
 	Name             string     `json:"name,omitempty"`
 	Version          string     `json:"version,omitempty"`
 	ModificationDate string     `json:"modificationDate,omitempty"`
-	ReleaseLink      string     `json:"releaseLink,omitempty"`
 	PictureWidth     int        `json:"pictureWidth,omitempty"`
 	PictureHeight    int        `json:"pictureHeight,omitempty"`
 	FirstFrame       *NextFrame `json:"firstFrame,omitempty"`

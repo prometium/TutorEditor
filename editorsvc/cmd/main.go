@@ -40,14 +40,14 @@ func main() {
 		level.Info(logger).Log("Error loading .env file")
 	}
 
-	var httpAddr = flag.String("http.addr", fmt.Sprintf("%s:%s", utils.Getenv("APP_HOST", ""), utils.Getenv("APP_PORT", "9001")), "HTTP listen address")
+	var httpAddr = flag.String("http.addr", utils.Getenv("APP_URL", ":9001"), "HTTP listen address")
 	flag.Parse()
 
 	var ctx = context.Background()
 
 	var dgraphClient *dgo.Dgraph
 	{
-		conn, err := grpc.Dial(fmt.Sprintf("%s:%s", utils.Getenv("DB_HOST", "editor-db-alpha"), utils.Getenv("DB_PORT", "9080")), grpc.WithInsecure())
+		conn, err := grpc.Dial(utils.Getenv("DB_URL", "editor-db-alpha:9080"), grpc.WithInsecure())
 		defer conn.Close()
 		if err != nil {
 			level.Error(logger).Log("exit", err)
@@ -62,7 +62,7 @@ func main() {
 		accessKeyID := utils.Getenv("S3_ACCESS_KEY_ID", "minioadmin")
 		secretAccessKey := utils.Getenv("S3_SECRET_ACCESS_KEY", "minioadmin")
 		useSSL := false
-		minioClient, err = minio.New(fmt.Sprintf("%s:%s", utils.Getenv("S3_HOST", "s3"), utils.Getenv("S3_PORT", "9099")), &minio.Options{
+		minioClient, err = minio.New(utils.Getenv("S3_URL", "s3:9099"), &minio.Options{
 			Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
 			Secure: useSSL,
 		})
@@ -99,37 +99,6 @@ func main() {
 			]
 		}`, bucketName)
 		err = minioClient.SetBucketPolicy(ctx, bucketName, policy)
-		if err != nil {
-			level.Error(logger).Log("exit", err)
-			os.Exit(-1)
-		}
-
-		sharedBucketName := utils.Getenv("S3_SHARED_BUCKET_NAME", "archive")
-		err = minioClient.MakeBucket(ctx, sharedBucketName, minio.MakeBucketOptions{Region: location})
-		if err != nil {
-			exists, errBucketExists := minioClient.BucketExists(ctx, sharedBucketName)
-			if errBucketExists == nil && exists {
-				level.Info(logger).Log(fmt.Sprintf("Backet with name %s already exists\n", sharedBucketName))
-			} else {
-				level.Error(logger).Log("exit", err)
-				os.Exit(-1)
-			}
-		} else {
-			level.Info(logger).Log(fmt.Sprintf("Backet with name %s successfully created \n", sharedBucketName))
-		}
-		policy = fmt.Sprintf(`{
-			"Version": "2012-10-17",
-			"Statement": [
-			  	{
-					"Effect": "Allow",
-					"Principal": { "AWS": ["*"] },
-					"Action": ["s3:GetObject"],
-					"Resource": ["arn:aws:s3:::%s/*"],
-					"Sid": ""
-			  	}
-			]
-		}`, sharedBucketName)
-		err = minioClient.SetBucketPolicy(ctx, sharedBucketName, policy)
 		if err != nil {
 			level.Error(logger).Log("exit", err)
 			os.Exit(-1)
