@@ -78,11 +78,9 @@ export default Vue.extend({
       configurePath: MutationTypes.CONFIGURE_PATH
     }),
     getPictureLink(pathItem: PathItem): string {
-      return `http://${process.env.VUE_APP_S3_HOST || "localhost"}:${
-        process.env.VUE_APP_S3_PORT || 9099
-      }/${process.env.VUE_APP_S3_BUCKET_NAME || "editor"}/${
-        this.script.frameByUid[pathItem.frameUid].pictureLink
-      }`;
+      return `${process.env.VUE_APP_S3_URL || "http://localhost:9099"}/${
+        process.env.VUE_APP_S3_BUCKET_NAME || "editor"
+      }/${this.script.frameByUid[pathItem.frameUid].pictureLink}`;
     }
   }
 });

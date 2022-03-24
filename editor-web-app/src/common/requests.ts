@@ -1,8 +1,6 @@
 import { Script, ScriptInfo } from "./types";
 
-export const API_ROOT = `http://${
-  process.env.VUE_APP_SVC_HOST || "localhost"
-}:${process.env.VUE_APP_SVC_PORT || 9001}`;
+export const API_ROOT = process.env.VUE_APP_SVC_URL || "http://localhost:9001";
 
 type RequestPayload = {
   endpoint: string;
