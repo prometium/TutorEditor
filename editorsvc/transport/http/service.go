@@ -18,75 +18,77 @@ import (
 // MakeHTTPHandler mounts all of the service endpoints into an http.Handler
 func MakeHTTPHandler(e transport.Endpoints, logger log.Logger) http.Handler {
 	r := mux.NewRouter()
+	api := r.PathPrefix("/api").Subrouter()
+
 	options := []httptransport.ServerOption{
 		httptransport.ServerErrorHandler(kittransport.NewLogErrorHandler(logger)),
 		httptransport.ServerErrorEncoder(encodeError),
 	}
 
-	r.Methods("POST").Path("/archive").Handler(httptransport.NewServer(
+	api.Methods("POST").Path("/archive").Handler(httptransport.NewServer(
 		e.AddScriptArchiveEndpoint,
 		decodeAddScriptArchiveRequest,
 		encodeResponse,
 		options...,
 	))
 
-	r.Methods("POST").Path("/archiveV2").Handler(httptransport.NewServer(
+	api.Methods("POST").Path("/archiveV2").Handler(httptransport.NewServer(
 		e.AddScriptArchiveV2Endpoint,
 		decodeAddScriptArchiveRequest,
 		encodeResponse,
 		options...,
 	))
 
-	r.Methods("GET").Path("/archiveV2/{uid}").Handler(httptransport.NewServer(
+	api.Methods("GET").Path("/archiveV2/{uid}").Handler(httptransport.NewServer(
 		e.GetScriptArchiveEndpoint,
 		decodeGetScriptArchiveRequest,
 		encodeBytesResponse,
 		options...,
 	))
 
-	r.Methods("PUT").Path("/archiveV2").Handler(httptransport.NewServer(
+	api.Methods("PUT").Path("/archiveV2").Handler(httptransport.NewServer(
 		e.ReleaseScriptArchiveEndpoint,
 		decodeReleaseScriptArchiveRequest,
 		encodeResponse,
 		options...,
 	))
 
-	r.Methods("GET").Path("/scripts").Handler(httptransport.NewServer(
+	api.Methods("GET").Path("/scripts").Handler(httptransport.NewServer(
 		e.GetScriptsListEndpoint,
 		decodeGetScriptsListRequest,
 		encodeResponse,
 		options...,
 	))
 
-	r.Methods("GET").Path("/scripts/{uid}").Handler(httptransport.NewServer(
+	api.Methods("GET").Path("/scripts/{uid}").Handler(httptransport.NewServer(
 		e.GetScriptEndpoint,
 		decodeGetScriptRequest,
 		encodeResponse,
 		options...,
 	))
 
-	r.Methods("DELETE").Path("/scripts/{uid}").Handler(httptransport.NewServer(
+	api.Methods("DELETE").Path("/scripts/{uid}").Handler(httptransport.NewServer(
 		e.DeleteScriptEndpoint,
 		decodeDeleteScriptRequest,
 		encodeResponse,
 		options...,
 	))
 
-	r.Methods("PUT").Path("/scripts").Handler(httptransport.NewServer(
+	api.Methods("PUT").Path("/scripts").Handler(httptransport.NewServer(
 		e.UpdateScriptEndpoint,
 		decodeUpdateScriptRequest,
 		encodeResponse,
 		options...,
 	))
 
-	r.Methods("POST").Path("/scripts").Handler(httptransport.NewServer(
+	api.Methods("POST").Path("/scripts").Handler(httptransport.NewServer(
 		e.CopyScriptEndpoint,
 		decodeCopyScriptRequest,
 		encodeResponse,
 		options...,
 	))
 
-	r.Methods("POST").Path("/images").Handler(httptransport.NewServer(
+	api.Methods("POST").Path("/images").Handler(httptransport.NewServer(
 		e.AddImageEndpoint,
 		decodeAddImageRequest,
 		encodeResponse,
