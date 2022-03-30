@@ -74,7 +74,7 @@ export default Vue.extend({
       return this.currentAction.actionType === ActionType.Drag;
     },
     pictureLink(): string {
-      return `${process.env.VUE_APP_S3_URL || "http://localhost:9099"}/${
+      return `${process.env.VUE_APP_S3_URL || ""}/${
         process.env.VUE_APP_S3_BUCKET_NAME || "editor"
       }/${
         this.activeSwitchPicture
