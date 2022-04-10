@@ -7,6 +7,7 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/minio/minio-go/v7"
@@ -128,11 +129,19 @@ func (s *service) ReleaseScriptArchive(ctx context.Context, id string) error {
 	requestUrl := fmt.Sprintf("%s/programs/uploadFile", utils.Getenv("SUPPORT_URL", "http://tutor-support:10080"))
 	bodyBuf := &bytes.Buffer{}
 	bodyWriter := multipart.NewWriter(bodyBuf)
+
 	fileWriter, err := bodyWriter.CreateFormFile("file", fileName)
 	if err != nil {
 		return err
 	}
 	fileWriter.Write(archiveBytesArray)
+
+	fileWriter, err = bodyWriter.CreateFormField("name")
+	if err != nil {
+		return err
+	}
+	_, err = io.Copy(fileWriter, strings.NewReader(script.Name))
+
 	contentType := bodyWriter.FormDataContentType()
 	bodyWriter.Close()
 
