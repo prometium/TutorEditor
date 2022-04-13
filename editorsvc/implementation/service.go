@@ -124,7 +124,7 @@ func (s *service) ReleaseScriptArchive(ctx context.Context, id string) error {
 		return err
 	}
 
-	fileName := fmt.Sprintf("%s.zip", script.Name)
+	fileName := fmt.Sprintf("%s.zip", strings.ReplaceAll(script.Name, " ", "_"))
 
 	requestUrl := fmt.Sprintf("%s/programs/uploadFile", utils.Getenv("SUPPORT_URL", "http://tutor-support:10080"))
 	bodyBuf := &bytes.Buffer{}
