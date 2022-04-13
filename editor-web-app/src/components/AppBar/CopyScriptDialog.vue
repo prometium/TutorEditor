@@ -50,7 +50,11 @@ export default Vue.extend({
       loadScript: ActionTypes.LOAD_SCRIPT
     }),
     handleCopy() {
-      copyScript({ ...this.script, name: this.name })
+      copyScript({
+        ...this.script,
+        frames: Object.values(this.script.frameByUid),
+        name: this.name
+      })
         .then(data => {
           this.loadScript(data.uid);
           this.$router.push({ path: "/", query: { scriptUid: data.uid } });
