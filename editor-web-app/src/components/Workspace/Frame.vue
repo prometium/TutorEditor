@@ -71,7 +71,7 @@ export default Vue.extend({
       return this.currentActionGroup === ActionGroup.Mouse;
     },
     showDraggingPath(): boolean {
-      return this.currentAction.actionType === ActionType.Drag;
+      return this.currentAction?.actionType === ActionType.Drag;
     },
     pictureLink(): string {
       return `${process.env.VUE_APP_S3_URL || ""}/${
@@ -83,7 +83,7 @@ export default Vue.extend({
       }`;
     },
     draggingPathLimits(): Record<string, unknown>[] | null {
-      if (this.currentAction.actionType === ActionType.Drag) {
+      if (this.currentAction?.actionType === ActionType.Drag) {
         return [
           {
             style: {
@@ -122,7 +122,7 @@ export default Vue.extend({
       return null;
     },
     draggingPath(): Record<string, unknown>[] | null {
-      if (this.currentAction.actionType === ActionType.Drag) {
+      if (this.currentAction?.actionType === ActionType.Drag) {
         return this.currentAction.switchPictures.map(
           (item: SwitchPicture, index: number, array: SwitchPicture[]) => {
             const nextItem = array[index + 1];
