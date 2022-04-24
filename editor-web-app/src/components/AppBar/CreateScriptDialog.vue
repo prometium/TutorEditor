@@ -22,7 +22,9 @@
       <v-card-actions>
         <v-spacer />
         <v-btn @click="dialog = false" text> Отменить </v-btn>
-        <v-btn @click="handleCreate" text color="primary"> Создать </v-btn>
+        <v-btn @click="handleCreate" :loading="isLoading" text color="primary">
+          Создать
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -41,7 +43,8 @@ export default Vue.extend({
     return {
       name: "",
       file: null as File | null,
-      radioGroup: "1"
+      radioGroup: "1",
+      isLoading: false
     };
   },
   computed: {
@@ -68,13 +71,17 @@ export default Vue.extend({
 
       const action = this.radioGroup === "1" ? createScript : createScriptV2;
 
+      this.isLoading = true;
       action(formData)
         .then(data => {
           this.loadScript(data.uid);
           this.$router.push({ path: "/", query: { scriptUid: data.uid } });
           this.dialog = false;
         })
-        .catch(console.error); // TODO: error handling
+        .catch(console.error)
+        .finally(() => {
+          this.isLoading = false;
+        });
     }
   },
   watch: {

@@ -14,7 +14,9 @@
       <v-card-actions>
         <v-spacer />
         <v-btn @click="dialog = false" text> Отменить </v-btn>
-        <v-btn @click="handleCopy" text color="primary"> Копировать </v-btn>
+        <v-btn @click="handleCopy" :loading="isLoading" text color="primary">
+          Копировать
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -31,7 +33,8 @@ export default Vue.extend({
   props: ["value"],
   data() {
     return {
-      name: ""
+      name: "",
+      isLoading: false
     };
   },
   computed: {
@@ -50,6 +53,7 @@ export default Vue.extend({
       loadScript: ActionTypes.LOAD_SCRIPT
     }),
     handleCopy() {
+      this.isLoading = true;
       copyScript({
         ...this.script,
         frames: Object.values(this.script.frameByUid),
@@ -60,7 +64,10 @@ export default Vue.extend({
           this.$router.push({ path: "/", query: { scriptUid: data.uid } });
           this.dialog = false;
         })
-        .catch(console.error); // TODO: error handling
+        .catch(console.error)
+        .finally(() => {
+          this.isLoading = false;
+        });
     }
   },
   watch: {

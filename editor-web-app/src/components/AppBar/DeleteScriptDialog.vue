@@ -5,7 +5,7 @@
     </template>
     <v-card>
       <v-card-title class="headline lighten-2">
-        Обучающие программы
+        Удаление обучающих программ
       </v-card-title>
       <v-card-text style="max-height: 300px; overflow-y: auto">
         <v-list-item-group v-model="selectedScriptIds" multiple>
@@ -31,7 +31,9 @@
       <v-card-actions>
         <v-spacer />
         <v-btn @click="dialog = false" text> Отменить </v-btn>
-        <v-btn @click="handleDelete" text color="primary"> Удалить </v-btn>
+        <v-btn @click="handleDelete" :loading="isLoading" text color="primary">
+          Удалить
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -47,7 +49,8 @@ export default Vue.extend({
   props: ["value"],
   data() {
     return {
-      selectedScriptIds: []
+      selectedScriptIds: [],
+      isLoading: false
     };
   },
   computed: {
@@ -67,10 +70,17 @@ export default Vue.extend({
       loadScriptsInfo: ActionTypes.LOAD_SCRIPTS_INFO
     }),
     async handleDelete() {
-      await Promise.all(
-        this.selectedScriptIds.map(id => this.deleteScript(id))
-      );
-      this.dialog = false;
+      this.isLoading = true;
+      try {
+        await Promise.all(
+          this.selectedScriptIds.map(id => this.deleteScript(id))
+        );
+        this.dialog = false;
+      } catch (error) {
+        console.error(error);
+      } finally {
+        this.isLoading = false;
+      }
     }
   },
   watch: {

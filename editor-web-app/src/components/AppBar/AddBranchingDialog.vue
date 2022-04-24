@@ -59,9 +59,10 @@
         <v-btn @click="dialog = false" text> Отменить </v-btn>
         <v-btn
           @click="handleAdd"
+          :loading="isLoading"
+          :disabled="isAddingDisabled"
           text
           color="primary"
-          :disabled="isAddingDisabled"
         >
           Добавить
         </v-btn>
@@ -90,7 +91,8 @@ export default Vue.extend({
       firstFrameIndex: null as number | null,
       firstConnectedFrameIndex: null as number | null,
       lastConnectedFrameIndex: null as number | null,
-      lastFrameIndex: null as number | null
+      lastFrameIndex: null as number | null,
+      isLoading: false
     };
   },
   computed: {
@@ -225,18 +227,25 @@ export default Vue.extend({
         ]
       };
 
-      await this.updateScript({
-        frames: [preparedFirstFrame, ...framesToConnect, preparedLastFrame]
-      }).then(() => {
-        this.dialog = false;
-      });
+      this.isLoading = true;
+      try {
+        await this.updateScript({
+          frames: [preparedFirstFrame, ...framesToConnect, preparedLastFrame]
+        }).then(() => {
+          this.dialog = false;
+        });
 
-      this.selectedScriptUid = null;
-      this.selectedScript = null;
-      this.firstFrameIndex = null;
-      this.firstConnectedFrameIndex = null;
-      this.lastConnectedFrameIndex = null;
-      this.lastFrameIndex = null;
+        this.selectedScriptUid = null;
+        this.selectedScript = null;
+        this.firstFrameIndex = null;
+        this.firstConnectedFrameIndex = null;
+        this.lastConnectedFrameIndex = null;
+        this.lastFrameIndex = null;
+      } catch (error) {
+        console.error(error);
+      } finally {
+        this.isLoading = false;
+      }
     }
   },
   watch: {

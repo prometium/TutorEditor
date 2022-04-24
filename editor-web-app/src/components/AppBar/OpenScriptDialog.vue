@@ -21,7 +21,9 @@
       <v-card-actions>
         <v-spacer />
         <v-btn @click="dialog = false" text> Отменить </v-btn>
-        <v-btn @click="handleOpen" text color="primary"> Открыть </v-btn>
+        <v-btn @click="handleOpen" :loading="isLoading" text color="primary">
+          Открыть
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -37,7 +39,8 @@ export default Vue.extend({
   props: ["value"],
   data() {
     return {
-      selectedScriptId: ""
+      selectedScriptId: "",
+      isLoading: false
     };
   },
   computed: {
@@ -56,13 +59,20 @@ export default Vue.extend({
       loadScript: ActionTypes.LOAD_SCRIPT,
       loadScriptsInfo: ActionTypes.LOAD_SCRIPTS_INFO
     }),
-    async handleOpen() {
-      this.dialog = false;
-      await this.loadScript(this.selectedScriptId);
-      this.$router
-        .push({ path: "/", query: { scriptUid: this.selectedScriptId } })
-        .catch(() => {
-          /* ignore */
+    handleOpen() {
+      this.isLoading = true;
+      this.loadScript(this.selectedScriptId)
+        .then(() => {
+          this.dialog = false;
+          this.$router
+            .push({ path: "/", query: { scriptUid: this.selectedScriptId } })
+            .catch(() => {
+              /* ignore */
+            });
+        })
+        .catch(console.error)
+        .finally(() => {
+          this.isLoading = false;
         });
     }
   },
