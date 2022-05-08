@@ -11,14 +11,15 @@
       />
       <div
         v-show="showDragMoveArea"
-        ref="resizeDrag"
+        ref="resizeDragRef"
         class="resize-drag-area"
       />
       <div
-        v-for="(draggingPathLimit, index) in draggingPathLimits"
-        :key="'dragging-path-limit' + index"
-        :style="draggingPathLimit.style"
-        class="dragging-path-limit"
+        v-for="limit in 2"
+        v-show="showDraggingPath"
+        ref="draggingPathLimitRefs"
+        :key="'dragging-path-limit' + limit"
+        :class="`dragging-path-limit-${limit}`"
         @mouseover="activeSwitchPicture = null"
         @mouseleave="activeSwitchPicture = null"
       />
@@ -52,17 +53,24 @@ export default Vue.extend({
   data() {
     return {
       scale: 1,
-      activeSwitchPicture: null as SwitchPicture | null
+      activeSwitchPicture: null as Record<string, unknown> | null,
+      timerId: undefined as number | undefined
     };
   },
   mounted() {
-    const resizeDrag = this.$refs.resizeDrag as HTMLElement;
-    if (resizeDrag) {
-      this.initInteract(resizeDrag);
+    const resizeDragRef = this.$refs.resizeDragRef as HTMLElement;
+    this.initInteract(resizeDragRef);
+    window.addEventListener("resize", this.onResize);
+
+    const draggingPathLimitRefs = this.$refs.draggingPathLimitRefs as
+      | HTMLElement[];
+    draggingPathLimitRefs.forEach(ref => {
+      this.initInteract(ref);
       window.addEventListener("resize", this.onResize);
-    }
+    });
   },
   beforeDestroy() {
+    clearTimeout(this.timerId);
     window.removeEventListener("resize", this.onResize);
   },
   computed: {
@@ -82,45 +90,6 @@ export default Vue.extend({
           : this.currentFrame.pictureLink
       }`;
     },
-    draggingPathLimits(): Record<string, unknown>[] | null {
-      if (this.currentAction?.actionType === ActionType.Drag) {
-        return [
-          {
-            style: {
-              left: this.currentAction.startXLeft * this.scale + "px",
-              top: this.currentAction.startYLeft * this.scale + "px",
-              width:
-                (this.currentAction.startXRight -
-                  this.currentAction.startXLeft) *
-                  this.scale +
-                "px",
-              height:
-                (this.currentAction.startYRight -
-                  this.currentAction.startYLeft) *
-                  this.scale +
-                "px"
-            }
-          },
-          {
-            style: {
-              left: this.currentAction.finishXLeft * this.scale + "px",
-              top: this.currentAction.finishYLeft * this.scale + "px",
-              width:
-                (this.currentAction.finishXRight -
-                  this.currentAction.finishXLeft) *
-                  this.scale +
-                "px",
-              height:
-                (this.currentAction.finishYRight -
-                  this.currentAction.startYLeft) *
-                  this.scale +
-                "px"
-            }
-          }
-        ];
-      }
-      return null;
-    },
     draggingPath(): Record<string, unknown>[] | null {
       if (this.currentAction?.actionType === ActionType.Drag) {
         return this.currentAction.switchPictures.map(
@@ -131,10 +100,10 @@ export default Vue.extend({
                 left: item.x * this.scale + "px",
                 top: item.y * this.scale + "px",
                 width: nextItem
-                  ? Math.abs(nextItem.x - item.x) + "px"
+                  ? Math.abs(nextItem.x - item.x) * this.scale + "px"
                   : undefined,
                 height: nextItem
-                  ? Math.abs(nextItem.y - item.y) + "px"
+                  ? Math.abs(nextItem.y - item.y) * this.scale + "px"
                   : undefined,
                 transform: nextItem
                   ? "rotate(" +
@@ -153,25 +122,49 @@ export default Vue.extend({
     }
   },
   watch: {
-    currentAction(action) {
-      const img = this.$refs.img as HTMLImageElement | undefined;
-      const resizeDrag = this.$refs.resizeDrag as HTMLDivElement | undefined;
+    currentAction: {
+      handler(action) {
+        // Макрозадача (таймер), чтобы успели инициализоваться рефы
+        this.timerId = setTimeout(() => {
+          const resizeDragRef = this.$refs.resizeDragRef as HTMLDivElement;
+          const draggingPathLimitRefs = this.$refs
+            .draggingPathLimitRefs as HTMLElement[];
 
-      if (!img || !resizeDrag || !this.showDragMoveArea) return;
+          [
+            {
+              left: action.xLeft,
+              top: action.yLeft,
+              width: Math.abs(action.xRight - action.xLeft),
+              height: Math.abs(action.yRight - action.yLeft),
+              ref: resizeDragRef
+            },
+            {
+              left: action.startXLeft,
+              top: action.startYLeft,
+              width: Math.abs(action.startXRight - action.startXLeft),
+              height: Math.abs(action.startYRight - action.startYLeft),
+              ref: draggingPathLimitRefs[0]
+            },
+            {
+              left: action.finishXLeft,
+              top: action.finishYLeft,
+              width: Math.abs(action.finishXRight - action.finishXLeft),
+              height: Math.abs(action.finishYRight - action.finishYLeft),
+              ref: draggingPathLimitRefs[1]
+            }
+          ].forEach(item => {
+            item.ref.setAttribute("data-fixed-x", item.left);
+            item.ref.setAttribute("data-fixed-y", item.top);
+            item.ref.setAttribute("data-fixed-width", String(item.width));
+            item.ref.setAttribute("data-fixed-height", String(item.height));
+          });
 
-      const width = action.xRight - action.xLeft;
-      const height = action.yRight - action.yLeft;
+          this.onResize();
 
-      resizeDrag.setAttribute("data-fixed-x", action.xLeft);
-      resizeDrag.setAttribute("data-fixed-y", action.yLeft);
-      resizeDrag.setAttribute("data-fixed-width", String(width));
-      resizeDrag.setAttribute("data-fixed-height", String(height));
-
-      setTimeout(() => {
-        this.onResize();
-      }, 100);
-
-      this.activeSwitchPicture = null;
+          this.activeSwitchPicture = null;
+        }, 0);
+      },
+      immediate: true
     }
   },
   methods: {
@@ -180,28 +173,33 @@ export default Vue.extend({
     }),
     onResize() {
       const img = this.$refs.img as HTMLImageElement | undefined;
-      const resizeDrag = this.$refs.resizeDrag as HTMLDivElement | undefined;
-      if (!img || !resizeDrag) return;
 
-      this.scale = img.clientWidth / img.naturalWidth || 1;
+      if (img) {
+        this.scale = img.clientWidth / img.naturalWidth || 1;
+        const resizeDragRef = this.$refs.resizeDragRef as HTMLDivElement;
+        const draggingPathLimitRefs = this.$refs
+          .draggingPathLimitRefs as HTMLElement[];
 
-      resizeDrag.setAttribute("data-scale", String(this.scale));
-      const x = parseFloat(resizeDrag.getAttribute("data-fixed-x") || "") || 0;
-      const y = parseFloat(resizeDrag.getAttribute("data-fixed-y") || "") || 0;
-      const width =
-        parseInt(resizeDrag.getAttribute("data-fixed-width") || "") || 0;
-      const height =
-        parseInt(resizeDrag.getAttribute("data-fixed-height") || "") || 0;
+        [resizeDragRef, ...draggingPathLimitRefs].forEach(ref => {
+          ref.setAttribute("data-scale", String(this.scale));
+          const x = parseFloat(ref.getAttribute("data-fixed-x") || "") || 0;
+          const y = parseFloat(ref.getAttribute("data-fixed-y") || "") || 0;
+          const width =
+            parseInt(ref.getAttribute("data-fixed-width") || "") || 0;
+          const height =
+            parseInt(ref.getAttribute("data-fixed-height") || "") || 0;
 
-      const scaledX = x * this.scale;
-      const scaledY = y * this.scale;
+          const scaledX = x * this.scale;
+          const scaledY = y * this.scale;
 
-      resizeDrag.style.transform = `translate(${scaledX}px, ${scaledY}px)`;
-      resizeDrag.style.width = `${width * this.scale}px`;
-      resizeDrag.style.height = `${height * this.scale}px`;
+          ref.style.transform = `translate(${scaledX}px, ${scaledY}px)`;
+          ref.style.width = `${width * this.scale}px`;
+          ref.style.height = `${height * this.scale}px`;
 
-      resizeDrag.setAttribute("data-x", String(scaledX));
-      resizeDrag.setAttribute("data-y", String(scaledY));
+          ref.setAttribute("data-x", String(scaledX));
+          ref.setAttribute("data-y", String(scaledY));
+        });
+      }
     },
     initInteract(selector: HTMLElement) {
       interact(selector)
@@ -291,32 +289,75 @@ export default Vue.extend({
       target.setAttribute("data-y", String(y));
     },
     handleBlur() {
-      const resizeDrag = this.$refs.resizeDrag as HTMLDivElement | undefined;
-      if (!resizeDrag) return;
+      if (this.showDragMoveArea) {
+        const resizeDragRef = this.$refs.resizeDragRef as HTMLDivElement;
 
-      const x = parseFloat(resizeDrag.getAttribute("data-fixed-x") || "") || 0;
-      const y = parseFloat(resizeDrag.getAttribute("data-fixed-y") || "") || 0;
-      const scale =
-        parseFloat(resizeDrag.getAttribute("data-scale") || "") || 1;
+        const x =
+          parseFloat(resizeDragRef.getAttribute("data-fixed-x") || "") || 0;
+        const y =
+          parseFloat(resizeDragRef.getAttribute("data-fixed-y") || "") || 0;
+        const scale =
+          parseFloat(resizeDragRef.getAttribute("data-scale") || "") || 1;
+        const rect = resizeDragRef.getBoundingClientRect();
 
-      const rect = resizeDrag.getBoundingClientRect();
+        this.updateScript({
+          frames: [
+            {
+              uid: this.currentFrame.uid,
+              actions: [
+                {
+                  uid: this.currentAction.uid,
+                  xLeft: x,
+                  xRight: x + rect.width / scale,
+                  yLeft: y,
+                  yRight: y + rect.height / scale
+                }
+              ]
+            }
+          ]
+        });
+      }
 
-      this.updateScript({
-        frames: [
-          {
-            uid: this.currentFrame.uid,
-            actions: [
-              {
-                uid: this.currentAction.uid,
-                xLeft: x,
-                xRight: x + rect.width / scale,
-                yLeft: y,
-                yRight: y + rect.height / scale
-              }
-            ]
-          }
-        ]
-      });
+      if (this.showDraggingPath) {
+        const draggingPathLimitRefs = this.$refs
+          .draggingPathLimitRefs as HTMLElement[];
+
+        const limitItems = draggingPathLimitRefs.map(ref => ({
+          x: parseFloat(ref.getAttribute("data-fixed-x") || "") || 0,
+          y: parseFloat(ref.getAttribute("data-fixed-y") || "") || 0,
+          scale: parseFloat(ref.getAttribute("data-scale") || "") || 1,
+          rect: ref.getBoundingClientRect()
+        }));
+
+        this.updateScript({
+          frames: [
+            {
+              uid: this.currentFrame.uid,
+              actions: [
+                {
+                  uid: this.currentAction.uid,
+                  startXLeft: limitItems[0].x,
+                  startYLeft: limitItems[0].y,
+                  startXRight:
+                    limitItems[0].x +
+                    limitItems[0].rect.width / limitItems[0].scale,
+                  startYRight:
+                    limitItems[0].y +
+                    limitItems[0].rect.height / limitItems[0].scale,
+                  finishXLeft: limitItems[1].x,
+                  finishYLeft: limitItems[1].y,
+                  finishXRight:
+                    limitItems[1].x +
+                    limitItems[1].rect.width / limitItems[1].scale,
+                  finishYRight:
+                    limitItems[1].y +
+                    limitItems[1].rect.height / limitItems[1].scale
+                }
+              ]
+            }
+          ]
+        });
+      }
     },
     handleImgLoad() {
       const img = this.$refs.img as HTMLImageElement;
@@ -350,33 +391,43 @@ export default Vue.extend({
   0% {
     background-color: rgba(244, 67, 54, 70%);
   }
+
   10% {
     background-color: rgba(233, 30, 99, 70%);
   }
+
   20% {
     background-color: rgba(156, 39, 176, 70%);
   }
+
   30% {
     background-color: rgba(103, 58, 183, 70%);
   }
+
   40% {
     background-color: rgba(63, 81, 181, 70%);
   }
+
   50% {
     background-color: rgba(33, 150, 243, 70%);
   }
+
   60% {
     background-color: rgba(0, 150, 136, 70%);
   }
+
   70% {
     background-color: rgba(76, 175, 80, 70%);
   }
+
   80% {
     background-color: rgba(255, 235, 59, 70%);
   }
+
   90% {
     background-color: rgba(255, 152, 0, 70%);
   }
+
   100% {
     background-color: rgba(255, 87, 34, 70%);
   }
@@ -402,15 +453,20 @@ export default Vue.extend({
   }
 }
 
-.dragging-path-limit {
+.dragging-path-limit-1,
+.dragging-path-limit-2 {
   position: absolute;
+  top: 0;
+  left: 0;
   padding: 1px;
-  background-color: rgba(158, 158, 158, 50%);
   cursor: pointer;
-  transition: background-color 0.2s ease-in-out;
+}
 
-  &:hover {
-    background-color: rgba(158, 158, 158, 70%);
-  }
+.dragging-path-limit-1 {
+  animation: 10s ease-in-out infinite alternate shine;
+}
+
+.dragging-path-limit-2 {
+  animation: 4s ease-in-out infinite alternate shine;
 }
 </style>
