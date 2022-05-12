@@ -13,9 +13,14 @@
             @keyup="handleKeyUp"
             @keydown.prevent
             solo
-            label="Новая клавиша (с модификатором или без)"
+            :label="
+              'Новая клавиша' +
+              (action.actionType === ActionType.KeyWithMod
+                ? ' с модификатором'
+                : '')
+            "
           />
-          <v-btn @click="editMode = ''" text small> Отмена </v-btn>
+          <v-btn @click="handleCancel" text small> Отмена </v-btn>
         </p>
         <template v-else>
           <p class="body-1">
@@ -27,7 +32,7 @@
               <v-icon> mdi-delete </v-icon>
             </v-btn>
           </p>
-          <p class="body-1">
+          <p v-if="action.actionType === ActionType.KeyWithMod" class="body-1">
             Модификатор: <b>{{ modKey || "[нет]" }}</b>
           </p>
         </template>
@@ -46,6 +51,7 @@
 import Vue from "vue";
 import { mapActions, mapState } from "vuex";
 import { ActionTypes } from "@/store/action-types";
+import { ActionType } from "@/common/constants";
 
 enum EditMode {
   Key = "key",
@@ -86,12 +92,18 @@ export default Vue.extend({
     handleKeyUp(event: KeyboardEvent) {
       this.key = event.code;
       this.modKey = "";
-      for (let modKeyArg of modKeyArgs) {
-        if (event.getModifierState(modKeyArg)) {
-          this.modKey = modKeyArg;
-          break;
+      if (this.action.actionType === ActionType.KeyWithMod) {
+        for (let modKeyArg of modKeyArgs) {
+          if (event.getModifierState(modKeyArg)) {
+            this.modKey = modKeyArg;
+            break;
+          }
         }
       }
+
+      this.editMode = EditMode.None;
+    },
+    handleCancel() {
       this.editMode = EditMode.None;
     },
     handleDelete() {
@@ -125,7 +137,10 @@ export default Vue.extend({
     }
   },
   computed: {
-    ...mapState(["scriptsInfo"])
+    ...mapState(["scriptsInfo"]),
+    ActionType() {
+      return ActionType;
+    }
   },
   watch: {
     action: {
