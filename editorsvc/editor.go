@@ -26,20 +26,20 @@ type Action struct {
 	NextFrame  *NextFrame `json:"nextFrame,omitempty"`
 
 	// mouse
-	XLeft  float32 `json:"xLeft,omitempty"`
-	XRight float32 `json:"xRight,omitempty"`
-	YLeft  float32 `json:"yLeft,omitempty"`
-	YRight float32 `json:"yRight,omitempty"`
+	XLeft  *float32 `json:"xLeft"`
+	XRight *float32 `json:"xRight"`
+	YLeft  *float32 `json:"yLeft"`
+	YRight *float32 `json:"yRight"`
 
 	// drag
-	StartXLeft   float32 `json:"startXLeft,omitempty"`
-	StartYLeft   float32 `json:"startYLeft,omitempty"`
-	StartXRight  float32 `json:"startXRight,omitempty"`
-	StartYRight  float32 `json:"startYRight,omitempty"`
-	FinishXLeft  float32 `json:"finishXLeft,omitempty"`
-	FinishYLeft  float32 `json:"finishYLeft,omitempty"`
-	FinishXRight float32 `json:"finishXRight,omitempty"`
-	FinishYRight float32 `json:"finishYRight,omitempty"`
+	StartXLeft   *float32 `json:"startXLeft"`
+	StartYLeft   *float32 `json:"startYLeft"`
+	StartXRight  *float32 `json:"startXRight"`
+	StartYRight  *float32 `json:"startYRight"`
+	FinishXLeft  *float32 `json:"finishXLeft"`
+	FinishYLeft  *float32 `json:"finishYLeft"`
+	FinishXRight *float32 `json:"finishXRight"`
+	FinishYRight *float32 `json:"finishYRight"`
 
 	// wheel
 	TicksCount int `json:"ticksCount,omitempty"`

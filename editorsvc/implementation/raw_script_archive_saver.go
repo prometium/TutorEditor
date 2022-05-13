@@ -205,7 +205,7 @@ func (controller *rawScriptArchiveSaver) saveImages(ctx context.Context, minioCl
 			}
 			defer inReader.Close()
 
-			bytesArray, err := utils.ReadAllFromZip(currentFile)
+			bytesArray, _ := utils.ReadAllFromZip(currentFile)
 			buf := bytes.NewBuffer(bytesArray)
 
 			objectName := hash + ".png"
@@ -258,18 +258,18 @@ func (controller *rawScriptArchiveSaver) createScript(name string, linksMap map[
 				{
 					NextFrame:    nextFrame,
 					ActionType:   action.ActionType,
-					XLeft:        action.XLeft,
-					XRight:       action.XRight,
-					YLeft:        action.YLeft,
-					YRight:       action.YRight,
-					StartXLeft:   action.StartXLeft,
-					StartYLeft:   action.StartYLeft,
-					StartXRight:  action.StartXRight,
-					StartYRight:  action.StartYRight,
-					FinishXLeft:  action.FinishXLeft,
-					FinishYLeft:  action.FinishYLeft,
-					FinishXRight: action.FinishXRight,
-					FinishYRight: action.FinishYRight,
+					XLeft:        &action.XLeft,
+					XRight:       &action.XRight,
+					YLeft:        &action.YLeft,
+					YRight:       &action.YRight,
+					StartXLeft:   &action.StartXLeft,
+					StartYLeft:   &action.StartYLeft,
+					StartXRight:  &action.StartXRight,
+					StartYRight:  &action.StartYRight,
+					FinishXLeft:  &action.FinishXLeft,
+					FinishYLeft:  &action.FinishYLeft,
+					FinishXRight: &action.FinishXRight,
+					FinishYRight: &action.FinishYRight,
 					TicksCount:   action.TicksCount,
 					Key:          key,
 					ModKey:       action.ModKey,
