@@ -2,7 +2,7 @@ version: "3"
 services:
   # База данных zero (https://dgraph.io/docs/deploy/dgraph-zero/)
   editor-db-zero:
-    image: dgraph/dgraph:v21.03.2
+    image: dgraph/dgraph:v22.0.0
     volumes:
       - /tmp/data:/dgraph
     restart: on-failure
