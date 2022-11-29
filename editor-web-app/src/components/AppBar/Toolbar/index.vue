@@ -111,7 +111,7 @@ export default Vue.extend({
         return this.currentAction?.actionType;
       },
       set(newValue: number) {
-        this.updateScript({
+        this.({
           frames: [
             {
               uid: this.currentFrame.uid,
