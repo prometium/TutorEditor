@@ -6,10 +6,8 @@
       </div>
       <div class="menubar">
         <v-menu>
-          <template v-slot:activator="{ on, attrs }">
-            <v-btn v-bind="attrs" v-on="on" small text elevation="0">
-              Файл
-            </v-btn>
+          <template v-slot:activator="{ props }">
+            <v-btn elevation="0" v-bind="props"> Файл </v-btn>
           </template>
           <v-list dense>
             <v-list-item @click="createScriptDialog = true">
@@ -43,10 +41,8 @@
         <CopyScriptDialog v-model="copyScriptDialog" />
         <DeleteScriptDialog v-model="deleteScriptDialog" />
         <v-menu v-if="hasScript">
-          <template v-slot:activator="{ on, attrs }">
-            <v-btn v-bind="attrs" v-on="on" small text elevation="0">
-              Редактирование
-            </v-btn>
+          <template v-slot:activator="{ props }">
+            <v-btn v-bind="props" elevation="0"> Редактирование </v-btn>
           </template>
           <v-list dense>
             <v-list-item @click="addBranchingDialog = true">
@@ -62,29 +58,27 @@
         </v-menu>
         <AddBranchingDialog v-model="addBranchingDialog" />
       </div>
-      <v-btn icon large class="user-button">
+      <v-btn icon class="user-button">
         <v-icon>mdi-account-circle</v-icon>
       </v-btn>
     </div>
-    <Toolbar v-if="showToolbar" />
+    <AppToolbar v-if="showToolbar" />
   </v-sheet>
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-import { mapState, mapGetters, mapActions, mapMutations } from "vuex";
+import { mapState, mapActions } from "pinia";
+import { useStore } from "@/store";
 import { downloadScriptArchive, releaseScriptArchive } from "@/common/requests";
-import { Frame } from "@/common/types";
-import { ActionTypes } from "@/store/action-types";
-import { MutationTypes } from "@/store/mutation-types";
+import type { Frame } from "@/common/types";
 import OpenScriptDialog from "./OpenScriptDialog.vue";
 import CreateScriptDialog from "./CreateScriptDialog.vue";
 import CopyScriptDialog from "./CopyScriptDialog.vue";
 import DeleteScriptDialog from "./DeleteScriptDialog.vue";
 import AddBranchingDialog from "./AddBranchingDialog.vue";
-import Toolbar from "./Toolbar/index.vue";
+import AppToolbar from "./AppToolbar/index.vue";
 
-export default Vue.extend({
+export default {
   name: "AppBar",
   props: ["value"],
   data() {
@@ -93,7 +87,7 @@ export default Vue.extend({
       openScriptDialog: false,
       copyScriptDialog: false,
       deleteScriptDialog: false,
-      addBranchingDialog: false
+      addBranchingDialog: false,
     };
   },
   components: {
@@ -102,16 +96,17 @@ export default Vue.extend({
     CopyScriptDialog,
     DeleteScriptDialog,
     AddBranchingDialog,
-    Toolbar
+    AppToolbar,
   },
   computed: {
-    ...mapState(["script"]),
-    ...mapGetters([
+    ...mapState(useStore, [
+      "script",
+      "scriptsInfo",
       "currentFrame",
       "path",
       "currentAction",
       "currentPathItem",
-      "currentPathItemIndex"
+      "currentPathItemIndex",
     ]),
     hasScript(): boolean {
       return !!this.script.uid;
@@ -121,17 +116,12 @@ export default Vue.extend({
     },
     isBranchRemovingDisabled(): boolean {
       return (this.currentFrame?.actions?.length || 0) <= 1;
-    }
+    },
   },
   methods: {
-    ...mapActions({
-      updateScript: ActionTypes.UPDATE_SCRIPT
-    }),
-    ...mapMutations({
-      configurePath: MutationTypes.CONFIGURE_PATH
-    }),
+    ...mapActions(useStore, ["updateScript", "configurePath"]),
     handleDownloadScriptArchive() {
-      downloadScriptArchive(this.script.uid).then(result => {
+      downloadScriptArchive(this.script.uid).then((result) => {
         const url = window.URL.createObjectURL(result);
         const link = document.createElement("a");
         link.href = url;
@@ -146,8 +136,8 @@ export default Vue.extend({
     async handleRemoveBranch() {
       const countByNextFrameUid = {} as Record<string, number>;
       Object.values(this.script.frameByUid as Record<string, Frame>).forEach(
-        frame => {
-          frame?.actions?.forEach(action => {
+        (frame) => {
+          frame?.actions?.forEach((action) => {
             if (action.nextFrame) {
               countByNextFrameUid[action.nextFrame.uid] =
                 (countByNextFrameUid[action.nextFrame.uid] || 0) + 1;
@@ -169,20 +159,22 @@ export default Vue.extend({
         frameIdsToDel.push(this.path[pathItemIndex].frameUid);
       }
 
-      const actionIdsToDel = [this.currentAction.uid];
+      const actionIdsToDel = this.currentAction?.uid
+        ? [this.currentAction.uid]
+        : [];
 
       this.configurePath({
-        frameUid: this.currentPathItem.frameUid,
-        branchNum: Math.max(this.currentPathItem.branchNum - 1, 0)
+        frameUid: this.currentPathItem?.frameUid || "",
+        branchNum: Math.max((this.currentPathItem?.branchNum || 0) - 1, 0),
       });
 
       this.updateScript({
         actionIdsToDel,
-        frameIdsToDel
+        frameIdsToDel,
       });
-    }
-  }
-});
+    },
+  },
+};
 </script>
 
 <style scoped lang="scss">

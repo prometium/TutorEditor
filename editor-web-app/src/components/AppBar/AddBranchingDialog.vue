@@ -4,21 +4,19 @@
       <slot name="activator" v-bind="activator" />
     </template>
     <v-card>
-      <v-card-title class="headline lighten-2">
-        Добавление ветвления
-      </v-card-title>
+      <v-card-title class="text-h5"> Добавление ветвления </v-card-title>
       <v-card-text style="max-height: 300px; overflow-y: auto">
         <v-select
           v-model="selectedScriptUid"
           :items="scriptsInfo"
-          :item-text="convertScriptInfoToText"
+          :item-title="convertScriptInfoToText"
           :item-value="convertScriptInfoToValue"
           label="Присоединенный фрагмент"
         />
         <v-select
           v-model="firstFrameIndex"
           :items="indexedFirstFrames"
-          :item-text="convertIndexedFrameToText"
+          :item-title="convertIndexedFrameToText"
           :item-value="convertIndexedFrameToValue"
           label="Кадр начала ветвления"
           dense
@@ -26,27 +24,25 @@
         <v-select
           v-model="firstConnectedFrameIndex"
           :items="indexedFramesOfSelectedScript"
-          :item-text="convertIndexedFrameToText"
+          :item-title="convertIndexedFrameToText"
           :item-value="convertIndexedFrameToValue"
           label="Первый присоединенный кадр"
-          :disabled="!this.selectedScriptUid"
+          :disabled="!selectedScriptUid"
           dense
         />
         <v-select
           v-model="lastConnectedFrameIndex"
           :items="indexedFramesOfSelectedScript"
-          :item-text="convertIndexedFrameToText"
+          :item-title="convertIndexedFrameToText"
           :item-value="convertIndexedFrameToValue"
           label="Последний присоединенный кадр"
-          :disabled="
-            !this.selectedScriptUid || firstConnectedFrameIndex == null
-          "
+          :disabled="!selectedScriptUid || firstConnectedFrameIndex == null"
           dense
         />
         <v-select
           v-model="lastFrameIndex"
           :items="indexedLastFrames"
-          :item-text="convertIndexedFrameToText"
+          :item-title="convertIndexedFrameToText"
           :item-value="convertIndexedFrameToValue"
           label="Кадр окончания ветвления"
           :disabled="firstFrameIndex == null"
@@ -56,12 +52,12 @@
       <v-divider />
       <v-card-actions>
         <v-spacer />
-        <v-btn @click="dialog = false" text> Отменить </v-btn>
+        <v-btn @click="dialog = false" variant="text"> Отменить </v-btn>
         <v-btn
           @click="handleAdd"
           :loading="isLoading"
           :disabled="isAddingDisabled"
-          text
+          variant="text"
           color="primary"
         >
           Добавить
@@ -72,18 +68,17 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-import { mapState, mapActions, mapGetters } from "vuex";
-import { ActionTypes } from "@/store/action-types";
-import { PathItem, ScriptInfo, Script, Frame } from "@/common/types";
+import { mapState, mapActions } from "pinia";
+import { useStore } from "@/store";
+import type { PathItem, ScriptInfo, Script, Frame } from "@/common/types";
 import { getScript } from "@/common/requests";
 import { configurePath } from "@/helpers/configurePath";
 
 type IndexedFrame = Frame & { index: number };
 
-export default Vue.extend({
+export default {
   name: "AddBranchingDialog",
-  props: ["value"],
+  props: ["modelValue"],
   data() {
     return {
       selectedScriptUid: null as string | null,
@@ -92,24 +87,28 @@ export default Vue.extend({
       firstConnectedFrameIndex: null as number | null,
       lastConnectedFrameIndex: null as number | null,
       lastFrameIndex: null as number | null,
-      isLoading: false
+      isLoading: false,
     };
   },
   computed: {
-    ...mapState(["script", "scriptsInfo"]),
-    ...mapGetters(["path", "currentPathItemIndex"]),
+    ...mapState(useStore, [
+      "script",
+      "scriptsInfo",
+      "path",
+      "currentPathItemIndex",
+    ]),
     dialog: {
       get(): boolean {
-        return this.value;
+        return this.modelValue;
       },
       set(value: boolean) {
-        this.$emit("input", value);
-      }
+        this.$emit("update:modelValue", value);
+      },
     },
     indexedFirstFrames(): IndexedFrame[] {
       return this.path.map((pathItem: PathItem, index: number) => ({
         index,
-        ...this.script.frameByUid[pathItem.frameUid]
+        ...this.script.frameByUid[pathItem.frameUid],
       }));
     },
     indexedLastFrames(): IndexedFrame[] {
@@ -118,7 +117,7 @@ export default Vue.extend({
     },
     frameOfSelectedScriptByUid(): Record<string, Frame> {
       const frameByUid: Record<string, Frame> = {};
-      this.selectedScript?.frames.forEach(frame => {
+      this.selectedScript?.frames.forEach((frame) => {
         frameByUid[frame.uid] = frame;
       });
       return frameByUid;
@@ -136,7 +135,7 @@ export default Vue.extend({
       return this.pathOfSelectedScript.map(
         (pathItem: PathItem, index: number) => ({
           index,
-          ...this.frameOfSelectedScriptByUid[pathItem.frameUid]
+          ...this.frameOfSelectedScriptByUid[pathItem.frameUid],
         })
       );
     },
@@ -148,14 +147,10 @@ export default Vue.extend({
         this.lastFrameIndex == null ||
         !this.selectedScript
       );
-    }
+    },
   },
   methods: {
-    ...mapActions({
-      loadScript: ActionTypes.LOAD_SCRIPT,
-      loadScriptsInfo: ActionTypes.LOAD_SCRIPTS_INFO,
-      updateScript: ActionTypes.UPDATE_SCRIPT
-    }),
+    ...mapActions(useStore, ["loadScript", "loadScriptsInfo", "updateScript"]),
     convertScriptInfoToText(scriptInfo: ScriptInfo) {
       return scriptInfo.name;
     },
@@ -166,7 +161,7 @@ export default Vue.extend({
       return `${frame.index}. ${frame.hintText || ""}`;
     },
     convertIndexedFrameToValue(frame: IndexedFrame) {
-      return frame.index;
+      return String(frame.index);
     },
     async handleAdd() {
       if (
@@ -188,7 +183,7 @@ export default Vue.extend({
 
           const action = frame.actions?.[0] || {
             uid: `_:framesToConnectAction${index}`,
-            nextFrame: { uid: "" }
+            nextFrame: { uid: "" },
           };
 
           return {
@@ -199,11 +194,11 @@ export default Vue.extend({
                   {
                     ...action,
                     uid: `_:${action.uid}`,
-                    nextFrame: { uid: `_:${action.nextFrame?.uid}` }
+                    nextFrame: { uid: `_:${action.nextFrame?.uid}` },
                   },
-                  ...frame.actions.slice(1)
+                  ...frame.actions.slice(1),
                 ]
-              : frame.actions || [action]
+              : frame.actions || [action],
           };
         });
 
@@ -219,18 +214,18 @@ export default Vue.extend({
       const preparedFirstFrame = {
         ...firstFrame,
         actions: [
-          ...firstFrame.actions,
+          ...(firstFrame.actions || []),
           {
             uid: "_:firstFrameAction",
-            nextFrame: { uid: framesToConnect[0].uid }
-          }
-        ]
+            nextFrame: { uid: framesToConnect[0].uid },
+          },
+        ],
       };
 
       this.isLoading = true;
       try {
-        await this.updateScript({
-          frames: [preparedFirstFrame, ...framesToConnect, preparedLastFrame]
+        this.updateScript({
+          frames: [preparedFirstFrame, ...framesToConnect, preparedLastFrame],
         }).then(() => {
           this.dialog = false;
         });
@@ -246,7 +241,7 @@ export default Vue.extend({
       } finally {
         this.isLoading = false;
       }
-    }
+    },
   },
   watch: {
     dialog(value) {
@@ -256,10 +251,10 @@ export default Vue.extend({
       }
     },
     selectedScriptUid(value) {
-      getScript(value).then(response => {
+      getScript(value).then((response) => {
         this.selectedScript = response.script;
       });
-    }
-  }
-});
+    },
+  },
+};
 </script>

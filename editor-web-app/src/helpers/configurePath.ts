@@ -1,4 +1,4 @@
-import { Frame, PathItem } from "@/common/types";
+import type { Frame, PathItem } from "../common/types";
 
 export function configurePath(
   firstFrame: Pick<Frame, "uid">,
@@ -10,7 +10,7 @@ export function configurePath(
   while (path.length <= Object.keys(frameByUid).length) {
     const pathItem: PathItem = {
       frameUid,
-      branchNum: branchNumByUid?.[frameUid] || 0
+      branchNum: branchNumByUid?.[frameUid] || 0,
     };
     path.push(pathItem);
 

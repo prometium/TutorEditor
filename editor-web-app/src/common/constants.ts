@@ -15,7 +15,7 @@ export enum ActionType {
   WheelUp,
   WheelDown,
   WheelClick,
-  Pause
+  Pause,
 }
 
 export enum ActionGroup {
@@ -23,5 +23,5 @@ export enum ActionGroup {
   Keyboard,
   Pause,
   Tick,
-  Other
+  Other,
 }

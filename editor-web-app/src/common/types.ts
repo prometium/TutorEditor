@@ -1,4 +1,4 @@
-import { ActionType } from "./constants";
+import type { ActionType } from "./constants";
 
 export type ScriptInfo = {
   uid: string;
@@ -29,36 +29,35 @@ export type PathItem = {
 
 export type Frame = {
   uid: string;
-  pictureLink: string;
-  actions?: Array<
-    | LeftMouseClick
-    | LeftMouseDown
-    | LeftMouseUp
-    | LeftMouseDoubleClick
-    | RightMouseClick
-    | RightMouseDown
-    | RightMouseUp
-    | RightMouseDobleClick
-    | KeyClick
-    | KeyDown
-    | KeyUp
-    | KeyWithMod
-    | Drag
-    | WheelUp
-    | WheelDown
-    | WheelClick
-    | Pause
-  >;
+  pictureLink?: string;
+  actions?: Array<Action>;
   taskText?: string;
   hintText?: string;
 };
 
 export type Action = {
-  actionType: ActionType;
+  actionType?: ActionType;
   uid: string;
   nextFrame?: {
     uid: string;
   };
+  key?: string;
+  modKey?: string;
+  xLeft?: number;
+  xRight?: number;
+  yLeft?: number;
+  yRight?: number;
+  startXLeft?: number;
+  startYLeft?: number;
+  startXRight?: number;
+  startYRight?: number;
+  finishXLeft?: number;
+  finishYLeft?: number;
+  finishXRight?: number;
+  finishYRight?: number;
+  switchPictures?: SwitchPicture[];
+  duration?: number;
+  ticksCount?: number;
 };
 
 type MouseAction = Action & {
@@ -68,49 +67,49 @@ type MouseAction = Action & {
   yRight: number;
 };
 
-type LeftMouseClick = MouseAction & {
+export type LeftMouseClick = MouseAction & {
   actionType: ActionType.LeftMouseClick;
 };
-type LeftMouseDown = MouseAction & {
+export type LeftMouseDown = MouseAction & {
   actionType: ActionType.LeftMouseDown;
 };
-type LeftMouseUp = MouseAction & {
+export type LeftMouseUp = MouseAction & {
   actionType: ActionType.LeftMouseUp;
 };
-type LeftMouseDoubleClick = MouseAction & {
+export type LeftMouseDoubleClick = MouseAction & {
   actionType: ActionType.LeftMouseDoubleClick;
 };
-type RightMouseClick = MouseAction & {
+export type RightMouseClick = MouseAction & {
   actionType: ActionType.RightMouseClick;
 };
-type RightMouseDown = MouseAction & {
+export type RightMouseDown = MouseAction & {
   actionType: ActionType.RightMouseDown;
 };
-type RightMouseUp = MouseAction & {
+export type RightMouseUp = MouseAction & {
   actionType: ActionType.RightMouseUp;
 };
-type RightMouseDobleClick = MouseAction & {
+export type RightMouseDobleClick = MouseAction & {
   actionType: ActionType.RightMouseDobleClick;
 };
 
 type KeyboardAction = Action & {
   key: string;
 };
-type KeyClick = KeyboardAction & {
+export type KeyClick = KeyboardAction & {
   actionType: ActionType.KeyClick;
 };
-type KeyDown = KeyboardAction & {
+export type KeyDown = KeyboardAction & {
   actionType: ActionType.KeyDown;
 };
-type KeyUp = KeyboardAction & {
+export type KeyUp = KeyboardAction & {
   actionType: ActionType.KeyUp;
 };
-type KeyWithMod = KeyboardAction & {
+export type KeyWithMod = KeyboardAction & {
   actionType: ActionType.KeyWithMod;
   modKey: string;
 };
 
-type Drag = Action & {
+export type Drag = Action & {
   actionType: ActionType.Drag;
   startXLeft: number;
   startYLeft: number;
@@ -124,7 +123,7 @@ type Drag = Action & {
 };
 
 export type SwitchPicture = {
-  pictureLink: string;
+  pictureLink?: string;
   x: number;
   y: number;
 };
@@ -132,18 +131,18 @@ export type SwitchPicture = {
 type WheelMotionAction = Action & {
   ticksCount: number;
 };
-type WheelUp = WheelMotionAction & {
+export type WheelUp = WheelMotionAction & {
   actionType: ActionType.WheelUp;
 };
-type WheelDown = WheelMotionAction & {
+export type WheelDown = WheelMotionAction & {
   actionType: ActionType.WheelDown;
 };
 
-type WheelClick = Action & {
+export type WheelClick = Action & {
   actionType: ActionType.WheelClick;
 };
 
-type Pause = Action & {
+export type Pause = Action & {
   actionType: ActionType.Pause;
-  duration: number;
+  duration?: number;
 };

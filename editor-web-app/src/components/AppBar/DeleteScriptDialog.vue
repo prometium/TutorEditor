@@ -4,11 +4,9 @@
       <slot name="activator" v-bind="activator" />
     </template>
     <v-card>
-      <v-card-title class="headline lighten-2">
-        Удаление обучающих программ
-      </v-card-title>
+      <v-card-title class="text-h5"> Удаление обучающих программ </v-card-title>
       <v-card-text style="max-height: 300px; overflow-y: auto">
-        <v-list-item-group v-model="selectedScriptIds" multiple>
+        <v-list v-model="selectedScriptIds" multiple>
           <v-list-item
             v-for="scriptInfo in scriptsInfo"
             :key="scriptInfo.uid"
@@ -18,20 +16,23 @@
           >
             <template v-slot:default="{ active }">
               <v-list-item-action>
-                <v-checkbox :input-value="active" />
+                <v-checkbox :model-value="active" />
               </v-list-item-action>
-              <v-list-item-content>
-                <v-list-item-title>{{ scriptInfo.name }}</v-list-item-title>
-              </v-list-item-content>
+              <v-list-item-title>{{ scriptInfo.name }}</v-list-item-title>
             </template>
           </v-list-item>
-        </v-list-item-group>
+        </v-list>
       </v-card-text>
       <v-divider />
       <v-card-actions>
         <v-spacer />
-        <v-btn @click="dialog = false" text> Отменить </v-btn>
-        <v-btn @click="handleDelete" :loading="isLoading" text color="primary">
+        <v-btn @click="dialog = false" variant="text"> Отменить </v-btn>
+        <v-btn
+          @click="handleDelete"
+          :loading="isLoading"
+          variant="text"
+          color="primary"
+        >
           Удалить
         </v-btn>
       </v-card-actions>
@@ -40,40 +41,36 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-import { mapState, mapActions } from "vuex";
-import { ActionTypes } from "@/store/action-types";
+import { mapState, mapActions } from "pinia";
+import { useStore } from "@/store";
 
-export default Vue.extend({
+export default {
   name: "DeleteScriptDialog",
-  props: ["value"],
+  props: ["modelValue"],
   data() {
     return {
       selectedScriptIds: [],
-      isLoading: false
+      isLoading: false,
     };
   },
   computed: {
-    ...mapState(["scriptsInfo", "script"]),
+    ...mapState(useStore, ["scriptsInfo", "script"]),
     dialog: {
       get(): boolean {
-        return this.value;
+        return this.modelValue;
       },
       set(value: boolean) {
-        this.$emit("input", value);
-      }
-    }
+        this.$emit("update:modelValue", value);
+      },
+    },
   },
   methods: {
-    ...mapActions({
-      deleteScript: ActionTypes.DELETE_SCRIPT,
-      loadScriptsInfo: ActionTypes.LOAD_SCRIPTS_INFO
-    }),
+    ...mapActions(useStore, ["deleteScript", "loadScriptsInfo"]),
     async handleDelete() {
       this.isLoading = true;
       try {
         await Promise.all(
-          this.selectedScriptIds.map(id => this.deleteScript(id))
+          this.selectedScriptIds.map((id) => this.deleteScript(id))
         );
         this.dialog = false;
       } catch (error) {
@@ -81,14 +78,14 @@ export default Vue.extend({
       } finally {
         this.isLoading = false;
       }
-    }
+    },
   },
   watch: {
     dialog(value) {
       if (value) {
         this.loadScriptsInfo();
       }
-    }
-  }
-});
+    },
+  },
+};
 </script>

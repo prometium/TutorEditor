@@ -1,51 +1,28 @@
-import { State } from "./state";
-import { Action, Frame, PathItem } from "@/common/types";
-import { ActionGroup, ActionType } from "@/common/constants";
-import { configurePath } from "@/helpers/configurePath";
+import type { State } from "./state";
+import type { Action, Frame, PathItem } from "../common/types";
+import { ActionGroup, ActionType } from "../common/constants";
+import { configurePath } from "../helpers/configurePath";
 
 type Getters = {
-  path(state: State): PathItem[];
-  currentFrame(state: State): Frame | null;
-  currentAction(
-    state: State,
-    getters: { [T in keyof Getters]: ReturnType<Getters[T]> }
-  ): Action | null;
-  currentActionGroup(
-    state: State,
-    getters: { [T in keyof Getters]: ReturnType<Getters[T]> }
-  ): number;
-  currentPathItemIndex(
-    state: State,
-    getters: { [T in keyof Getters]: ReturnType<Getters[T]> }
-  ): number;
-  currentPathItem(
-    state: State,
-    getters: { [T in keyof Getters]: ReturnType<Getters[T]> }
-  ): PathItem | null;
-  prevPathItem(
-    state: State,
-    getters: { [T in keyof Getters]: ReturnType<Getters[T]> }
-  ): PathItem | null;
-  prevFrame(
-    state: State,
-    getters: { [T in keyof Getters]: ReturnType<Getters[T]> }
-  ): Frame | null;
-  prevAction(
-    state: State,
-    getters: { [T in keyof Getters]: ReturnType<Getters[T]> }
-  ): Action | null;
-  nextFrame(
-    state: State,
-    getters: { [T in keyof Getters]: ReturnType<Getters[T]> }
-  ): Frame | null;
-  nextAction(
-    state: State,
-    getters: { [T in keyof Getters]: ReturnType<Getters[T]> }
-  ): Action | null;
+  path(this: ComputedGetters, state: State): PathItem[];
+  currentFrame(this: ComputedGetters, state: State): Frame | null;
+  currentAction(this: ComputedGetters, state: State): Action | null;
+  currentActionGroup(this: ComputedGetters, state: State): number;
+  currentPathItemIndex(this: ComputedGetters, state: State): number;
+  currentPathItem(this: ComputedGetters, state: State): PathItem | null;
+  prevPathItem(this: ComputedGetters, state: State): PathItem | null;
+  prevFrame(this: ComputedGetters, state: State): Frame | null;
+  prevAction(this: ComputedGetters, state: State): Action | null;
+  nextFrame(this: ComputedGetters, state: State): Frame | null;
+  nextAction(this: ComputedGetters, state: State): Action | null;
+};
+
+export type ComputedGetters = {
+  [Getter in keyof Getters]: ReturnType<Getters[Getter]>;
 };
 
 export const getters: Getters = {
-  path(state) {
+  path: (state) => {
     const path = configurePath(
       state.script.firstFrame,
       state.script.frameByUid,
@@ -56,17 +33,15 @@ export const getters: Getters = {
   currentFrame(state) {
     return state.frameUid ? state.script.frameByUid[state.frameUid] : null;
   },
-  currentAction(state, getters) {
+  currentAction(state) {
     return (
-      (getters.currentFrame?.actions &&
-        getters.currentFrame.actions[
-          state.script.branchNumByUid[getters.currentFrame.uid] || 0
-        ]) ||
-      null
+      this.currentFrame?.actions?.[
+        state.script.branchNumByUid[this.currentFrame.uid] || 0
+      ] || null
     );
   },
-  currentActionGroup(_, getters) {
-    switch (getters.currentAction?.actionType) {
+  currentActionGroup() {
+    switch (this.currentAction?.actionType) {
       case ActionType.LeftMouseClick:
       case ActionType.LeftMouseDown:
       case ActionType.LeftMouseUp:
@@ -90,40 +65,38 @@ export const getters: Getters = {
         return ActionGroup.Other;
     }
   },
-  currentPathItemIndex(_, getters) {
-    const pathItemIndex = getters.path.findIndex(
-      (pathItem: PathItem) => pathItem.frameUid === getters.currentFrame?.uid
+  currentPathItemIndex() {
+    const pathItemIndex = this.path.findIndex(
+      (pathItem: PathItem) => pathItem.frameUid === this.currentFrame?.uid
     );
     return pathItemIndex || 0;
   },
-  currentPathItem(_, getters) {
-    const currentPathItem = getters.path[getters.currentPathItemIndex];
+  currentPathItem() {
+    const currentPathItem = this.path[this.currentPathItemIndex];
     return currentPathItem || null;
   },
-  prevPathItem(_, getters) {
-    const prevPathItem = getters.path[getters.currentPathItemIndex - 1];
+  prevPathItem() {
+    const prevPathItem = this.path[this.currentPathItemIndex - 1];
     return prevPathItem || null;
   },
-  prevFrame(state, getters) {
-    if (!getters.prevPathItem) return null;
-    return state.script.frameByUid[getters.prevPathItem.frameUid];
+  prevFrame(state) {
+    if (!this.prevPathItem) return null;
+    return state.script.frameByUid[this.prevPathItem.frameUid];
   },
-  prevAction(_, getters) {
-    if (!getters.prevPathItem) return null;
-    return getters.prevFrame?.actions?.[getters.prevPathItem.branchNum] || null;
+  prevAction() {
+    if (!this.prevPathItem) return null;
+    return this.prevFrame?.actions?.[this.prevPathItem.branchNum] || null;
   },
-  nextFrame(state, getters) {
-    if (!getters.currentAction?.nextFrame?.uid) return null;
-    return (
-      state.script.frameByUid[getters.currentAction?.nextFrame.uid] || null
+  nextFrame(state) {
+    if (!this.currentAction?.nextFrame?.uid) return null;
+    return state.script.frameByUid[this.currentAction?.nextFrame.uid] || null;
+  },
+  nextAction() {
+    const pathItemIndex = this.path.findIndex(
+      (pathItem: PathItem) => pathItem.frameUid === this.currentFrame?.uid
     );
-  },
-  nextAction(_, getters) {
-    const pathItemIndex = getters.path.findIndex(
-      (pathItem: PathItem) => pathItem.frameUid === getters.currentFrame?.uid
-    );
-    const nextPathItem = getters.path[pathItemIndex + 1];
+    const nextPathItem = this.path[pathItemIndex + 1];
     if (!nextPathItem) return null;
-    return getters.nextFrame?.actions?.[nextPathItem.branchNum] || null;
-  }
+    return this.nextFrame?.actions?.[nextPathItem.branchNum] || null;
+  },
 };

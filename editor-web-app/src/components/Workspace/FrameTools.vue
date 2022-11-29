@@ -31,35 +31,41 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-import { mapActions, mapGetters, mapMutations } from "vuex";
-import { ActionTypes } from "@/store/action-types";
-import { MutationTypes } from "@/store/mutation-types";
+import { mapActions, mapState } from "pinia";
+import { useStore } from "@/store";
 
-export default Vue.extend({
+export default {
   name: "FrameTools",
   computed: {
-    ...mapGetters([
+    ...mapState(useStore, [
+      "script",
+      "scriptsInfo",
       "path",
       "currentFrame",
       "currentAction",
       "prevFrame",
       "prevAction",
       "nextFrame",
-      "nextAction"
+      "nextAction",
     ]),
     isDeletingDisabled(): boolean {
-      return this.currentFrame?.actions?.length > 1 || this.path.length <= 2;
-    }
+      return (
+        (this.currentFrame?.actions?.length || 0) > 1 || this.path.length <= 2
+      );
+    },
   },
   methods: {
-    ...mapActions({
-      updateScript: ActionTypes.UPDATE_SCRIPT
-    }),
-    ...mapMutations({
-      selectFrame: MutationTypes.SELECT_FRAME
-    }),
+    ...mapActions(useStore, ["updateScript", "selectFrame"]),
     async handleUp() {
+      if (
+        this.prevFrame == null ||
+        this.prevAction == null ||
+        this.currentFrame == null ||
+        this.currentAction == null
+      ) {
+        return;
+      }
+
       await this.updateScript({
         frames: [
           {
@@ -69,9 +75,9 @@ export default Vue.extend({
               {
                 ...this.currentAction,
                 uid: this.prevAction.uid,
-                nextFrame: this.prevAction.nextFrame
-              }
-            ]
+                nextFrame: this.prevAction.nextFrame,
+              },
+            ],
           },
           {
             ...this.prevFrame,
@@ -80,16 +86,25 @@ export default Vue.extend({
               {
                 ...this.prevAction,
                 uid: this.currentAction.uid,
-                nextFrame: this.currentAction.nextFrame
-              }
-            ]
-          }
-        ]
+                nextFrame: this.currentAction.nextFrame,
+              },
+            ],
+          },
+        ],
       });
 
       this.selectFrame(this.prevFrame.uid);
     },
     async handleDown() {
+      if (
+        this.nextFrame == null ||
+        this.nextAction == null ||
+        this.currentFrame == null ||
+        this.currentAction == null
+      ) {
+        return;
+      }
+
       await this.updateScript({
         frames: [
           {
@@ -99,9 +114,9 @@ export default Vue.extend({
               {
                 ...this.currentAction,
                 uid: this.nextAction.uid,
-                nextFrame: this.nextAction.nextFrame
-              }
-            ]
+                nextFrame: this.nextAction.nextFrame,
+              },
+            ],
           },
           {
             ...this.nextFrame,
@@ -110,16 +125,20 @@ export default Vue.extend({
               {
                 ...this.nextAction,
                 uid: this.currentAction.uid,
-                nextFrame: this.currentAction.nextFrame
-              }
-            ]
-          }
-        ]
+                nextFrame: this.currentAction.nextFrame,
+              },
+            ],
+          },
+        ],
       });
 
       this.selectFrame(this.nextFrame.uid);
     },
     async handleAdd() {
+      if (this.currentFrame == null || this.currentAction == null) {
+        return;
+      }
+
       await this.updateScript({
         frames: [
           {
@@ -127,9 +146,9 @@ export default Vue.extend({
             actions: [
               {
                 uid: this.currentAction.uid,
-                nextFrame: { uid: "_:new1" }
-              }
-            ]
+                nextFrame: { uid: "_:new1" },
+              },
+            ],
           },
           {
             uid: "_:new1",
@@ -140,56 +159,65 @@ export default Vue.extend({
               {
                 uid: "_:new2",
                 nextFrame: this.currentAction.nextFrame && {
-                  uid: this.currentAction.nextFrame.uid
-                }
-              }
-            ]
-          }
-        ]
+                  uid: this.currentAction.nextFrame.uid,
+                },
+              },
+            ],
+          },
+        ],
       });
 
-      this.selectFrame(this.nextFrame.uid);
+      this.selectFrame(this.nextFrame?.uid);
     },
     async handleDelete() {
       if (this.path.length < 3) return;
 
       const hasPrev = !!this.prevFrame && !!this.prevAction;
       const prevFrameUid = this.prevFrame?.uid;
-      const nextFrameUid = this.currentAction.nextFrame?.uid;
+
+      if (this.currentFrame == null || this.prevAction == null) {
+        return;
+      }
+
+      const nextFrameUid = this.currentAction?.nextFrame?.uid;
+
+      const scriptForUpdate = hasPrev
+        ? {}
+        : {
+            firstFrame: {
+              uid: nextFrameUid || "",
+            },
+          };
+
+      const framesForUpdate = hasPrev
+        ? [
+            {
+              uid: prevFrameUid || "",
+              actions: [
+                {
+                  ...this.prevAction,
+                  nextFrame: nextFrameUid
+                    ? {
+                        uid: nextFrameUid,
+                      }
+                    : undefined,
+                },
+              ],
+            },
+          ]
+        : [];
 
       await this.updateScript({
-        script: hasPrev
-          ? {}
-          : {
-              firstFrame: {
-                uid: this.currentAction.nextFrame.uid
-              }
-            },
-        frames: hasPrev
-          ? [
-              {
-                uid: prevFrameUid,
-                actions: [
-                  {
-                    ...this.prevAction,
-                    nextFrame: nextFrameUid
-                      ? {
-                          uid: nextFrameUid
-                        }
-                      : null
-                  }
-                ]
-              }
-            ]
-          : [],
+        script: scriptForUpdate,
+        frames: framesForUpdate,
         frameIdsToDel: [this.currentFrame.uid],
-        actionIdsToDel: this.prevAction ? [this.prevAction.uid] : undefined
+        actionIdsToDel: this.prevAction ? [this.prevAction.uid] : undefined,
       });
 
-      this.selectFrame(prevFrameUid || nextFrameUid || null);
-    }
-  }
-});
+      this.selectFrame(prevFrameUid || nextFrameUid);
+    },
+  },
+};
 </script>
 
 <style scoped lang="scss">

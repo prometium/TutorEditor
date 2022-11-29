@@ -1,65 +1,84 @@
-import { ActionContext } from "vuex";
-import { State } from "./state";
-import { ActionTypes } from "./action-types";
-import { Mutations } from "./mutations";
-import { MutationTypes } from "./mutation-types";
-import { Script, TraversableScript, Frame } from "@/common/types";
+import type { State } from "./state";
+import type {
+  Script,
+  ScriptInfo,
+  TraversableScript,
+  Frame,
+} from "@/common/types";
 import {
   getScriptsInfo,
   getScript,
   updateScript,
-  deleteScript
+  deleteScript,
 } from "@/common/requests";
 
-type AugmentedActionContext = {
-  commit<K extends keyof Mutations>(
-    key: K,
-    payload?: Parameters<Mutations[K]>[1]
-  ): ReturnType<Mutations[K]>;
-} & Omit<ActionContext<State, State>, "commit">;
-
 type Actions = {
-  [ActionTypes.LOAD_SCRIPTS_INFO](
-    context: AugmentedActionContext
-  ): Promise<void>;
-  [ActionTypes.LOAD_SCRIPT](
-    context: AugmentedActionContext,
-    uid: string
-  ): Promise<void>;
-  [ActionTypes.UPDATE_SCRIPT](
-    context: AugmentedActionContext,
+  setScriptsInfo(this: State & Actions, scriptsInfo: ScriptInfo[]): void;
+  setScript(this: State & Actions, script: TraversableScript): void;
+  updateScript(
+    this: State & Actions,
     data: {
-      script?: Script;
+      script?: Partial<Script>;
       frames?: Frame[];
+      uids?: Record<string, string> | null;
       frameIdsToDel?: string[];
       actionIdsToDel?: string[];
     }
   ): Promise<void>;
-  [ActionTypes.DELETE_SCRIPT](
-    context: AugmentedActionContext,
-    uid: string
+  selectFrame(this: State & Actions, uid?: string): void;
+  configurePath(
+    this: State & Actions,
+    fork: {
+      frameUid: string;
+      branchNum: number;
+    }
+  ): void;
+  loadScriptsInfo(this: State & Actions): Promise<void>;
+  loadScript(this: State & Actions, uid: string): Promise<void>;
+  updateScript(
+    this: State & Actions,
+    data: {
+      script?: Script;
+      frames?: Frame[];
+      uids?: Record<string, string>;
+      frameIdsToDel?: string[];
+      actionIdsToDel?: string[];
+    }
   ): Promise<void>;
+  deleteScript(this: State & Actions, uid: string): Promise<void>;
 };
 
 export const actions: Actions = {
-  [ActionTypes.LOAD_SCRIPTS_INFO]({ commit }) {
+  setScriptsInfo(scriptsInfo) {
+    this.scriptsInfo = scriptsInfo;
+  },
+  setScript(script) {
+    this.script = script;
+  },
+  selectFrame(uid) {
+    this.frameUid = uid;
+  },
+  configurePath(fork) {
+    this.script.branchNumByUid[fork.frameUid] = fork.branchNum;
+  },
+  loadScriptsInfo() {
     return new Promise((resolve, reject) => {
       getScriptsInfo()
-        .then(data => {
-          commit(MutationTypes.SET_SCRIPTS_INFO, data.scripts);
+        .then((data) => {
+          this.setScriptsInfo(data.scripts);
           resolve();
         })
         .catch(reject);
     });
   },
-  [ActionTypes.LOAD_SCRIPT]({ commit }, uid) {
+  loadScript(uid) {
     return new Promise((resolve, reject) => {
       getScript(uid)
-        .then(data => {
+        .then((data) => {
           const script: Script = data.script;
 
           const frameByUid: Record<string, Frame> = {};
-          script.frames.forEach(frame => {
+          script.frames.forEach((frame) => {
             frameByUid[frame.uid] = frame;
           });
 
@@ -67,53 +86,121 @@ export const actions: Actions = {
             ...script,
             frameByUid,
             path: [],
-            branchNumByUid: {}
+            branchNumByUid: {},
           };
-          commit(MutationTypes.SET_SCRIPT, traversableScript);
-          commit(MutationTypes.SELECT_FRAME, traversableScript.firstFrame.uid);
+          this.setScript(traversableScript);
+          this.selectFrame(traversableScript.firstFrame.uid);
           resolve();
         })
-        .catch(err => {
+        .catch((err) => {
           reject(err);
         });
     });
   },
-  [ActionTypes.UPDATE_SCRIPT](
-    { state, commit },
-    { script, frames, frameIdsToDel, actionIdsToDel }
-  ) {
+  updateScript({ script, frames, frameIdsToDel, actionIdsToDel }) {
     return new Promise((resolve, reject) => {
-      if (!state.script.uid) return;
+      if (!this.script.uid) return;
 
       return updateScript(
-        { uid: state.script.uid, ...script, frames } as Script,
+        { uid: this.script.uid, ...script, frames } as Script,
         { frameIdsToDel, actionIdsToDel }
       )
-        .then(res => {
-          commit(MutationTypes.UPDATE_SCRIPT, {
-            script,
-            frames,
-            uids: res.uids,
-            frameIdsToDel,
-            actionIdsToDel
+        .then((res) => {
+          this.script = {
+            ...this.script,
+            ...script,
+          };
+
+          const framesWithCorrectUids = !res.uids
+            ? frames
+            : frames?.map((frame) => {
+                const actionsWithCorrectUids = frame.actions?.map((action) => {
+                  const newNextFrameUid = action.nextFrame
+                    ? res.uids?.[action.nextFrame?.uid.slice(2)]
+                    : null;
+                  const nextFrameWithCorrectUid = newNextFrameUid
+                    ? { uid: newNextFrameUid }
+                    : action.nextFrame;
+
+                  const newActionUid = res.uids?.[action.uid.slice(2)];
+                  return newActionUid
+                    ? {
+                        ...action,
+                        uid: newActionUid,
+                        nextFrame: nextFrameWithCorrectUid,
+                      }
+                    : { ...action, nextFrame: nextFrameWithCorrectUid };
+                });
+
+                const newFrameUid = res.uids?.[frame.uid.slice(2)];
+                return newFrameUid
+                  ? {
+                      ...frame,
+                      uid: newFrameUid,
+                      actions: actionsWithCorrectUids,
+                    }
+                  : { ...frame, actions: actionsWithCorrectUids };
+              });
+
+          frameIdsToDel?.forEach((frameId) => {
+            delete this.script.frameByUid[frameId];
+          });
+
+          Object.values(this.script.frameByUid).forEach((frame: Frame) => {
+            if (frame.actions) {
+              frame["actions"] = frame.actions?.filter(
+                (action) => !actionIdsToDel?.includes(action.uid)
+              );
+            }
+          });
+
+          framesWithCorrectUids?.forEach((frame) => {
+            const currentFrame = this.script?.frameByUid[frame.uid];
+            if (currentFrame) {
+              const currentActions =
+                currentFrame.actions?.map((currentAction) => {
+                  const newAppropriateAction = frame.actions?.find(
+                    (action) => action.uid === currentAction.uid
+                  );
+                  return { ...currentAction, ...newAppropriateAction };
+                }) || [];
+
+              const newActions =
+                frame.actions?.filter(
+                  (action) =>
+                    !currentActions.find(
+                      (currentAction) => currentAction.uid === action.uid
+                    )
+                ) || [];
+
+              this.script.frameByUid[frame.uid] = {
+                ...currentFrame,
+                ...frame,
+                actions: [...currentActions, ...newActions],
+              };
+            } else {
+              this.script.frameByUid[frame.uid] = frame;
+            }
           });
           resolve();
         })
-        .catch(err => {
+        .catch((err) => {
           reject(err);
         });
     });
   },
-  [ActionTypes.DELETE_SCRIPT]({ commit }, uid) {
+  deleteScript(uid) {
     return new Promise((resolve, reject) => {
       return deleteScript(uid)
         .then(() => {
-          commit(MutationTypes.DELETE_SCRIPT, uid);
+          this.scriptsInfo = this.scriptsInfo.filter(
+            (script) => script.uid !== uid
+          );
           resolve();
         })
-        .catch(err => {
+        .catch((err) => {
           reject(err);
         });
     });
-  }
+  },
 };

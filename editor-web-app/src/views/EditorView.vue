@@ -1,23 +1,10 @@
 <template>
   <div class="editor">
     <AppBar />
+    <v-icon icon="home" />
     <Workspace />
   </div>
 </template>
-
-<script lang="ts">
-import Vue from "vue";
-import AppBar from "@/components/AppBar/index.vue";
-import Workspace from "@/components/Workspace/index.vue";
-
-export default Vue.extend({
-  name: "App",
-  components: {
-    AppBar,
-    Workspace
-  }
-});
-</script>
 
 <style scoped lang="scss">
 .editor {
@@ -26,3 +13,16 @@ export default Vue.extend({
   height: 100%;
 }
 </style>
+
+<script lang="ts">
+import AppBar from "@/components/AppBar/index.vue";
+import Workspace from "@/components/Workspace/index.vue";
+
+export default {
+  name: "App",
+  components: {
+    AppBar,
+    Workspace,
+  },
+};
+</script>

@@ -12,7 +12,7 @@
           :alt="`Превью кадра №${index}`"
           :class="[
             'frame-previews__img',
-            currentFrame && pathItem.frameUid === currentFrame.uid && 'active'
+            currentFrame && pathItem.frameUid === currentFrame.uid && 'active',
           ]"
           loading="lazy"
         />
@@ -22,21 +22,21 @@
         >
           <span
             v-for="offsetBranchNum in script.frameByUid[pathItem.frameUid]
-              .actions.length"
+              ?.actions?.length"
             :key="offsetBranchNum"
             :style="{
               width: `calc(100% / ${
-                script.frameByUid[pathItem.frameUid].actions.length
-              })`
+                script.frameByUid[pathItem.frameUid]?.actions?.length
+              })`,
             }"
             :class="[
               'frame-previews__branch',
-              offsetBranchNum - 1 === pathItem.branchNum && 'active'
+              offsetBranchNum - 1 === pathItem.branchNum && 'active',
             ]"
             @click="
               configurePath({
                 frameUid: pathItem.frameUid,
-                branchNum: offsetBranchNum - 1
+                branchNum: offsetBranchNum - 1,
               })
             "
           />
@@ -47,7 +47,7 @@
         :class="[
           'frame-previews__img',
           'empty',
-          currentFrame && pathItem.frameUid === currentFrame.uid && 'active'
+          currentFrame && pathItem.frameUid === currentFrame.uid && 'active',
         ]"
       />
     </div>
@@ -55,35 +55,30 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-import { mapState, mapMutations, mapGetters } from "vuex";
-import { MutationTypes } from "@/store/mutation-types";
+import { mapState, mapActions } from "pinia";
+import { useStore } from "@/store";
 import { API_ROOT } from "@/common/requests";
-import { PathItem } from "@/common/types";
+import type { PathItem } from "@/common/types";
 
-export default Vue.extend({
+export default {
   name: "FramePreviews",
   data() {
     return {
-      API_ROOT
+      API_ROOT,
     };
   },
   computed: {
-    ...mapState(["script"]),
-    ...mapGetters(["path", "currentFrame"])
+    ...mapState(useStore, ["script", "path", "currentFrame"]),
   },
   methods: {
-    ...mapMutations({
-      selectFrame: MutationTypes.SELECT_FRAME,
-      configurePath: MutationTypes.CONFIGURE_PATH
-    }),
+    ...mapActions(useStore, ["selectFrame", "configurePath"]),
     getPictureLink(pathItem: PathItem): string {
-      return `${process.env.VUE_APP_S3_URL || ""}/${
-        process.env.VUE_APP_S3_BUCKET_NAME || "editor"
+      return `${import.meta.env.VITE_S3_URL || ""}/${
+        import.meta.env.VITE_S3_BUCKET_NAME || "editor"
       }/${this.script.frameByUid[pathItem.frameUid].pictureLink}`;
-    }
-  }
-});
+    },
+  },
+};
 </script>
 
 <style scoped lang="scss">
@@ -100,12 +95,12 @@ export default Vue.extend({
     width: 100%;
     outline-offset: -3px;
 
-    &:hover {
-      outline: 3px solid var(--v-secondary-base);
+    &.active {
+      outline: 3px solid rgb(var(--v-theme-primary));
     }
 
-    &.active {
-      outline: 3px solid var(--v-accent-base);
+    &:hover {
+      outline: 3px solid rgba(var(--v-theme-primary), 0.5);
     }
 
     &.empty {
@@ -116,7 +111,7 @@ export default Vue.extend({
         ),
         linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0));
       background-size: 1em 1em, 100%;
-      background-color: var(--v-secondary-base);
+      background-color: rgb(var(--v-theme-secondary));
     }
   }
 
@@ -130,11 +125,11 @@ export default Vue.extend({
     cursor: pointer;
 
     &:hover {
-      background-color: var(--v-secondary-base);
+      background-color: rgba(var(--v-theme-primary), 0.5);
     }
 
     &.active {
-      background-color: var(--v-accent-base);
+      background-color: rgb(var(--v-theme-primary));
     }
   }
 }

@@ -1,6 +1,6 @@
 <template>
   <v-file-input
-    v-model="file"
+    v-model="files"
     label="Выбрать новое изображение"
     accept=".png"
     class="file-input"
@@ -8,50 +8,49 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-import { mapGetters, mapActions } from "vuex";
-import { ActionTypes } from "@/store/action-types";
+import { mapState, mapActions } from "pinia";
+import { useStore } from "@/store";
 import { addImage } from "@/common/requests";
 
-export default Vue.extend({
-  name: "Frame",
+export default {
+  name: "ImageUploader",
   data() {
     return {
-      file: null as File | null
+      files: [] as File[],
     };
   },
   computed: {
-    ...mapGetters(["currentFrame"])
+    ...mapState(useStore, ["currentFrame", "script", "scriptsInfo"]),
   },
   methods: {
-    ...mapActions({
-      updateScript: ActionTypes.UPDATE_SCRIPT
-    })
+    ...mapActions(useStore, ["updateScript"]),
   },
   watch: {
-    file(value) {
-      if (!value) return;
+    files(value: File[]) {
+      if (value.length) return;
 
       const formData = new FormData();
-      formData.append("image", value);
+      formData.append("image", value[0]);
 
       addImage(formData)
         .then(({ link }) => {
-          this.updateScript({
-            frames: [
-              {
-                uid: this.currentFrame.uid,
-                pictureLink: link
-              }
-            ]
-          });
+          if (this.currentFrame) {
+            this.updateScript({
+              frames: [
+                {
+                  uid: this.currentFrame.uid,
+                  pictureLink: link,
+                },
+              ],
+            });
+          }
         })
         .finally(() => {
-          this.file = null;
+          this.files = [];
         });
-    }
-  }
-});
+    },
+  },
+};
 </script>
 
 <style scoped lang="scss">

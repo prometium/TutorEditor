@@ -1,6 +1,6 @@
-import { Script, ScriptInfo } from "./types";
+import type { Script, ScriptInfo } from "./types";
 
-export const API_ROOT = `${process.env.VUE_APP_SVC_URL || ""}/api`;
+export const API_ROOT = `${import.meta.env.VITE_SVC_URL || ""}/api`;
 
 type RequestPayload = {
   endpoint: string;
@@ -13,15 +13,15 @@ function executeRequest<T>({
   endpoint = "",
   method = "GET",
   data = null,
-  headers
+  headers,
 }: RequestPayload): Promise<T> {
   return new Promise((resolve, reject) => {
     fetch(API_ROOT + endpoint, {
       method,
       body: data,
-      headers
+      headers,
     })
-      .then(response => {
+      .then((response) => {
         if (!response.ok) {
           throw new Error(response.statusText);
         }
@@ -37,10 +37,10 @@ function executeRequest<T>({
         }
         return response.text();
       })
-      .then(data => {
+      .then((data) => {
         resolve(data);
       })
-      .catch(err => {
+      .catch((err) => {
         reject(err);
       });
   });
@@ -52,7 +52,7 @@ type GetScriptsInfoResponse = {
 
 export function getScriptsInfo(): Promise<GetScriptsInfoResponse> {
   return executeRequest({
-    endpoint: "/scripts"
+    endpoint: "/scripts",
   });
 }
 
@@ -62,7 +62,7 @@ type GetScriptResponse = {
 
 export function getScript(uid: string): Promise<GetScriptResponse> {
   return executeRequest({
-    endpoint: `/scripts/${uid}`
+    endpoint: `/scripts/${uid}`,
   });
 }
 
@@ -76,7 +76,7 @@ export function createScript(
   return executeRequest({
     endpoint: "/archive",
     method: "POST",
-    data: scriptData
+    data: scriptData,
   });
 }
 
@@ -86,7 +86,7 @@ export function createScriptV2(
   return executeRequest({
     endpoint: "/archiveV2",
     method: "POST",
-    data: scriptData
+    data: scriptData,
   });
 }
 
@@ -98,13 +98,13 @@ export function updateScript(
   script: Script,
   {
     frameIdsToDel,
-    actionIdsToDel
+    actionIdsToDel,
   }: { frameIdsToDel?: string[]; actionIdsToDel?: string[] } = {}
 ): Promise<UpdateScriptResponse> {
   return executeRequest({
     endpoint: "/scripts",
     method: "PUT",
-    data: JSON.stringify({ script, frameIdsToDel, actionIdsToDel })
+    data: JSON.stringify({ script, frameIdsToDel, actionIdsToDel }),
   });
 }
 
@@ -113,14 +113,14 @@ type DeleteScriptResponse = Record<string, unknown>;
 export function deleteScript(uid: string): Promise<DeleteScriptResponse> {
   return executeRequest({
     endpoint: `/scripts/${uid}`,
-    method: "DELETE"
+    method: "DELETE",
   });
 }
 
 export function downloadScriptArchive(uid: string): Promise<Blob> {
   return executeRequest({
     endpoint: `/archiveV2/${uid}`,
-    method: "GET"
+    method: "GET",
   });
 }
 
@@ -132,7 +132,7 @@ export function releaseScriptArchive(
   return executeRequest({
     endpoint: `/archiveV2`,
     method: "PUT",
-    data: JSON.stringify({ uid })
+    data: JSON.stringify({ uid }),
   });
 }
 
@@ -144,7 +144,7 @@ export function addImage(imageData: FormData): Promise<AddImageResponse> {
   return executeRequest({
     endpoint: "/images",
     method: "POST",
-    data: imageData
+    data: imageData,
   });
 }
 
@@ -156,6 +156,6 @@ export function copyScript(script: Script): Promise<CopyScriptResponse> {
   return executeRequest({
     endpoint: "/scripts",
     method: "POST",
-    data: JSON.stringify({ script })
+    data: JSON.stringify({ script }),
   });
 }

@@ -4,15 +4,13 @@
       <slot name="activator" v-bind="activator" />
     </template>
     <v-card>
-      <v-card-title class="headline lighten-2">
-        Редактирование действия
-      </v-card-title>
+      <v-card-title class="text-h5"> Редактирование действия </v-card-title>
       <v-card-text style="max-height: 300px">
-        <p class="body-1" v-if="editMode">
+        <p class="text-body-1" v-if="editMode">
           <v-text-field
             @keyup="handleKeyUp"
             @keydown.prevent
-            solo
+            variant="solo"
             :label="
               'Новая клавиша' +
               (action.actionType === ActionType.KeyWithMod
@@ -20,10 +18,12 @@
                 : '')
             "
           />
-          <v-btn @click="handleCancel" text small> Отмена </v-btn>
+          <v-btn @click="handleCancel" variant="text" size="small">
+            Отмена
+          </v-btn>
         </p>
         <template v-else>
-          <p class="body-1">
+          <p class="text-body-1">
             Клавиша: <b>{{ key || "[нет]" }}</b>
             <v-btn @click="handleChange" icon>
               <v-icon> mdi-pencil </v-icon>
@@ -32,7 +32,10 @@
               <v-icon> mdi-delete </v-icon>
             </v-btn>
           </p>
-          <p v-if="action.actionType === ActionType.KeyWithMod" class="body-1">
+          <p
+            v-if="action.actionType === ActionType.KeyWithMod"
+            class="text-body-1"
+          >
             Модификатор: <b>{{ modKey || "[нет]" }}</b>
           </p>
         </template>
@@ -40,22 +43,23 @@
       <v-divider />
       <v-card-actions>
         <v-spacer />
-        <v-btn @click="handleDiscard" text> Отменить </v-btn>
-        <v-btn @click="handleSubmit" text color="primary"> Сохранить </v-btn>
+        <v-btn @click="handleDiscard" variant="text"> Отменить </v-btn>
+        <v-btn @click="handleSubmit" variant="text" color="primary">
+          Сохранить
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-import { mapActions, mapState } from "vuex";
-import { ActionTypes } from "@/store/action-types";
+import { mapActions, mapState } from "pinia";
+import { useStore } from "@/store";
 import { ActionType } from "@/common/constants";
 
 enum EditMode {
   Key = "key",
-  None = ""
+  None = "",
 }
 
 const modKeyArgs = [
@@ -65,27 +69,25 @@ const modKeyArgs = [
   "Shift",
   "CapsLock",
   "NumLock",
-  "ScrollLock"
+  "ScrollLock",
 ];
 
-export default Vue.extend({
+export default {
   name: "EditKeyboardActionDialog",
   props: {
     frameUid: { type: String, required: true },
-    action: { type: Object, required: true }
+    action: { type: Object, required: true },
   },
   data() {
     return {
       dialog: false,
       editMode: EditMode.None,
       key: "",
-      modKey: ""
+      modKey: "",
     };
   },
   methods: {
-    ...mapActions({
-      updateScript: ActionTypes.UPDATE_SCRIPT
-    }),
+    ...mapActions(useStore, ["updateScript"]),
     handleChange() {
       this.editMode = EditMode.Key;
     },
@@ -127,20 +129,20 @@ export default Vue.extend({
                 actionType: this.action.actionType,
                 nextFrame: this.action.nextFrame,
                 key: this.key,
-                modKey: this.modKey
-              }
-            ]
-          }
-        ]
+                modKey: this.modKey,
+              },
+            ],
+          },
+        ],
       });
       this.dialog = false;
-    }
+    },
   },
   computed: {
-    ...mapState(["scriptsInfo"]),
+    ...mapState(useStore, ["script", "scriptsInfo"]),
     ActionType() {
       return ActionType;
-    }
+    },
   },
   watch: {
     action: {
@@ -148,8 +150,8 @@ export default Vue.extend({
       handler(value) {
         this.key = value.key;
         this.modKey = value.modKey;
-      }
-    }
-  }
-});
+      },
+    },
+  },
+};
 </script>

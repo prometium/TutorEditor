@@ -9,49 +9,45 @@
       <FramePreviews class="workspace__aside-previews" />
       <FrameTools />
     </v-sheet>
-    <Frame v-if="hasScript" class="workspace__frame" />
+    <FrameImg v-if="hasScript" class="workspace__frame" />
   </main>
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-import { mapActions, mapState } from "vuex";
-import store from "@/store";
-import { ActionTypes } from "@/store/action-types";
-import Frame from "./Frame.vue";
+import { mapActions, mapState } from "pinia";
+import { useStore } from "@/store";
+
+import FrameImg from "./FrameImg.vue";
 import FramePreviews from "./FramePreviews.vue";
 import FrameTools from "./FrameTools.vue";
 
-export default Vue.extend({
+export default {
   name: "App",
   components: {
-    Frame,
+    FrameImg,
     FramePreviews,
-    FrameTools
+    FrameTools,
   },
-  store,
   data() {
     return {
-      scriptUid: ""
+      scriptUid: "",
     };
   },
   mounted() {
     if (this.$route.query.scriptUid) {
-      this.loadScript(this.$route.query.scriptUid);
+      this.loadScript(String(this.$route.query.scriptUid));
     }
   },
   computed: {
-    ...mapState(["script"]),
+    ...mapState(useStore, ["script", "scriptsInfo"]),
     hasScript(): boolean {
       return !!this.script.uid;
-    }
+    },
   },
   methods: {
-    ...mapActions({
-      loadScript: ActionTypes.LOAD_SCRIPT
-    })
-  }
-});
+    ...mapActions(useStore, ["loadScript"]),
+  },
+};
 </script>
 
 <style scoped lang="scss">

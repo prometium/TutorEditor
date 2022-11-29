@@ -1,13 +1,13 @@
 <template>
   <v-dialog v-model="dialog" width="600">
     <v-card>
-      <v-card-title class="headline lighten-2">
+      <v-card-title class="text-h5">
         Создание обучающей программы
       </v-card-title>
       <v-card-text style="max-height: 300px">
         <v-text-field v-model="name" label="Название обучающей программы" />
         <v-file-input
-          v-model="file"
+          v-model="files"
           :label="`Выбрать архив от ${
             radioGroup === '1' ? 'перехватчика' : 'редактора'
           }`"
@@ -21,8 +21,13 @@
       <v-divider />
       <v-card-actions>
         <v-spacer />
-        <v-btn @click="dialog = false" text> Отменить </v-btn>
-        <v-btn @click="handleCreate" :loading="isLoading" text color="primary">
+        <v-btn @click="dialog = false" variant="text"> Отменить </v-btn>
+        <v-btn
+          @click="handleCreate"
+          :loading="isLoading"
+          variant="text"
+          color="primary"
+        >
           Создать
         </v-btn>
       </v-card-actions>
@@ -31,49 +36,46 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-import { mapActions, mapState } from "vuex";
+import { mapActions, mapState } from "pinia";
+import { useStore } from "@/store";
 import { createScript, createScriptV2 } from "@/common/requests";
-import { ActionTypes } from "@/store/action-types";
 
-export default Vue.extend({
+export default {
   name: "CreateScriptDialog",
-  props: ["value"],
+  props: ["modelValue"],
   data() {
     return {
       name: "",
-      file: null as File | null,
+      files: [] as File[],
       radioGroup: "1",
-      isLoading: false
+      isLoading: false,
     };
   },
   computed: {
-    ...mapState(["scriptsInfo"]),
+    ...mapState(useStore, ["script", "scriptsInfo"]),
     dialog: {
       get(): boolean {
-        return this.value;
+        return this.modelValue;
       },
       set(value: boolean) {
-        this.$emit("input", value);
-      }
-    }
+        this.$emit("update:modelValue", value);
+      },
+    },
   },
   methods: {
-    ...mapActions({
-      loadScript: ActionTypes.LOAD_SCRIPT
-    }),
+    ...mapActions(useStore, ["loadScript"]),
     handleCreate() {
-      if (!this.file) return;
+      if (!this.files.length) return;
 
       const formData = new FormData();
-      formData.append("script", this.file);
+      formData.append("script", this.files[0]);
       formData.append("name", this.name);
 
       const action = this.radioGroup === "1" ? createScript : createScriptV2;
 
       this.isLoading = true;
       action(formData)
-        .then(data => {
+        .then((data) => {
           this.loadScript(data.uid);
           this.$router.push({ path: "/", query: { scriptUid: data.uid } });
           this.dialog = false;
@@ -82,16 +84,16 @@ export default Vue.extend({
         .finally(() => {
           this.isLoading = false;
         });
-    }
+    },
   },
   watch: {
     dialog(value) {
       if (value) {
         this.name = "";
-        this.file = null;
+        this.files = [];
         this.radioGroup = "1";
       }
-    }
-  }
-});
+    },
+  },
+};
 </script>

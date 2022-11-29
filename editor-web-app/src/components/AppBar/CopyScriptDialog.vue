@@ -1,7 +1,7 @@
 <template>
   <v-dialog v-model="dialog" width="600">
     <v-card>
-      <v-card-title class="headline lighten-2">
+      <v-card-title class="text-h5">
         Создание копии обучающей программы
       </v-card-title>
       <v-card-text style="max-height: 300px">
@@ -13,8 +13,13 @@
       <v-divider />
       <v-card-actions>
         <v-spacer />
-        <v-btn @click="dialog = false" text> Отменить </v-btn>
-        <v-btn @click="handleCopy" :loading="isLoading" text color="primary">
+        <v-btn @click="dialog = false" variant="text"> Отменить </v-btn>
+        <v-btn
+          @click="handleCopy"
+          :loading="isLoading"
+          variant="text"
+          color="primary"
+        >
           Копировать
         </v-btn>
       </v-card-actions>
@@ -23,43 +28,40 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-import { mapActions, mapState } from "vuex";
+import { mapActions, mapState } from "pinia";
+import { useStore } from "@/store";
 import { copyScript } from "@/common/requests";
-import { ActionTypes } from "@/store/action-types";
 
-export default Vue.extend({
+export default {
   name: "CopyScriptDialog",
-  props: ["value"],
+  props: ["modelValue"],
   data() {
     return {
       name: "",
-      isLoading: false
+      isLoading: false,
     };
   },
   computed: {
-    ...mapState(["script"]),
+    ...mapState(useStore, ["script", "scriptsInfo"]),
     dialog: {
       get(): boolean {
-        return this.value;
+        return this.modelValue;
       },
       set(value: boolean) {
-        this.$emit("input", value);
-      }
-    }
+        this.$emit("update:modelValue", value);
+      },
+    },
   },
   methods: {
-    ...mapActions({
-      loadScript: ActionTypes.LOAD_SCRIPT
-    }),
+    ...mapActions(useStore, ["loadScript"]),
     handleCopy() {
       this.isLoading = true;
       copyScript({
         ...this.script,
         frames: Object.values(this.script.frameByUid),
-        name: this.name
+        name: this.name,
       })
-        .then(data => {
+        .then((data) => {
           this.loadScript(data.uid);
           this.$router.push({ path: "/", query: { scriptUid: data.uid } });
           this.dialog = false;
@@ -68,14 +70,14 @@ export default Vue.extend({
         .finally(() => {
           this.isLoading = false;
         });
-    }
+    },
   },
   watch: {
     dialog(value) {
       if (value) {
         this.name = this.script.name + " - копия";
       }
-    }
-  }
-});
+    },
+  },
+};
 </script>

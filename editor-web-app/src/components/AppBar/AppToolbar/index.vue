@@ -12,7 +12,7 @@
       <v-row align="center" de>
         <v-col class="d-flex" cols="12" md="6">
           <v-text-field
-            :value="currentFrame.taskText"
+            :model-value="currentFrame.taskText"
             label="Текст задания"
             dense
             hide-details
@@ -21,7 +21,7 @@
         </v-col>
         <v-col class="d-flex" cols="12" md="6">
           <v-text-field
-            :value="currentFrame.hintText"
+            :model-value="currentFrame.hintText"
             label="Текст подсказки"
             dense
             hide-details
@@ -32,7 +32,7 @@
       <v-row v-if="showAction" v-show="expanded">
         <v-col class="d-flex">
           <v-select
-            item-text="text"
+            item-title="text"
             item-value="value"
             v-model="currentActionType"
             :items="actionItems"
@@ -41,7 +41,7 @@
             hide-details
           />
           <span v-if="isTicksCountShown" class="action-immutable-value">
-            {{ currentAction.ticksCount || 0 }} щелчков
+            {{ currentAction?.ticksCount || 0 }} щелчков
           </span>
           <component
             v-if="actionDialogComponent"
@@ -68,28 +68,33 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-import { mapGetters, mapActions } from "vuex";
-import { ActionTypes } from "@/store/action-types";
+import { mapActions, mapState } from "pinia";
+import { useStore } from "@/store";
 import { initialActionItems } from "./constants";
 import EditKeyboardActionDialog from "./EditKeyboardActionDialog.vue";
 import EditPauseActionDialog from "./EditPauseActionDialog.vue";
 import { ActionGroup } from "@/common/constants";
 
-export default Vue.extend({
-  name: "Toolbar",
+export default {
+  name: "AppToolbar",
   components: {
     EditKeyboardActionDialog,
-    EditPauseActionDialog
+    EditPauseActionDialog,
   },
   data() {
     return {
       expanded: false,
-      actionItems: initialActionItems
+      actionItems: initialActionItems,
     };
   },
   computed: {
-    ...mapGetters(["currentFrame", "currentAction", "currentActionGroup"]),
+    ...mapState(useStore, [
+      "script",
+      "scriptsInfo",
+      "currentFrame",
+      "currentAction",
+      "currentActionGroup",
+    ]),
     showAction(): boolean {
       return !!this.currentFrame?.actions?.length;
     },
@@ -108,29 +113,27 @@ export default Vue.extend({
     },
     currentActionType: {
       get(): number {
-        return this.currentAction?.actionType;
+        return this.currentAction?.actionType || 0; // TODO
       },
       set(newValue: number) {
-        this.({
+        this.updateScript({
           frames: [
             {
-              uid: this.currentFrame.uid,
+              uid: this.currentFrame?.uid || "",
               actions: [
                 {
-                  uid: this.currentAction.uid,
-                  actionType: newValue
-                }
-              ]
-            }
-          ]
+                  uid: this.currentAction?.uid || "",
+                  actionType: newValue,
+                },
+              ],
+            },
+          ],
         });
-      }
-    }
+      },
+    },
   },
   methods: {
-    ...mapActions({
-      updateScript: ActionTypes.UPDATE_SCRIPT
-    }),
+    ...mapActions(useStore, ["updateScript"]),
     handleToggleExpanded() {
       this.expanded = !this.expanded;
     },
@@ -138,14 +141,14 @@ export default Vue.extend({
       this.updateScript({
         frames: [
           {
-            uid: this.currentFrame.uid,
-            [field]: newValue
-          }
-        ]
+            uid: this.currentFrame?.uid || "",
+            [field]: newValue,
+          },
+        ],
       });
-    }
-  }
-});
+    },
+  },
+};
 </script>
 
 <style scoped lang="scss">

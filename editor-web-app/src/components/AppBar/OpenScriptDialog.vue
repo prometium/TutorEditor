@@ -4,11 +4,9 @@
       <slot name="activator" v-bind="activator" />
     </template>
     <v-card>
-      <v-card-title class="headline lighten-2">
-        Обучающие программы
-      </v-card-title>
+      <v-card-title class="text-h5"> Обучающие программы </v-card-title>
       <v-card-text style="max-height: 300px; overflow-y: auto">
-        <v-radio-group v-model="selectedScriptId" column>
+        <v-radio-group v-model="selectedScriptId">
           <v-radio
             v-for="scriptInfo in scriptsInfo"
             :key="scriptInfo.uid"
@@ -20,8 +18,8 @@
       <v-divider />
       <v-card-actions>
         <v-spacer />
-        <v-btn @click="dialog = false" text> Отменить </v-btn>
-        <v-btn @click="handleOpen" :loading="isLoading" text color="primary">
+        <v-btn @click="dialog = false"> Отменить </v-btn>
+        <v-btn @click="handleOpen" :loading="isLoading" color="primary">
           Открыть
         </v-btn>
       </v-card-actions>
@@ -30,35 +28,31 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-import { mapState, mapActions } from "vuex";
-import { ActionTypes } from "@/store/action-types";
+import { mapState, mapActions } from "pinia";
+import { useStore } from "@/store";
 
-export default Vue.extend({
+export default {
   name: "OpenScriptDialog",
-  props: ["value"],
+  props: ["modelValue"],
   data() {
     return {
       selectedScriptId: "",
-      isLoading: false
+      isLoading: false,
     };
   },
   computed: {
-    ...mapState(["scriptsInfo"]),
+    ...mapState(useStore, ["scriptsInfo", "script", "scriptsInfo"]),
     dialog: {
       get(): boolean {
-        return this.value;
+        return this.modelValue;
       },
       set(value: boolean) {
-        this.$emit("input", value);
-      }
-    }
+        this.$emit("update:modelValue", value);
+      },
+    },
   },
   methods: {
-    ...mapActions({
-      loadScript: ActionTypes.LOAD_SCRIPT,
-      loadScriptsInfo: ActionTypes.LOAD_SCRIPTS_INFO
-    }),
+    ...mapActions(useStore, ["loadScript", "loadScriptsInfo"]),
     handleOpen() {
       this.isLoading = true;
       this.loadScript(this.selectedScriptId)
@@ -74,14 +68,14 @@ export default Vue.extend({
         .finally(() => {
           this.isLoading = false;
         });
-    }
+    },
   },
   watch: {
     dialog(value) {
       if (value) {
         this.loadScriptsInfo();
       }
-    }
-  }
-});
+    },
+  },
+};
 </script>
